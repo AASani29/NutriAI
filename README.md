@@ -1,18 +1,18 @@
-# LocaNutri Smart
+# NutriAI
 
 ## Product Overview
 
 **Domain:** HealthTech (Nutrition & Diet Recommender)  
 **Mission:** Democratizing personalized nutrition by bridging the gap between medical needs, local market prices, and household reality.
 
-LocaNutri Smart is an innovative mobile/web application designed specifically for the Bangladeshi context, where affordability, local market fluctuations, and environmental factors play crucial roles in daily nutrition decisions. Unlike generic diet apps, LocaNutri Smart integrates real-time local pricing, weather conditions, and household inventory to provide practical, affordable, and safe nutritional guidance.
+NutriAI is an innovative mobile/web application designed specifically for the Bangladeshi context, where affordability, local market fluctuations, and environmental factors play crucial roles in daily nutrition decisions. Unlike generic diet apps, NutriAI integrates real-time local pricing, weather conditions, and household inventory to provide practical, affordable, and safe nutritional guidance.
 
 ## Key Features
 
 ### 🛒 Feature 1: The "Smart Pantry" Context Engine
 A digital inventory of what the user currently owns (Rice, Oil, Lentils, Vegetables) stored in the app.
 
-**Why it matters:** Most diet apps suggest meals requiring new ingredients. LocaNutri Smart prioritizes food you already have. This is the single biggest factor in making a diet affordable for low-to-middle-income families.
+**Why it matters:** Most diet apps suggest meals requiring new ingredients. NutriAI prioritizes food you already have. This is the single biggest factor in making a diet affordable for low-to-middle-income families.
 
 **Key Capabilities:**
 - **Scan-to-Add:** Users can snap a photo of their grocery receipt or product barcodes to instantly add items to their pantry list.
@@ -128,28 +128,28 @@ The application is currently in development with the following features implemen
 
 **The Problem:** Traditional diet apps suggest "Grilled Chicken and Quinoa" which is impossible for him. He needs energy but meat prices just doubled this week.
 
-**LocaNutri Solution (Feature 2):** The Price Optimization Engine detects the price hike in meat. It generates a high-calorie meal plan using Lentils (Dal), Potato (Aloo), and Eggs, ensuring he gets his required protein and energy for 40% less cost than the meat-based option.
+**NutriAI Solution (Feature 2):** The Price Optimization Engine detects the price hike in meat. It generates a high-calorie meal plan using Lentils (Dal), Potato (Aloo), and Eggs, ensuring he gets his required protein and energy for 40% less cost than the meat-based option.
 
 ### Case Study B: The Diabetic Homemaker in Summer
 **Profile:** Sumaiya, 45. Type-2 Diabetic. Manages a household kitchen without 24/7 air conditioning.
 
 **The Problem:** She bought spinach and milk in the morning. It is an extremely hot and humid day (38°C). A standard app assumes these foods are good for 3 days.
 
-**LocaNutri Solution (Feature 3 & 4):** The Weather-Adaptive Guard detects the heatwave. It sends her an alert at 4 PM: "High Heat Alert! Your spinach will lose nutrition and spoil by tomorrow. Please cook it for dinner tonight." The Clinical Shield ensures the suggested recipe uses minimal oil and no added sugar, keeping her blood sugar stable.
+**NutriAI Solution (Feature 3 & 4):** The Weather-Adaptive Guard detects the heatwave. It sends her an alert at 4 PM: "High Heat Alert! Your spinach will lose nutrition and spoil by tomorrow. Please cook it for dinner tonight." The Clinical Shield ensures the suggested recipe uses minimal oil and no added sugar, keeping her blood sugar stable.
 
 ### Case Study C: The Garment Worker with Anemia
 **Profile:** Fatema, 22. Works long shifts. Diagnosed with Anemia (Iron deficiency). Often skips meals to save money.
 
 **The Problem:** She buys expensive imported apples because she thinks they are "healthy," wasting money. She ignores cheap local greens because she doesn't know their value.
 
-**LocaNutri Solution (Feature 2 & 5):** The app suggests Local Superfoods. It recommends Kochu Shak (Taro Leaves) and Lal Shak (Red Amaranth)—which are incredibly cheap and rich in iron. It also prompts her to add a slice of Lemon (Vitamin C) to her meal to help her body absorb the iron, a zero-cost medical intervention.
+**NutriAI Solution (Feature 2 & 5):** The app suggests Local Superfoods. It recommends Kochu Shak (Taro Leaves) and Lal Shak (Red Amaranth)—which are incredibly cheap and rich in iron. It also prompts her to add a slice of Lemon (Vitamin C) to her meal to help her body absorb the iron, a zero-cost medical intervention.
 
 ### Case Study D: The "Leftover" Dilemma
 **Profile:** A middle-class family with leftover Panta Bhat (soaked rice) from the previous night.
 
 **The Problem:** They want to eat it to avoid waste, but the weather has been warm, and bacterial growth is a risk.
 
-**LocaNutri Solution (Feature 5):** The user inputs "Leftover Soaked Rice." The app checks the local temperature history. It calculates that the risk of bacterial contamination is high because the kitchen was above 30°C overnight. It advises: "Risk of bacterial growth detected. Do not consume raw. Thoroughly fry with onions and chilies to ensure safety, or discard."
+**NutriAI Solution (Feature 5):** The user inputs "Leftover Soaked Rice." The app checks the local temperature history. It calculates that the risk of bacterial contamination is high because the kitchen was above 30°C overnight. It advises: "Risk of bacterial growth detected. Do not consume raw. Thoroughly fry with onions and chilies to ensure safety, or discard."
 
 ## Technology Stack
 
@@ -206,7 +206,7 @@ The application uses PostgreSQL with the following main entities:
 ## Project Structure
 
 ```
-LocaNutri-Smart/
+NutriAI/
 ├── client/                          # React frontend application
 │   ├── src/
 │   │   ├── components/              # Reusable UI components
@@ -360,7 +360,7 @@ LocaNutri-Smart/
    - Copy `.env.example` to `.env`
    - Configure the following variables:
      ```env
-     DATABASE_URL="postgresql://username:password@localhost:5432/locanutri_db"
+     DATABASE_URL="postgresql://username:password@localhost:5432/NutriAI_db"
      CLERK_SECRET_KEY="your_clerk_secret_key"
      PORT=3000
      NODE_ENV=development
