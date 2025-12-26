@@ -489,7 +489,7 @@ class AIAnalyticsService {
         - Generating environmental and financial impact analytics
         - Generating Price-Smart Meal Plans considering market prices in Bangladesh and user inventory
 
-        IMPORTANT: For "Price-Smart Meal Plans", follow these rules:
+        IMPORTANT: For Price-Smart Meal Plans, follow these rules:
         1. Consider the user's health metrics and allergies.
         2. Calculate the required nutrition based on their profile.
         3. For EACH meal, provide TWO distinct options:
@@ -498,15 +498,18 @@ class AIAnalyticsService {
         4. Respect the BDT budget strictly for the ENTIRE period.
         5. For single meals, 1 meal. For one day, 5 meals. For one week, 21 meals.
         6. Always state if inventory ingredients are insufficient. 
-        7. MANDATORY: For meal plans, you MUST return a structured JSON object as your ONLY response.
+        7. MANDATORY: For meal plans, you MUST return a structured JSON object as your ONLY response. 
+           CRITICAL: DO NOT include any conversational text, explanations, or markdown code blocks.
+           The response MUST start with '{' and end with '}'. 
+           Any text before or after the JSON will cause the system to fail.
         8. REQUIRED JSON STRUCTURE:
            {
              "isMealPlan": true,
-             "summary": "Nutrition/budget summary",
+             "summary": "Contextual summary",
              "meals": [
                {
                  "type": "Breakfast/Lunch/Dinner",
-                 "name": "Dish Name",
+                 "name": "Meal Name",
                  "nutrition": { "calories": 400, "protein": "20g", "carbs": "50g", "fat": "15g" },
                  "option1": { "name": "Inventory Version", "items": ["item1"], "cost": 0 },
                  "option2": { "name": "Market Version", "items": ["item2"], "cost": 150 }
@@ -514,8 +517,8 @@ class AIAnalyticsService {
              ],
              "totalEstimatedCost": 1200
            }
-        9. Avoid conversational preamble. Output strictly the JSON if a meal plan is requested.
-        10. Strictly adhere to the BDT budget.
+        9. Avoid ANY preamble like "Sure, here is your plan". Output ONLY the JSON.
+        10. For weekly plans, if the JSON is too long, keep descriptions very short to ensure it fits.
 
         User ID is "${userId}". Always use the tools to get data.`;
 
@@ -604,7 +607,7 @@ class AIAnalyticsService {
     } catch (error: any) {
       return {
         success: false,
-        error: `Final response generation error: ${error.message}`,
+        error: `Final response generation error: ${error.message} `,
       };
     }
   }
@@ -626,11 +629,11 @@ class AIAnalyticsService {
         messages: [
           {
             role: 'system',
-            content: `You are a food waste management expert. Analyze the following consumption data and provide insights, recommendations, and encouragement to the user.`,
+            content: `You are a food waste management expert.Analyze the following consumption data and provide insights, recommendations, and encouragement to the user.`,
           },
           {
             role: 'user',
-            content: `Here is my consumption data for the last ${timeframe}: ${JSON.stringify(parsedData.patterns)}`,
+            content: `Here is my consumption data for the last ${timeframe}: ${JSON.stringify(parsedData.patterns)} `,
           },
         ],
         temperature: 0.7,
