@@ -1,12 +1,13 @@
 import express from 'express';
 import { imageController } from './image-controller';
-import { requireAuth } from '../../middleware/auth';
+import { ensureUserExists, requireAuth } from '../../middleware/auth';
 import { fileUploadMiddleware } from '../../middleware/fileUpload';
 
 const router = express.Router();
 
-// All routes require authentication
+// All routes require authentication and user existence check
 router.use(requireAuth);
+router.use(ensureUserExists);
 
 // Upload image
 router.post('/', fileUploadMiddleware, imageController.uploadImage);

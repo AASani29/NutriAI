@@ -18,7 +18,10 @@ import {
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import ImageUploadModal from '../components/inventory/ImageUploadModal';
+import WeatherAlertBanner from '../components/weather/WeatherAlertBanner';
+import WeatherWidget from '../components/weather/WeatherWidget';
 import { useInventory } from '../hooks/useInventory';
+import { getAlerts, type FoodAlert } from '../services/weather-service';
 
 export interface Inventory {
   id: string;
@@ -61,6 +64,10 @@ export interface FoodItem {
 export default function InventoryDetailPage() {
   // Image upload modal state
   const [showImageUploadModal, setShowImageUploadModal] = useState(false);
+
+  // Weather alerts state
+  const [weatherAlerts, setWeatherAlerts] = useState<FoodAlert[]>([]);
+  const [alertsLoading, setAlertsLoading] = useState(false);
 
   // Rest of the states
   const { inventoryId } = useParams<{ inventoryId: string }>();
@@ -121,6 +128,25 @@ export default function InventoryDetailPage() {
       setLoading(false);
     }
   }, [inventoryId, inventories, isLoading]);
+
+  // Fetch weather alerts
+  useEffect(() => {
+    const fetchAlerts = async () => {
+      if (!inventoryId) return;
+
+      try {
+        setAlertsLoading(true);
+        const alerts = await getAlerts(inventoryId);
+        setWeatherAlerts(alerts);
+      } catch (err) {
+        console.error('Error fetching weather alerts:', err);
+      } finally {
+        setAlertsLoading(false);
+      }
+    };
+
+    fetchAlerts();
+  }, [inventoryId, inventoryItems]);
 
   // Handle image upload success
   const handleImageUploadSuccess = (extractedItems: any[]) => {
@@ -332,6 +358,14 @@ export default function InventoryDetailPage() {
       </div>
 
       <div className="max-w-5xl mx-auto px-4 py-8">
+        {/* Weather Widget and Alerts */}
+        <div className="mb-6">
+          <WeatherWidget className="mb-4" />
+          {!alertsLoading && weatherAlerts.length > 0 && (
+            <WeatherAlertBanner alerts={weatherAlerts} />
+          )}
+        </div>
+
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <div className="bg-card rounded-xl border border-border p-6">
@@ -376,7 +410,7 @@ export default function InventoryDetailPage() {
                     const today = new Date();
                     const diffDays = Math.ceil(
                       (expDate.getTime() - today.getTime()) /
-                        (1000 * 60 * 60 * 24),
+                      (1000 * 60 * 60 * 24),
                     );
                     return diffDays >= 0 && diffDays <= 3;
                   }).length || 0}
@@ -424,11 +458,10 @@ export default function InventoryDetailPage() {
             </div>
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className={`px-4 py-2 rounded-lg flex items-center gap-2 transition-smooth ${
-                showFilters || hasActiveFilters
+              className={`px-4 py-2 rounded-lg flex items-center gap-2 transition-smooth ${showFilters || hasActiveFilters
                   ? 'bg-primary text-primary-foreground'
                   : 'bg-card border border-border text-foreground hover:bg-secondary/10'
-              }`}
+                }`}
             >
               <Filter className="w-4 h-4" />
               Filters
@@ -564,9 +597,9 @@ export default function InventoryDetailPage() {
               const today = new Date();
               const daysUntilExpiry = expiryDate
                 ? Math.ceil(
-                    (expiryDate.getTime() - today.getTime()) /
-                      (1000 * 60 * 60 * 24),
-                  )
+                  (expiryDate.getTime() - today.getTime()) /
+                  (1000 * 60 * 60 * 24),
+                )
                 : null;
 
               let expiryStatus = 'none';
@@ -621,8 +654,8 @@ export default function InventoryDetailPage() {
                           {expiryStatus === 'expired'
                             ? `Expired ${Math.abs(daysUntilExpiry!)} days ago`
                             : expiryStatus === 'expiring-soon'
-                            ? `Expires in ${daysUntilExpiry} days`
-                            : `Expires ${expiryDate.toLocaleDateString()}`}
+                              ? `Expires in ${daysUntilExpiry} days`
+                              : `Expires ${expiryDate.toLocaleDateString()}`}
                         </span>
                       </div>
                     )}
@@ -641,11 +674,10 @@ export default function InventoryDetailPage() {
                   <button
                     onClick={() => handleConsumption(item)}
                     disabled={item.quantity <= 0 || item.id.startsWith('temp-')}
-                    className={`w-full px-3 py-2 rounded-lg transition-smooth font-medium flex items-center justify-center gap-2 ${
-                      item.quantity <= 0 || item.id.startsWith('temp-')
+                    className={`w-full px-3 py-2 rounded-lg transition-smooth font-medium flex items-center justify-center gap-2 ${item.quantity <= 0 || item.id.startsWith('temp-')
                         ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                         : 'bg-primary text-primary-foreground hover:bg-primary/90'
-                    }`}
+                      }`}
                     title={
                       item.id.startsWith('temp-')
                         ? 'Item is being saved, please wait...'
@@ -656,8 +688,8 @@ export default function InventoryDetailPage() {
                     {item.quantity <= 0
                       ? 'Out of Stock'
                       : item.id.startsWith('temp-')
-                      ? 'Saving...'
-                      : 'Consume'}
+                        ? 'Saving...'
+                        : 'Consume'}
                   </button>
                 </div>
               );

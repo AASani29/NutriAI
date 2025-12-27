@@ -40,6 +40,10 @@ model UserProfile {
   dietaryPreference String?
   location          String?
   budgetRange       Float?
+  height            Float?
+  weight            Float?
+  weightPreference  String?   // "lose", "gain", "maintain"
+  allergies         String?
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
   isDeleted         Boolean   @default(false)
@@ -68,6 +72,7 @@ model FoodItem {
   files                 File[]           @relation("FoodItemFiles")
   createdBy             User?            @relation("CreatedFoodItems", fields: [createdById], references: [id])
   inventoryItems        InventoryItem[]
+  foodSafetyAlerts      FoodSafetyAlert[] @relation("FoodItemAlerts")
 }
 
 model Inventory {
@@ -125,6 +130,7 @@ model InventoryItem {
   foodItem        FoodItem?        @relation(fields: [foodItemId], references: [id])
   inventory       Inventory        @relation("InventoryItems", fields: [inventoryId], references: [id])
   expirationRisk  ExpirationRisk?
+  foodSafetyAlerts FoodSafetyAlert[] @relation("InventoryItemAlerts")
 }
 
 model ConsumptionLog {
@@ -143,6 +149,7 @@ model ConsumptionLog {
   fiber           Float?
   sugar           Float?
   sodium          Float?
+  cost            Float?   // Total cost of this consumption
   consumedAt      DateTime         @default(now())
   notes           String?
   isDeleted       Boolean          @default(false)
@@ -352,4 +359,18 @@ model AuditLog {
   details   Json
   createdAt DateTime @default(now())
   user      User     @relation(fields: [userId], references: [id])
+}
+
+model FoodSafetyAlert {
+  id              String         @id @default(uuid())
+  foodItemId      String?
+  inventoryItemId String?
+  alertType       String         // "RECALL", "EXPIRED", "CONTAMINATION"
+  severity        String         // "HIGH", "MEDIUM", "LOW"
+  message         String
+  createdAt       DateTime       @default(now())
+  isResolved      Boolean        @default(false)
+  resolvedAt      DateTime?
+  foodItem        FoodItem?      @relation("FoodItemAlerts", fields: [foodItemId], references: [id])
+  inventoryItem   InventoryItem? @relation("InventoryItemAlerts", fields: [inventoryItemId], references: [id])
 }

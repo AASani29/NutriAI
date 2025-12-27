@@ -526,6 +526,8 @@ export class InventoryService {
       sugar: data.sugar,
       sodium: data.sodium,
     };
+    
+    let calculatedCost: number | null = null;
 
     if (data.foodItemId) {
       const foodItem = await prisma.foodItem.findFirst({
@@ -551,21 +553,42 @@ export class InventoryService {
           sodium: (base.sodium || 0) * ratio,
         };
       }
+      
+      // --- COST CALCULATION START ---
+      // If we have basePrice, calculate cost
+      if (foodItemAny.basePrice && foodItemAny.nutritionBasis) {
+          calculatedCost = (foodItemAny.basePrice / foodItemAny.nutritionBasis) * data.quantity;
+      } 
+      // If NO basePrice, try to predict it now (JIT Prediction)
+      else if (data.itemName) {
+          try {
+             console.log(`🤖 JIT Price Estimating for: ${data.itemName}`);
+             const estimated = await aiAnalyticsService.estimateItemDetails(data.itemName);
+             if (estimated && estimated.basePrice && estimated.nutritionBasis) {
+                 calculatedCost = (estimated.basePrice / estimated.nutritionBasis) * data.quantity;
+                 console.log(`✅ JIT Estimated Cost: ${calculatedCost}`);
+
+                 // Update FoodItem so we don't pay for this again
+                 await prisma.foodItem.update({
+                     where: { id: foodItem.id },
+                     data: {
+                         basePrice: estimated.basePrice,
+                         nutritionBasis: estimated.nutritionBasis, // Ensure basis matches price
+                         nutritionUnit: estimated.nutritionUnit,
+                         category: estimated.category || foodItem.category
+                     } as any
+                 });
+             }
+          } catch(e) {
+              console.warn('Failed to JIT estimate price:', e);
+          }
+      }
+      // --- COST CALCULATION END ---
+
       // 2. If FoodItem has NO base nutrition but we have incoming AI data, CACHE IT
-      else if (data.calories !== undefined) {
+      if (!foodItemAny.nutritionPerUnit && data.calories !== undefined) {
         // Assume incoming data is for the consumed quantity.
         // We'll standardize to 100 units as a convention if unit is 'g'/'ml', or 1 unit otherwise.
-        const isWeight = ['g', 'ml', 'gram', 'grams', 'kg', 'kilogram'].includes(
-          (data.unit || '').toLowerCase(),
-        );
-        const quantityInBase = isWeight ? data.quantity : data.quantity; // If kg, we might need conversion, but for now assume matching unit families.
-        
-        // Actually, if unit is 'kg', we should probably normalize to 'g' or keep 'kg'. 
-        // Let's stick to the prompt's simplicity: "standardize" means calculate per 1 unit or per 100 units of the SAME unit type.
-        // If user logged 200g, we store per 100g.
-        // If user logged 2 pieces, we store per 1 piece.
-        
-        // Simple heuristic: Weight/Volume -> 100 basis. Count -> 1 basis.
         const isStandardizable = ['g', 'ml', 'gram', 'grams', 'milliliter', 'milliliters'].includes((data.unit || '').toLowerCase());
         const standardBasis = isStandardizable ? 100 : 1;
         
@@ -603,6 +626,7 @@ export class InventoryService {
       itemName: data.itemName,
       quantity: data.quantity,
       unit: data.unit,
+      cost: calculatedCost, // Save calculated cost
       consumedAt: data.consumedAt || new Date(),
       notes: data.notes,
       ...logNutrients,

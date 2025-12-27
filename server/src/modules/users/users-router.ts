@@ -1,11 +1,12 @@
 import express from 'express';
 import { userController } from './users-controller';
-import { requireAuth } from '../../middleware/auth';
+import { ensureUserExists, requireAuth } from '../../middleware/auth';
 
 const router = express.Router();
 
-// All user routes require authentication
+// All user routes require authentication and existence check
 router.use(requireAuth);
+router.use(ensureUserExists);
 
 router.get('/me', userController.getCurrentUser.bind(userController));
 router.get('/profile', userController.getProfile.bind(userController));
