@@ -12,6 +12,8 @@ import {
   ChefHat,
   Info,
   CheckCircle2,
+  X,
+  ListChecks,
 } from 'lucide-react';
 import { useProfile } from '../context/ProfileContext';
 import { useApi } from '../hooks/useApi';
@@ -56,6 +58,10 @@ export default function MealPlannerPage() {
   const [viewMode, setViewMode] = useState<'current' | 'saved'>('current');
   const [savedPlans, setSavedPlans] = useState<any[]>([]);
   const [consuming, setConsuming] = useState<string | null>(null);
+  const [selectedRecipe, setSelectedRecipe] = useState<any | null>(null);
+  const [isRecipeLoading, setIsRecipeLoading] = useState(false);
+  const [activeMeal, setActiveMeal] = useState<{ name: string; items: string[]; nutrition: any; type: string } | null>(null);
+  const [modalTab, setModalTab] = useState<'nutrition' | 'recipe'>('nutrition');
   
   const [config, setConfig] = useState({
     budget: 200,
@@ -169,6 +175,26 @@ export default function MealPlannerPage() {
     } finally {
       setConsuming(null);
     }
+  };
+
+  const fetchRecipe = async (dishName: string, ingredients: string[]) => {
+    setIsRecipeLoading(true);
+    try {
+      const response = await api.getRecipe(dishName, ingredients);
+      setSelectedRecipe(response.data);
+      setModalTab('recipe');
+    } catch (error) {
+      console.error('Error fetching recipe:', error);
+      alert('Failed to load recipe. Please try again.');
+    } finally {
+      setIsRecipeLoading(false);
+    }
+  };
+
+  const handleMealClick = (name: string, items: string[], nutrition: any, type: string) => {
+    setActiveMeal({ name, items, nutrition, type });
+    setModalTab('nutrition');
+    setSelectedRecipe(null);
   };
 
   if (!hasHealthMetrics) {
@@ -317,7 +343,14 @@ export default function MealPlannerPage() {
                      <div className="p-5 border-b border-border bg-secondary/5 flex justify-between items-start">
                        <div>
                          <span className="text-xs font-bold text-primary uppercase tracking-wider">{meal.type}</span>
-                         <h4 className="text-lg font-bold text-foreground">{meal.name}</h4>
+                         <h4 className="text-lg font-bold text-foreground">
+                           <span 
+                             className="cursor-pointer hover:text-primary transition-colors" 
+                             onClick={() => handleMealClick(meal.name, [], meal.nutrition, meal.type)}
+                           >
+                             {meal.name}
+                           </span>
+                         </h4>
                        </div>
                        <ChefHat className="w-5 h-5 text-foreground/30" />
                      </div>
@@ -350,7 +383,14 @@ export default function MealPlannerPage() {
                                </span>
                                <span className="text-xs font-bold font-mono">৳{meal.option1.cost}</span>
                              </div>
-                             <p className="text-sm font-bold mb-1">{meal.option1.name}</p>
+                             <p className="text-sm font-bold mb-1">
+                               <span 
+                                 className="cursor-pointer hover:text-primary hover:underline transition-colors" 
+                                 onClick={() => handleMealClick(meal.option1?.name || '', meal.option1?.items || [], meal.nutrition, meal.type)}
+                               >
+                                 {meal.option1?.name}
+                               </span>
+                             </p>
                              <p className="text-[10px] text-foreground/60 leading-tight mb-3">
                                Uses: {meal.option1.items.join(', ')}
                              </p>
@@ -384,7 +424,7 @@ export default function MealPlannerPage() {
                              </span>
                              <span className="text-xs font-bold font-mono">৳{meal.option2.cost}</span>
                            </div>
-                           <p className="text-sm font-bold mb-1">{meal.option2.name}</p>
+                           <p className="text-sm font-bold mb-1"><span className="cursor-pointer hover:text-primary hover:underline transition-colors" onClick={() => handleMealClick(meal.option2.name, meal.option2.items, meal.nutrition, meal.type)}>{meal.option2.name}</span></p>
                            <p className="text-[10px] text-foreground/60 leading-tight mb-3">
                              Buy: {meal.option2.items.join(', ')}
                            </p>
@@ -538,6 +578,174 @@ export default function MealPlannerPage() {
               </div>
             </div>
           </div>
+        </div>
+      )}
+      {/* Meal Detail Modal */}
+      {activeMeal && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+          <div className="bg-card w-full max-w-2xl max-h-[90vh] rounded-3xl border border-border overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-200 flex flex-col">
+            {/* Modal Header */}
+            <div className="p-6 border-b border-border bg-secondary/5 flex justify-between items-center">
+              <div>
+                <span className="text-[10px] font-bold text-primary uppercase tracking-widest bg-primary/10 px-2 py-0.5 rounded mb-1 inline-block">
+                  {activeMeal.type}
+                </span>
+                <h2 className="text-2xl font-black text-foreground">{activeMeal.name}</h2>
+              </div>
+              <button 
+                onClick={() => setActiveMeal(null)}
+                className="p-2 hover:bg-secondary rounded-full transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Tabs */}
+            <div className="flex border-b border-border bg-secondary/10 p-1 m-4 rounded-xl">
+              <button
+                onClick={() => setModalTab('nutrition')}
+                className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all flex items-center justify-center gap-2 ${
+                  modalTab === 'nutrition' ? 'bg-background text-primary shadow-sm' : 'text-foreground/50 hover:text-foreground'
+                }`}
+              >
+                <Brain className="w-4 h-4" /> Nutrition
+              </button>
+              <button
+                onClick={() => setModalTab('recipe')}
+                className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all flex items-center justify-center gap-2 ${
+                  modalTab === 'recipe' ? 'bg-background text-primary shadow-sm' : 'text-foreground/50 hover:text-foreground'
+                }`}
+              >
+                <ChefHat className="w-4 h-4" /> Recipe
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-6 pt-0">
+              {modalTab === 'nutrition' ? (
+                <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    <div className="p-4 bg-orange-50 rounded-2xl border border-orange-100 text-center">
+                      <p className="text-[10px] font-bold text-orange-400 uppercase tracking-widest mb-1">Calories</p>
+                      <p className="text-xl font-black text-orange-600">{activeMeal.nutrition.calories}</p>
+                    </div>
+                    <div className="p-4 bg-blue-50 rounded-2xl border border-blue-100 text-center">
+                      <p className="text-[10px] font-bold text-blue-400 uppercase tracking-widest mb-1">Protein</p>
+                      <p className="text-xl font-black text-blue-600">{activeMeal.nutrition.protein}</p>
+                    </div>
+                    <div className="p-4 bg-green-50 rounded-2xl border border-green-100 text-center">
+                      <p className="text-[10px] font-bold text-green-400 uppercase tracking-widest mb-1">Carbs</p>
+                      <p className="text-xl font-black text-green-600">{activeMeal.nutrition.carbs}</p>
+                    </div>
+                    <div className="p-4 bg-purple-50 rounded-2xl border border-purple-100 text-center">
+                      <p className="text-[10px] font-bold text-purple-400 uppercase tracking-widest mb-1">Fat</p>
+                      <p className="text-xl font-black text-purple-600">{activeMeal.nutrition.fat}</p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <h3 className="font-bold text-lg flex items-center gap-2">
+                       <ShoppingBag className="w-5 h-5 text-primary" />
+                       Key Ingredients Used:
+                    </h3>
+                    <div className="flex flex-wrap gap-2">
+                      {activeMeal.items.length > 0 ? (
+                        activeMeal.items.map((item, i) => (
+                          <span key={i} className="px-3 py-1.5 bg-secondary/50 rounded-lg border border-border text-sm font-medium">
+                            {item}
+                          </span>
+                        ))
+                      ) : (
+                        <p className="text-sm text-foreground/50 italic">Standard ingredients suitable for {activeMeal.type}</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+                  {selectedRecipe ? (
+                    <div className="space-y-8">
+                      <div>
+                        <p className="text-lg text-foreground/80 leading-relaxed italic border-l-4 border-primary pl-4">
+                          "{selectedRecipe.description}"
+                        </p>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div className="space-y-4">
+                          <h3 className="text-lg font-bold flex items-center gap-2">
+                            <ShoppingBag className="w-5 h-5 text-primary" />
+                            Full Ingredients
+                          </h3>
+                          <div className="space-y-2">
+                            {selectedRecipe.ingredients.map((ing: any, i: number) => (
+                              <div key={i} className="flex justify-between items-center p-3 bg-secondary/20 rounded-xl border border-border/50">
+                                <span className="font-semibold">{ing.item}</span>
+                                <span className="text-sm opacity-60 font-mono bg-background/50 px-2 py-0.5 rounded-lg">{ing.amount}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="space-y-4">
+                          <h3 className="text-lg font-bold flex items-center gap-2">
+                            <ListChecks className="w-5 h-5 text-primary" />
+                            Instructions
+                          </h3>
+                          <div className="space-y-4">
+                            {selectedRecipe.instructions.map((step: string, i: number) => (
+                              <div key={i} className="flex gap-4">
+                                <span className="flex-shrink-0 w-6 h-6 bg-primary text-primary-foreground text-xs font-black rounded-full flex items-center justify-center">
+                                  {i + 1}
+                                </span>
+                                <p className="text-sm leading-relaxed text-foreground/70">{step}</p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="bg-secondary/10 p-6 rounded-3xl border border-border">
+                        <h4 className="text-sm font-bold opacity-50 uppercase tracking-widest mb-2">Chef's Tips</h4>
+                        <p className="text-sm font-medium leading-relaxed">{selectedRecipe.chefTips}</p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center py-12 text-center space-y-4">
+                      <div className="p-6 bg-primary/5 rounded-full">
+                        <Utensils className="w-12 h-12 text-primary/40" />
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-bold">Ready to cook?</h3>
+                        <p className="text-foreground/60 max-w-xs mx-auto mt-2">
+                          AI will generate a custom recipe using your {activeMeal.items.length > 0 ? 'specific inventory' : 'suggested meal'} items.
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => fetchRecipe(activeMeal.name, activeMeal.items)}
+                        disabled={isRecipeLoading}
+                        className="px-8 py-3 bg-primary text-white font-bold rounded-2xl hover:scale-105 transition-all shadow-lg shadow-primary/20 flex items-center gap-2"
+                      >
+                        {isRecipeLoading ? <Sparkles className="w-5 h-5 animate-spin" /> : <Sparkles className="w-5 h-5" />}
+                        Generate Detailed Recipe
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Persistent Loading for Recipes within Modal is handled by button state, 
+          but if it takes long, we keep this for UX */}
+      {isRecipeLoading && !selectedRecipe && (
+        <div className="fixed inset-0 z-[70] flex flex-col items-center justify-center bg-black/40 backdrop-blur-sm">
+          <div className="relative">
+            <div className="w-20 h-20 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+            <ChefHat className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 text-primary animate-pulse" />
+          </div>
+          <p className="mt-4 text-white font-black tracking-widest uppercase text-xs">AI is preparing your recipe instructions...</p>
         </div>
       )}
     </div>

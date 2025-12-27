@@ -85,5 +85,10 @@ export function useApi() {
         method: 'POST',
         body: JSON.stringify({ mealName, items }),
       }),
+    getRecipe: (dishName: string, ingredients: string[]) =>
+      fetchWithAuth('/intelligence/recipe', {
+        method: 'POST',
+        body: JSON.stringify({ dishName, ingredients }),
+      }),
   };
 }

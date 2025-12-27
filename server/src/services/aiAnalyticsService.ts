@@ -872,6 +872,50 @@ class AIAnalyticsService {
       throw new Error(`Failed to estimate item details: ${error.message}`);
     }
   }
+
+  /**
+   * Generate a recipe for a specified dish name and ingredients
+   */
+  async generateRecipe(dishName: string, ingredients: string[]): Promise<any> {
+    try {
+      const prompt = `Generate a detailed recipe for the dish: "${dishName}". 
+        It MUST use these primary ingredients: ${ingredients.join(', ')}.
+        
+        Return ONLY a JSON object with this schema:
+        {
+          "title": "Dish Name",
+          "description": "Short appetizing description",
+          "prepTime": "e.g. 15 mins",
+          "cookTime": "e.g. 20 mins",
+          "ingredients": [
+            { "item": "Name", "amount": "quantity/unit" }
+          ],
+          "instructions": [
+            "Step 1...",
+            "Step 2..."
+          ],
+          "nutritionalKeyFacts": "e.g. High in protein, 450 calories",
+          "chefTips": "A quick tip for better taste"
+        }
+        Do not include any other text or markdown coding blocks. Output ONLY valid JSON.`;
+
+      const completion = await this.groqClient.chat.completions.create({
+        model: 'llama-3.3-70b-versatile',
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0.7,
+        max_tokens: 2048,
+      });
+
+      const responseText = completion.choices[0].message.content || '{}';
+      const cleanJson = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
+      const recipe = JSON.parse(cleanJson);
+
+      return recipe;
+    } catch (error: any) {
+      console.error('Recipe generation error:', error);
+      throw new Error(`Failed to generate recipe: ${error.message}`);
+    }
+  }
 }
 
 export const aiAnalyticsService = new AIAnalyticsService();

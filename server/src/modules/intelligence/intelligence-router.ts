@@ -38,6 +38,9 @@ router.get('/meal-plans/saved', intelligentDashboardController.getSavedMealPlans
 // Consume meal
 router.post('/meal-plans/consume', intelligentDashboardController.consumeMeal);
 
+// Get recipe
+router.post('/recipe', intelligentDashboardController.getRecipe);
+
 // Nutrition analysis
 router.get(
   '/nutrition-analysis',

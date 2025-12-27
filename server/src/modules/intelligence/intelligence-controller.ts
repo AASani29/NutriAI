@@ -150,6 +150,29 @@ export class IntelligentDashboardController {
     }
   }
 
+  // Get recipe for a specific dish and ingredients
+  async getRecipe(req: Request, res: Response) {
+    try {
+      const { dishName, ingredients } = req.body;
+      if (!dishName) {
+        return res.status(400).json({ error: 'Dish name is required' });
+      }
+
+      const recipe = await aiAnalyticsService.generateRecipe(dishName, ingredients);
+
+      res.json({
+        success: true,
+        data: recipe,
+      });
+    } catch (error: any) {
+      console.error('Get recipe error:', error);
+      res.status(500).json({
+        success: false,
+        error: error.message || 'Failed to generate recipe',
+      });
+    }
+  }
+
   // Get AI-powered dashboard insights
   async getDashboardInsights(req: Request, res: Response) {
     try {
