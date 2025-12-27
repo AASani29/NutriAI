@@ -14,6 +14,7 @@ import {
   CheckCircle2,
   X,
   ListChecks,
+  MessageSquare,
 } from 'lucide-react';
 import { useProfile } from '../context/ProfileContext';
 import { useApi } from '../hooks/useApi';
@@ -66,6 +67,7 @@ export default function MealPlannerPage() {
   const [config, setConfig] = useState({
     budget: 200,
     timePeriod: 'one_day',
+    notes: '',
   });
 
   const hasHealthMetrics = profile?.profile?.height && profile?.profile?.weight;
@@ -89,6 +91,7 @@ export default function MealPlannerPage() {
       const response = await api.getOptimizedMealPlan({
         budget: config.budget,
         timePeriod: config.timePeriod,
+        notes: config.notes,
       });
       
       console.log('API Response received:', response);
@@ -560,6 +563,19 @@ export default function MealPlannerPage() {
                     <option value="one_week">Full Week (35 Meals)</option>
                   </optgroup>
                 </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold mb-2 flex items-center gap-2">
+                  <MessageSquare className="w-4 h-4" />
+                  Special Considerations / Notes
+                </label>
+                <textarea
+                  value={config.notes}
+                  onChange={(e) => setConfig({ ...config, notes: e.target.value })}
+                  placeholder="I have got a fever/ cold today or I am outside"
+                  className="w-full px-4 py-3 bg-secondary/20 border-border border rounded-xl outline-none focus:ring-2 focus:ring-primary h-24 resize-none text-sm"
+                />
               </div>
 
               <div className="flex gap-4 pt-4">

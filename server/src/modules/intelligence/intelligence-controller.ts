@@ -306,12 +306,14 @@ export class IntelligentDashboardController {
         return res.status(401).json({ error: 'Unauthorized' });
       }
 
-      const { budget, timePeriod, preferences } = req.body;
+      const { budget, timePeriod, preferences, notes } = req.body;
 
       let query = `Generate a price-smart meal plan for the period: ${timePeriod || 'one_day'}. `;
       if (budget) query += `The total budget for this entire period is ${budget} BDT. `;
       if (preferences)
         query += `Dietary preferences: ${JSON.stringify(preferences)}. `;
+      if (notes)
+        query += `IMPORTANT USER CONSIDERATION/NOTE: "${notes}". Adapt the meal choices according to this note. `;
       query += `Use my inventory where possible. Return the result in the requested JSON format.`;
 
       const mealPlan = await aiAnalyticsService.generateIntelligentInsights(

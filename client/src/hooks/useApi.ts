@@ -71,7 +71,7 @@ export function useApi() {
         method: 'PUT',
         body: JSON.stringify(data),
       }),
-    getOptimizedMealPlan: (data: { budget?: number; timePeriod?: string; preferences?: any }) =>
+    getOptimizedMealPlan: (data: { budget?: number; timePeriod?: string; preferences?: any; notes?: string }) =>
       fetchWithAuth('/intelligence/meal-plan', {
         method: 'POST',
         body: JSON.stringify(data),
