@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { User, Mail, Utensils, MapPin, DollarSign, Edit, ArrowLeft, Ruler, Scale, Target, AlertCircle } from 'lucide-react';
+import { User, Mail, Utensils, MapPin, DollarSign, Edit, ArrowLeft, Ruler, Scale, Target, AlertCircle, Heart } from 'lucide-react';
 import { useProfile } from '../context/ProfileContext';
 
 export default function ProfilePage() {
@@ -178,6 +178,16 @@ export default function ProfilePage() {
               <div className="flex-1">
                 <p className="text-sm font-medium text-foreground/70 mb-1">Allergies</p>
                 <p className="text-foreground">{profile?.profile?.allergies || 'None reported'}</p>
+              </div>
+            </div>
+            {/* Health Condition */}
+            <div className="flex items-start gap-4">
+              <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                <Heart className="w-5 h-5 text-primary" />
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-medium text-foreground/70 mb-1">Health Condition</p>
+                <p className="text-foreground capitalize">{profile?.profile?.healthConditions || 'None reported'}</p>
               </div>
             </div>
           </div>

@@ -49,6 +49,7 @@ export class UserController {
         weight,
         weightPreference,
         allergies,
+        healthConditions,
       } = req.body;
 
       if (budgetRange !== undefined && (budgetRange < 0 || isNaN(budgetRange))) {
@@ -67,6 +68,7 @@ export class UserController {
         weight: weight ? parseFloat(weight) : undefined,
         weightPreference,
         allergies,
+        healthConditions,
       });
 
       res.json({

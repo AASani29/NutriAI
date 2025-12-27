@@ -19,6 +19,7 @@ export interface UserProfile {
     weight: number | null;
     weightPreference: string | null;
     allergies: string | null;
+    healthConditions: string | null;
   } | null;
   isNewUser?: boolean;
 }
@@ -32,6 +33,7 @@ export interface UpdateProfileData {
   weight?: number;
   weightPreference?: string;
   allergies?: string;
+  healthConditions?: string;
 }
 
 // Custom hook for authenticated API calls
@@ -69,7 +71,7 @@ export function useApi() {
         method: 'PUT',
         body: JSON.stringify(data),
       }),
-    getOptimizedMealPlan: (data: { budget?: number; timePeriod?: string; preferences?: any }) =>
+    getOptimizedMealPlan: (data: { budget?: number; timePeriod?: string; preferences?: any; notes?: string }) =>
       fetchWithAuth('/intelligence/meal-plan', {
         method: 'POST',
         body: JSON.stringify(data),
@@ -84,6 +86,11 @@ export function useApi() {
       fetchWithAuth('/intelligence/meal-plans/consume', {
         method: 'POST',
         body: JSON.stringify({ mealName, items }),
+      }),
+    getRecipe: (dishName: string, ingredients: string[]) =>
+      fetchWithAuth('/intelligence/recipe', {
+        method: 'POST',
+        body: JSON.stringify({ dishName, ingredients }),
       }),
   };
 }
