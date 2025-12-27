@@ -13,7 +13,16 @@ const requireAdmin = async (req: any, res: any, next: any) => {
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
-    // Get user data from Clerk to check role
+    // 1. Try to check role from JWT claims (fast, no network call)
+    // Note: This requires Clerk to be configured to include publicMetadata in the JWT
+    const claims = req.auth?.sessionClaims;
+    const roleFromJWT = (claims?.metadata as any)?.role || (claims as any)?.role;
+    
+    if (roleFromJWT === 'admin') {
+      return next();
+    }
+
+    // 2. Fallback to Clerk API if not in JWT (slow, but necessary if not configured)
     const user = await clerkClient.users.getUser(userId);
 
     // Check if user has admin role in public metadata
