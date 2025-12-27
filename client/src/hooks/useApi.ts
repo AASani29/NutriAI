@@ -19,6 +19,7 @@ export interface UserProfile {
     weight: number | null;
     weightPreference: string | null;
     allergies: string | null;
+    healthConditions: string | null;
   } | null;
   isNewUser?: boolean;
 }
@@ -32,6 +33,7 @@ export interface UpdateProfileData {
   weight?: number;
   weightPreference?: string;
   allergies?: string;
+  healthConditions?: string;
 }
 
 // Custom hook for authenticated API calls

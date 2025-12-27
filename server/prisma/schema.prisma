@@ -44,6 +44,7 @@ model UserProfile {
   weight            Float?
   weightPreference  String?   // "lose", "gain", "maintain"
   allergies         String?
+  healthConditions  String?   // e.g. "Diabetes", "Hypertension", etc.
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
   isDeleted         Boolean   @default(false)

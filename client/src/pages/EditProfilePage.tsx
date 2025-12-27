@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { User, Utensils, MapPin, DollarSign, Save, ArrowLeft, Ruler, Scale, Target, AlertCircle } from 'lucide-react';
+import { User, Utensils, MapPin, DollarSign, Save, ArrowLeft, Ruler, Scale, Target, AlertCircle, Heart } from 'lucide-react';
 import { useProfile } from '../context/ProfileContext';
 import { useApi } from '../hooks/useApi';
 
@@ -22,6 +22,7 @@ export default function EditProfilePage() {
     weight: '',
     weightPreference: '',
     allergies: '',
+    healthConditions: '',
   });
 
   useEffect(() => {
@@ -35,6 +36,7 @@ export default function EditProfilePage() {
         weight: profile.profile.weight?.toString() || '',
         weightPreference: profile.profile.weightPreference || '',
         allergies: profile.profile.allergies || '',
+        healthConditions: profile.profile.healthConditions || '',
       });
     }
   }, [profile]);
@@ -71,6 +73,7 @@ export default function EditProfilePage() {
         weight: formData.weight ? parseFloat(formData.weight) : undefined,
         weightPreference: formData.weightPreference || undefined,
         allergies: formData.allergies || undefined,
+        healthConditions: formData.healthConditions || undefined,
       });
 
       await refreshProfile();
@@ -96,6 +99,17 @@ export default function EditProfilePage() {
     { value: 'keto', label: 'Keto' },
     { value: 'paleo', label: 'Paleo' },
     { value: 'gluten-free', label: 'Gluten-Free' },
+    { value: 'other', label: 'Other' },
+  ];
+
+  const healthOptions = [
+    { value: '', label: 'None' },
+    { value: 'diabetes', label: 'Diabetes' },
+    { value: 'hypertension', label: 'Hypertension' },
+    { value: 'heart-disease', label: 'Heart Disease' },
+    { value: 'kidney-disease', label: 'Kidney Disease' },
+    { value: 'celiac-disease', label: 'Celiac Disease' },
+    { value: 'ibs', label: 'IBS' },
     { value: 'other', label: 'Other' },
   ];
 
@@ -266,6 +280,28 @@ export default function EditProfilePage() {
               placeholder="e.g., Peanuts, Seafood, Dairy"
             />
             <p className="mt-1 text-xs text-foreground/50">Separate allergies with commas</p>
+          </div>
+
+          {/* Health Conditions */}
+          <div>
+            <label htmlFor="healthConditions" className="flex items-center gap-2 text-sm font-medium text-foreground mb-2">
+              <Heart className="w-4 h-4 text-primary" />
+              Health Condition
+            </label>
+            <select
+              id="healthConditions"
+              name="healthConditions"
+              value={formData.healthConditions}
+              onChange={handleChange}
+              className="w-full px-4 py-3 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-foreground"
+            >
+              {healthOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+            <p className="mt-1 text-xs text-foreground/50">Used to provide health-safe meal recommendations</p>
           </div>
 
           {/* Error Message */}

@@ -466,6 +466,7 @@ class AIAnalyticsService {
           weight: (user.profile as any)?.weight,
           preference: (user.profile as any)?.weightPreference,
           allergies: (user.profile as any)?.allergies,
+          healthConditions: (user.profile as any)?.healthConditions,
           dietaryPreference: user.profile?.dietaryPreference
         },
         inventory: inventory.map(i => ({
@@ -504,7 +505,7 @@ class AIAnalyticsService {
         - Generating Price-Smart Meal Plans that are budget-aware and inventory-optimized.
 
         IMPORTANT: For Price-Smart Meal Plans, follow these rules:
-        1. HEALTH FIRST: Consider the user's health metrics, dietary preferences, and allergies.
+        1. HEALTH FIRST: Consider the user's health metrics, dietary preferences, allergies, and health conditions (e.g., Diabetes, Hypertension).
         2. RECIPE FOCUS: For EACH meal slot, provide TWO distinct options that are actual DISHES or RECIPES, not just raw ingredients.
            - Option 1 (Inventory-Based): A specific dish (e.g., "Spinach & Egg Bhurji") using available inventory. If multiple dishes are possible, list them (e.g., "Bhurji or Omelette").
            - Option 2 (Market-Based): A healthy, budget-friendly dish (e.g., "Shakshuka" or "Vegetable Khichuri") requiring market purchases.
