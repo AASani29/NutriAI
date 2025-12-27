@@ -8,6 +8,7 @@ import { inventoryRouter } from './modules/inventories/inventory-router';
 import { resourcesRouter } from './modules/resources/resources-router';
 import { usersRouter } from './modules/users/users-router';
 import { sharingRouter } from './modules/sharing/sharing-router';
+import weatherRouter from './modules/weather/weather-router';
 const router = express.Router();
 
 router.get('/', (req: Request, res: Response) => {
@@ -24,6 +25,7 @@ router.get('/health', (req: Request, res: Response) => {
   });
 });
 
+
 // Public routes
 router.use('/foods', foodRouter);
 router.use('/resources', resourcesRouter);
@@ -36,6 +38,9 @@ router.use('/sharing', sharingRouter);
 
 // AI Intelligence routes (require authentication)
 router.use('/intelligence', intelligenceRouter);
+
+// Weather and alerts routes
+router.use('/weather', weatherRouter);
 
 // Admin routes (require admin role)
 router.use('/admin', adminRouter);
