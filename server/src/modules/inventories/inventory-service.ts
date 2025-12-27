@@ -409,7 +409,6 @@ export class InventoryService {
    * Log a consumption event
    */
   async logConsumption(userId: string, data: ConsumptionLogRequest) {
-    // First, find the application user by their Clerk ID
     const user = await prisma.user.findUnique({
       where: { clerkId: userId },
     });
@@ -418,54 +417,111 @@ export class InventoryService {
       throw new Error('User not found in database');
     }
 
-    // Verify that the inventory belongs to the user
-    const inventory = await prisma.inventory.findFirst({
-      where: {
-        id: data.inventoryId,
-        createdById: user.id,
-        isDeleted: false,
-      },
-    });
-
-    if (!inventory) {
-      throw new Error('Inventory not found or does not belong to user');
-    }
-
-    // If an inventoryItemId is provided, verify it exists and belongs to the inventory
+    // Verify inventory only if inventoryId is provided
     let inventoryItem: any = null;
-    if (data.inventoryItemId && !data.inventoryItemId.startsWith('temp-')) {
-      inventoryItem = await prisma.inventoryItem.findFirst({
-        where: {
-          id: data.inventoryItemId,
-          inventoryId: data.inventoryId,
-          isDeleted: false,
-        },
+
+    if (data.inventoryId) {
+      const inventory = await prisma.inventory.findFirst({
+        where: { id: data.inventoryId, createdById: user.id, isDeleted: false },
       });
 
-      if (!inventoryItem) {
-        throw new Error(
-          'Inventory item not found or does not belong to the specified inventory',
-        );
+      if (!inventory) {
+        throw new Error('Inventory not found or does not belong to user');
+      }
+
+      if (data.inventoryItemId && !data.inventoryItemId.startsWith('temp-')) {
+        inventoryItem = await prisma.inventoryItem.findFirst({
+          where: {
+            id: data.inventoryItemId,
+            inventoryId: data.inventoryId,
+            isDeleted: false,
+          },
+        });
+
+        if (!inventoryItem) throw new Error('Inventory item not found');
       }
     }
 
-    // If a foodItemId is provided, verify it exists
+    // Handle Nutrition Logic
+    let logNutrients = {
+      calories: data.calories,
+      protein: data.protein,
+      carbohydrates: data.carbohydrates,
+      fat: data.fat,
+      fiber: data.fiber,
+      sugar: data.sugar,
+      sodium: data.sodium,
+    };
+
     if (data.foodItemId) {
       const foodItem = await prisma.foodItem.findFirst({
-        where: {
-          id: data.foodItemId,
-          isDeleted: false,
-        },
+        where: { id: data.foodItemId, isDeleted: false },
       });
 
-      if (!foodItem) {
-        throw new Error('Food item not found');
+      if (!foodItem) throw new Error('Food item not found');
+
+      // 1. If FoodItem has base nutrition, CALCULATE
+      const foodItemAny = foodItem as any;
+      if (foodItemAny.nutritionPerUnit && foodItemAny.nutritionBasis) {
+        const base = foodItemAny.nutritionPerUnit;
+        const basis = foodItemAny.nutritionBasis; // e.g. 100 (g)
+        const ratio = data.quantity / basis; // e.g. 200g / 100g = 2
+
+        logNutrients = {
+          calories: (base.calories || 0) * ratio,
+          protein: (base.protein || 0) * ratio,
+          carbohydrates: (base.carbohydrates || 0) * ratio,
+          fat: (base.fat || 0) * ratio,
+          fiber: (base.fiber || 0) * ratio,
+          sugar: (base.sugar || 0) * ratio,
+          sodium: (base.sodium || 0) * ratio,
+        };
+      }
+      // 2. If FoodItem has NO base nutrition but we have incoming AI data, CACHE IT
+      else if (data.calories !== undefined) {
+        // Assume incoming data is for the consumed quantity.
+        // We'll standardize to 100 units as a convention if unit is 'g'/'ml', or 1 unit otherwise.
+        const isWeight = ['g', 'ml', 'gram', 'grams', 'kg', 'kilogram'].includes(
+          (data.unit || '').toLowerCase(),
+        );
+        const quantityInBase = isWeight ? data.quantity : data.quantity; // If kg, we might need conversion, but for now assume matching unit families.
+        
+        // Actually, if unit is 'kg', we should probably normalize to 'g' or keep 'kg'. 
+        // Let's stick to the prompt's simplicity: "standardize" means calculate per 1 unit or per 100 units of the SAME unit type.
+        // If user logged 200g, we store per 100g.
+        // If user logged 2 pieces, we store per 1 piece.
+        
+        // Simple heuristic: Weight/Volume -> 100 basis. Count -> 1 basis.
+        const isStandardizable = ['g', 'ml', 'gram', 'grams', 'milliliter', 'milliliters'].includes((data.unit || '').toLowerCase());
+        const standardBasis = isStandardizable ? 100 : 1;
+        
+        const ratio = standardBasis / (data.quantity || 1);
+
+        const baseNutrition = {
+          calories: (data.calories || 0) * ratio,
+          protein: (data.protein || 0) * ratio,
+          carbohydrates: (data.carbohydrates || 0) * ratio,
+          fat: (data.fat || 0) * ratio,
+          fiber: (data.fiber || 0) * ratio,
+          sugar: (data.sugar || 0) * ratio,
+          sodium: (data.sodium || 0) * ratio,
+        };
+
+        // Update FoodItem (Source of Truth)
+        await prisma.foodItem.update({
+          where: { id: foodItem.id },
+          data: {
+            nutritionPerUnit: baseNutrition,
+            nutritionBasis: standardBasis,
+            nutritionUnit: data.unit,
+          } as any,
+        });
       }
     }
 
     // Create the consumption log
     const consumptionLogData = {
-      inventoryId: data.inventoryId,
+      inventoryId: data.inventoryId || null,
       inventoryItemId: data.inventoryItemId?.startsWith('temp-')
         ? null
         : data.inventoryItemId,
@@ -475,38 +531,25 @@ export class InventoryService {
       unit: data.unit,
       consumedAt: data.consumedAt || new Date(),
       notes: data.notes,
+      ...logNutrients,
     };
 
     const consumptionLog = await prisma.consumptionLog.create({
-      data: consumptionLogData,
+      data: consumptionLogData as any,
     });
 
-    // Update inventory quantity if an inventory item was consumed
+    // Update inventory quantity
     if (inventoryItem && inventoryItem.quantity >= data.quantity) {
       const newQuantity = inventoryItem.quantity - data.quantity;
-
       if (newQuantity <= 0) {
-        // Automatically remove item when quantity reaches zero
         await prisma.inventoryItem.update({
-          where: {
-            id: inventoryItem.id,
-          },
-          data: {
-            quantity: 0,
-            removed: true,
-            updatedAt: new Date(),
-          },
+          where: { id: inventoryItem.id },
+          data: { quantity: 0, removed: true, updatedAt: new Date() },
         });
       } else {
-        // Update quantity if still remaining
         await prisma.inventoryItem.update({
-          where: {
-            id: inventoryItem.id,
-          },
-          data: {
-            quantity: newQuantity,
-            updatedAt: new Date(),
-          },
+          where: { id: inventoryItem.id },
+          data: { quantity: newQuantity, updatedAt: new Date() },
         });
       }
     } else if (inventoryItem) {

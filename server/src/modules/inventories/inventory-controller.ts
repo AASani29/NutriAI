@@ -434,18 +434,30 @@ export class InventoryController {
         unit,
         consumedAt,
         notes,
-      }: ConsumptionLogRequest = req.body;
+        calories,
+        protein,
+        carbohydrates,
+        fat,
+        fiber,
+        sugar,
+        sodium,
+      }: ConsumptionLogRequest & { 
+        calories?: number;
+        protein?: number;
+        carbohydrates?: number;
+        fat?: number;
+        fiber?: number;
+        sugar?: number;
+        sodium?: number;
+      } = req.body;
 
       if (!userId) {
         res.status(401).json({ error: 'Unauthorized' });
         return;
       }
 
-      // Validate required fields
-      if (!inventoryId) {
-        res.status(400).json({ error: 'Inventory ID is required' });
-        return;
-      }
+      // If inventoryId IS provided, validate it. If not, it's a "quick log" or "external log".
+      // But we still require itemName and quantity.
 
       if (!itemName || itemName.trim().length === 0) {
         res.status(400).json({ error: 'Item name is required' });
@@ -462,7 +474,7 @@ export class InventoryController {
       const consumptionLog = await this.inventoryService.logConsumption(
         userId,
         {
-          inventoryId,
+          inventoryId, // Now optional
           inventoryItemId,
           foodItemId,
           itemName,
@@ -470,6 +482,13 @@ export class InventoryController {
           unit,
           consumedAt: consumedAt ? new Date(consumedAt) : undefined,
           notes,
+          calories,
+          protein,
+          carbohydrates,
+          fat,
+          fiber,
+          sugar,
+          sodium,
         },
       );
 
@@ -481,7 +500,7 @@ export class InventoryController {
           consumptionId: consumptionLog.id,
           itemName,
           quantity,
-          inventoryId,
+          inventoryId: inventoryId || 'NONE',
         },
       });
 

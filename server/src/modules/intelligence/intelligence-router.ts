@@ -64,4 +64,19 @@ router.get(
   intelligentDashboardController.getSeasonalInsights,
 );
 
+// Estimate nutrition
+router.post(
+  '/estimate-nutrition',
+  intelligentDashboardController.estimateNutrition,
+);
+
+// Estimate price
+router.post('/estimate-price', intelligentDashboardController.estimatePrice);
+
+// Estimate item details
+router.post(
+  '/estimate-details',
+  intelligentDashboardController.estimateItemDetails,
+);
+
 export { router as intelligenceRouter };

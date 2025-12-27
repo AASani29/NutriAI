@@ -652,6 +652,166 @@ class AIAnalyticsService {
 
     return items;
   }
+
+  // Estimate nutrition for a food item
+  async estimateNutrition(
+    foodName: string,
+    quantity: number,
+    unit: string,
+    baseData?: {
+      nutritionPerUnit?: any;
+      nutritionUnit?: string;
+      nutritionBasis?: number;
+    },
+  ): Promise<any> {
+    try {
+      let systemContent = `You are a nutrition expert. Estimate the nutritional values for the given food item.
+            Return ONLY a JSON object with this exact schema (all values are numbers):
+            {
+              "calories": number, // kcal
+              "protein": number, // grams
+              "carbohydrates": number, // grams
+              "fat": number, // grams
+              "fiber": number, // grams
+              "sugar": number, // grams
+              "sodium": number // mg
+            }
+            Do not include any explanation or markdown formatting.`;
+
+      if (baseData?.nutritionPerUnit && baseData?.nutritionBasis) {
+        systemContent += `\n\nKNOWN BASE DATA:
+        - Nutrition Basis: ${baseData.nutritionBasis} ${baseData.nutritionUnit}
+        - Nutrition Values: ${JSON.stringify(baseData.nutritionPerUnit)}
+        
+        INSTRUCTION: Use this KNOWN BASE DATA to calculate the values for the requested quantity. Perform the unit conversion and math precisely.`;
+      }
+
+      const completion = await this.groqClient.chat.completions.create({
+        model: 'openai/gpt-oss-120b',
+        messages: [
+          {
+            role: 'system',
+            content: systemContent,
+          },
+          {
+            role: 'user',
+            content: `Estimate nutrition for: ${quantity} ${unit} of ${foodName}`,
+          },
+        ],
+        response_format: { type: 'json_object' },
+        temperature: 0.1,
+      });
+
+      return JSON.parse(completion.choices[0].message.content || '{}');
+    } catch (error: any) {
+      console.error('Nutrition estimation error:', error);
+      throw new Error(`Failed to estimate nutrition: ${error.message}`);
+    }
+  }
+
+  // Estimate price for a food item
+  async estimatePrice(
+    foodName: string,
+    quantity: number,
+    unit: string,
+    baseData?: {
+      basePrice?: number;
+      nutritionUnit?: string;
+      nutritionBasis?: number;
+    },
+  ): Promise<any> {
+    try {
+      let systemContent = `You are a grocery pricing expert. Estimate the market price for the given food item.
+            Return ONLY a JSON object with this exact schema (all values are numbers):
+            {
+              "sampleCostPerUnit": number, // Cost for 1 unit of this item (e.g. 1 kg, 1 piece)
+              "estimatedPrice": number // Total price for the requested quantity (in BDT)
+            }
+            Do not include any explanation or markdown formatting.`;
+
+      if (baseData?.basePrice && baseData?.nutritionBasis) {
+        systemContent += `\n\nKNOWN BASE DATA:
+        - Base Price: ${baseData.basePrice} BDT per ${baseData.nutritionBasis} ${baseData.nutritionUnit}
+        
+        INSTRUCTION: Use this KNOWN BASE DATA to calculate the estimated price. Perform the math precisely.`;
+      }
+
+      const completion = await this.groqClient.chat.completions.create({
+        model: 'openai/gpt-oss-120b',
+        messages: [
+          {
+            role: 'system',
+            content: systemContent,
+          },
+          {
+            role: 'user',
+            content: `Estimate price for: ${quantity} ${unit} of ${foodName}`,
+          },
+        ],
+        response_format: { type: 'json_object' },
+        temperature: 0.1,
+      });
+
+      return JSON.parse(completion.choices[0].message.content || '{}');
+    } catch (error: any) {
+      console.error('Price estimation error:', error);
+      throw new Error(`Failed to estimate price: ${error.message}`);
+    }
+  }
+
+  // Estimate standardized item details (nutrition + base price)
+  async estimateItemDetails(
+    foodName: string,
+    region: string = 'Bangladesh',
+  ): Promise<any> {
+    try {
+      const completion = await this.groqClient.chat.completions.create({
+        model: 'openai/gpt-oss-120b',
+        messages: [
+          {
+            role: 'system',
+            content: `You are a nutrition and pricing expert for food in ${region}.
+            Your goal is to provide STANDARD "Per Unit" data for a food item.
+            
+            RULES:
+            1. Identify if the item is typically measured by weight/volume (e.g. Rice, Milk, Chicken) or count (e.g. Egg, Apple, Burger).
+            2. If Weight/Volume: Standardize to 100 GRAMS or 100 ML. Set nutritionBasis = 100. Set nutritionUnit = 'g' or 'ml'.
+            3. If Count: Standardize to 1 PIECE/UNIT. Set nutritionBasis = 1. Set nutritionUnit = 'piece'.
+            4. Estimate the "basePrice" in BDT (Bangladeshi Taka) for that specific nutritionBasis amount (e.g. Price for 100g, or Price for 1 piece).
+            5. Provide nutrition values for that specific nutritionBasis.
+
+            Return JSON ONLY:
+            {
+              "nutritionPerUnit": { 
+                  "calories": number, 
+                  "protein": number, 
+                  "carbohydrates": number, 
+                  "fat": number, 
+                  "fiber": number, 
+                  "sugar": number, 
+                  "sodium": number 
+              },
+              "nutritionUnit": string, // 'g', 'ml', 'piece'
+              "nutritionBasis": number, // 100 or 1
+              "basePrice": number // Price in BDT for the basis amount
+            }
+            Do not include any explanation or markdown formatting.`,
+          },
+          {
+            role: 'user',
+            content: `Provide standard details for: ${foodName}`,
+          },
+        ],
+        response_format: { type: 'json_object' },
+        temperature: 0.1,
+      });
+
+      return JSON.parse(completion.choices[0].message.content || '{}');
+    } catch (error: any) {
+      console.error('Item details estimation error:', error);
+      throw new Error(`Failed to estimate item details: ${error.message}`);
+    }
+  }
 }
 
 export const aiAnalyticsService = new AIAnalyticsService();

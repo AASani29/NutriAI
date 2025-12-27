@@ -34,7 +34,7 @@ export type UpdateInventoryItemRequest = {
 };
 
 export type ConsumptionLogRequest = {
-  inventoryId: string;
+  inventoryId?: string; // Optional
   inventoryItemId?: string;
   foodItemId?: string;
   itemName: string;
@@ -42,6 +42,14 @@ export type ConsumptionLogRequest = {
   unit?: string;
   consumedAt?: Date;
   notes?: string;
+  // Nutrients
+  calories?: number;
+  protein?: number;
+  carbohydrates?: number;
+  fat?: number;
+  fiber?: number;
+  sugar?: number;
+  sodium?: number;
 };
 
 export type ConsumptionLogFilters = {

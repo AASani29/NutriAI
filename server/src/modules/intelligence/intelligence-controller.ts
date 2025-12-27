@@ -380,6 +380,119 @@ export class IntelligentDashboardController {
       });
     }
   }
+  // Estimate nutrition
+  async estimateNutrition(req: Request, res: Response) {
+    try {
+      const {
+        foodName,
+        quantity,
+        unit,
+        nutritionPerUnit,
+        nutritionUnit,
+        nutritionBasis,
+      } = req.body;
+      if (!foodName || !quantity || !unit) {
+        return res.status(400).json({
+          error: 'foodName, quantity, and unit are required',
+        });
+      }
+
+      const baseData =
+        nutritionPerUnit && nutritionBasis
+          ? { nutritionPerUnit, nutritionUnit, nutritionBasis }
+          : undefined;
+
+      const nutrition = await aiAnalyticsService.estimateNutrition(
+        foodName,
+        Number(quantity),
+        unit,
+        baseData,
+      );
+
+      res.json({
+        success: true,
+        data: nutrition,
+        message: 'Nutrition estimated successfully',
+      });
+    } catch (error: any) {
+      console.error('Nutrition estimation error:', error);
+      res.status(500).json({
+        success: false,
+        error: error.message || 'Failed to estimate nutrition',
+      });
+    }
+  }
+
+  // Estimate price
+  async estimatePrice(req: Request, res: Response) {
+    try {
+      const {
+        foodName,
+        quantity,
+        unit,
+        basePrice,
+        nutritionUnit,
+        nutritionBasis,
+      } = req.body;
+      if (!foodName || !quantity || !unit) {
+        return res.status(400).json({
+          error: 'foodName, quantity, and unit are required',
+        });
+      }
+
+      const baseData =
+        basePrice && nutritionBasis
+          ? { basePrice, nutritionUnit, nutritionBasis }
+          : undefined;
+
+      const price = await aiAnalyticsService.estimatePrice(
+        foodName,
+        Number(quantity),
+        unit,
+        baseData,
+      );
+
+      res.json({
+        success: true,
+        data: price,
+        message: 'Price estimated successfully',
+      });
+    } catch (error: any) {
+      console.error('Price estimation error:', error);
+      res.status(500).json({
+        success: false,
+        error: error.message || 'Failed to estimate price',
+      });
+    }
+  }
+  // Estimate item details
+  async estimateItemDetails(req: Request, res: Response) {
+    try {
+      const { foodName, region } = req.body;
+      if (!foodName) {
+        return res.status(400).json({
+          error: 'foodName is required',
+        });
+      }
+
+      const details = await aiAnalyticsService.estimateItemDetails(
+        foodName,
+        region,
+      );
+
+      res.json({
+        success: true,
+        data: details,
+        message: 'Item details estimated successfully',
+      });
+    } catch (error: any) {
+      console.error('Item details estimation error:', error);
+      res.status(500).json({
+        success: false,
+        error: error.message || 'Failed to estimate item details',
+      });
+    }
+  }
 }
 
 export const intelligentDashboardController =
