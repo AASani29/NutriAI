@@ -35,4 +35,5 @@ export interface UserResponse {
     weightPreference: string | null;
     allergies: string | null;
   } | null;
+  isNewUser?: boolean;
 }

@@ -20,6 +20,7 @@ export interface UserProfile {
     weightPreference: string | null;
     allergies: string | null;
   } | null;
+  isNewUser?: boolean;
 }
 
 export interface UpdateProfileData {

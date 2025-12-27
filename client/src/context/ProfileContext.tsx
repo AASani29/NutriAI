@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 import { useAuth } from '@clerk/clerk-react';
 import { useApi } from '../hooks/useApi';
 import type { UserProfile } from '../hooks/useApi';
@@ -8,6 +8,7 @@ interface ProfileContextType {
   loading: boolean;
   error: string | null;
   isOnboarded: boolean;
+  isNewUser: boolean;
   refreshProfile: () => Promise<void>;
 }
 
@@ -57,6 +58,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
         loading,
         error,
         isOnboarded,
+        isNewUser: profile?.isNewUser || false,
         refreshProfile,
       }}
     >
