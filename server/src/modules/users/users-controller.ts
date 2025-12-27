@@ -18,7 +18,10 @@ export class UserController {
 
       res.json({
         success: true,
-        data: user,
+        data: {
+          ...user,
+          isNewUser: (req as any).isFirstSync || false,
+        },
       });
     } catch (error: any) {
       console.error('Error getting current user:', error);

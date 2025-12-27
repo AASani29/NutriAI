@@ -2,7 +2,11 @@ import prisma from '../../config/database';
 import { CreateUserDTO, UpdateUserProfileDTO, UserResponse } from './users-types';
 
 export class UserService {
-  async syncUserFromClerk(clerkId: string, email: string): Promise<UserResponse> {
+  async syncUserFromClerk(
+    clerkId: string, 
+    email: string, 
+    fullName?: string
+  ): Promise<UserResponse> {
     try {
       let user = await prisma.user.findUnique({
         where: { clerkId },
@@ -24,13 +28,15 @@ export class UserService {
             include: { profile: true },
           });
         } else {
-          // Create a new user
+          // Create a new user with initial profile data if available
           user = await prisma.user.create({
             data: {
               clerkId,
               email,
               profile: {
-                create: {},
+                create: {
+                  fullName: fullName || null,
+                },
               },
             },
             include: { profile: true },

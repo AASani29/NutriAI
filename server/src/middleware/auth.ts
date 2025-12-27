@@ -1,6 +1,13 @@
 import { Request, Response, NextFunction, RequestHandler } from 'express';
 import { ClerkExpressRequireAuth, clerkClient } from '@clerk/clerk-sdk-node';
 import { userService } from '../modules/users/users-service';
+import fs from 'fs';
+
+const logFile = '/home/sadman/Academics/MillionX/MXB2026-Dhaka-Team-X-NutriAI/debug.log';
+const log = (msg: string) => {
+  const timestamp = new Date().toISOString();
+  fs.appendFileSync(logFile, `[${timestamp}] ${msg}\n`);
+};
 
 // Extend Express Request to include auth
 declare global {
@@ -10,6 +17,7 @@ declare global {
         userId: string;
         sessionId: string;
       };
+      isFirstSync?: boolean;
     }
   }
 }
@@ -18,7 +26,11 @@ declare global {
 const clerkAuth = ClerkExpressRequireAuth();
 
 // Export it as requireAuth and assert the middleware type
-export const requireAuth: RequestHandler = clerkAuth as unknown as RequestHandler;
+const _requireAuth = clerkAuth as unknown as RequestHandler;
+export const requireAuth: RequestHandler = (req, res, next) => {
+  log(`🔑 [requireAuth] Request: ${req.method} ${req.originalUrl} - Auth: ${req.headers.authorization ? 'PRESENT' : 'MISSING'}`);
+  return _requireAuth(req, res, next);
+};
 
 // Custom middleware to ensure user exists in database
 export const ensureUserExists = async (
@@ -27,8 +39,16 @@ export const ensureUserExists = async (
   next: NextFunction
 ) => {
   try {
+    log(`🛡️ [ensureUserExists] Request URL: ${req.originalUrl}`);
+    log(`🛡️ [ensureUserExists] Auth Headers: Auth=${req.headers.authorization ? 'PRESENT' : 'MISSING'}, Cookie=${req.headers.cookie ? 'PRESENT' : 'MISSING'}`);
+    log(`🛡️ [ensureUserExists] Auth Object: ${req.auth ? 'PRESENT' : 'MISSING'}`);
+    if (req.auth) {
+      console.log('🛡️ [ensureUserExists] UserId:', req.auth.userId);
+    }
+
     if (!req.auth?.userId) {
-      return res.status(401).json({ error: 'Unauthorized' });
+      console.log('❌ [ensureUserExists] Blocking unauthorized request - req.auth missing');
+      return res.status(401).json({ error: 'User check failed' });
     }
 
     // Get user's Clerk ID from the request
@@ -41,16 +61,18 @@ export const ensureUserExists = async (
       return next();
     }
 
-    // 2. If not found, only then call the slow Clerk API
+    // Get the user's data from Clerk's API
     const clerkUser = await clerkClient.users.getUser(clerkId);
     const email = clerkUser.emailAddresses[0]?.emailAddress;
+    const fullName = [clerkUser.firstName, clerkUser.lastName].filter(Boolean).join(' ');
 
     if (!email) {
       return res.status(401).json({ error: 'User email not found' });
     }
 
     // 3. Sync user with database
-    await userService.syncUserFromClerk(clerkId, email);
+    await userService.syncUserFromClerk(clerkId, email, fullName);
+    req.isFirstSync = true;
 
     next();
   } catch (error) {
