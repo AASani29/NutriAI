@@ -1,11 +1,12 @@
 import { Router } from 'express';
-import { requireAuth } from '../../middleware/auth';
+import { ensureUserExists, requireAuth } from '../../middleware/auth';
 import { intelligentDashboardController } from './intelligence-controller';
 
 const router = Router();
 
-// Apply authentication to all intelligence routes
+// Apply authentication and user existence middleware to all intelligence routes
 router.use(requireAuth);
+router.use(ensureUserExists);
 
 // Dashboard insights
 router.get('/dashboard', intelligentDashboardController.getDashboardInsights);
