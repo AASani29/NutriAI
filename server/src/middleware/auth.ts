@@ -34,15 +34,22 @@ export const ensureUserExists = async (
     // Get user's Clerk ID from the request
     const clerkId = req.auth.userId;
 
-    // Get the user's email from Clerk's API
-    const { emailAddresses } = await clerkClient.users.getUser(clerkId);
-    const email = emailAddresses[0]?.emailAddress;
+    // 1. Check if user already exists in local database
+    const existingUser = await userService.getUserByClerkId(clerkId);
+    
+    if (existingUser) {
+      return next();
+    }
+
+    // 2. If not found, only then call the slow Clerk API
+    const clerkUser = await clerkClient.users.getUser(clerkId);
+    const email = clerkUser.emailAddresses[0]?.emailAddress;
 
     if (!email) {
       return res.status(401).json({ error: 'User email not found' });
     }
 
-    // Sync user with database (create if doesn't exist)
+    // 3. Sync user with database
     await userService.syncUserFromClerk(clerkId, email);
 
     next();

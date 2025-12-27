@@ -1,6 +1,5 @@
 import { Request, Response } from 'express';
 import { userService } from './users-service';
-import { clerkClient } from '@clerk/clerk-sdk-node';
 
 export class UserController {
   async getCurrentUser(req: Request, res: Response) {
@@ -11,12 +10,11 @@ export class UserController {
         return res.status(401).json({ error: 'Unauthorized' });
       }
 
-      const clerkUser = await clerkClient.users.getUser(clerkId);
+      const user = await userService.getUserByClerkId(clerkId);
 
-      const user = await userService.syncUserFromClerk(
-        clerkId,
-        clerkUser.emailAddresses[0]?.emailAddress || ''
-      );
+      if (!user) {
+        return res.status(404).json({ error: 'User not found after sync' });
+      }
 
       res.json({
         success: true,
@@ -39,7 +37,16 @@ export class UserController {
         return res.status(401).json({ error: 'Unauthorized' });
       }
 
-      const { fullName, dietaryPreference, location, budgetRange } = req.body;
+      const {
+        fullName,
+        dietaryPreference,
+        location,
+        budgetRange,
+        height,
+        weight,
+        weightPreference,
+        allergies,
+      } = req.body;
 
       if (budgetRange !== undefined && (budgetRange < 0 || isNaN(budgetRange))) {
         return res.status(400).json({
@@ -53,6 +60,10 @@ export class UserController {
         dietaryPreference,
         location,
         budgetRange: budgetRange ? parseFloat(budgetRange) : undefined,
+        height: height ? parseFloat(height) : undefined,
+        weight: weight ? parseFloat(weight) : undefined,
+        weightPreference,
+        allergies,
       });
 
       res.json({

@@ -1,11 +1,12 @@
 import { Router } from 'express';
-import { requireAuth } from '../../middleware/auth';
+import { ensureUserExists, requireAuth } from '../../middleware/auth';
 import { intelligentDashboardController } from './intelligence-controller';
 
 const router = Router();
 
-// Apply authentication to all intelligence routes
+// Apply authentication and user existence middleware to all intelligence routes
 router.use(requireAuth);
+router.use(ensureUserExists);
 
 // Dashboard insights
 router.get('/dashboard', intelligentDashboardController.getDashboardInsights);
@@ -63,5 +64,10 @@ router.get(
   '/seasonal-insights',
   intelligentDashboardController.getSeasonalInsights,
 );
+
+// Saved Meal Plans
+router.post('/meal-plans/save', intelligentDashboardController.saveMealPlan);
+router.get('/meal-plans/saved', intelligentDashboardController.getSavedMealPlans);
+router.post('/meal-plans/consume', intelligentDashboardController.consumeMeal);
 
 export { router as intelligenceRouter };
