@@ -3,11 +3,6 @@ import { ClerkExpressRequireAuth, clerkClient } from '@clerk/clerk-sdk-node';
 import { userService } from '../modules/users/users-service';
 import fs from 'fs';
 
-const logFile = '/home/sadman/Academics/MillionX/MXB2026-Dhaka-Team-X-NutriAI/debug.log';
-const log = (msg: string) => {
-  const timestamp = new Date().toISOString();
-  fs.appendFileSync(logFile, `[${timestamp}] ${msg}\n`);
-};
 
 // Extend Express Request to include auth
 declare global {
@@ -28,7 +23,7 @@ const clerkAuth = ClerkExpressRequireAuth();
 // Export it as requireAuth and assert the middleware type
 const _requireAuth = clerkAuth as unknown as RequestHandler;
 export const requireAuth: RequestHandler = (req, res, next) => {
-  log(`🔑 [requireAuth] Request: ${req.method} ${req.originalUrl} - Auth: ${req.headers.authorization ? 'PRESENT' : 'MISSING'}`);
+  
   return _requireAuth(req, res, next);
 };
 
@@ -39,9 +34,7 @@ export const ensureUserExists = async (
   next: NextFunction
 ) => {
   try {
-    log(`🛡️ [ensureUserExists] Request URL: ${req.originalUrl}`);
-    log(`🛡️ [ensureUserExists] Auth Headers: Auth=${req.headers.authorization ? 'PRESENT' : 'MISSING'}, Cookie=${req.headers.cookie ? 'PRESENT' : 'MISSING'}`);
-    log(`🛡️ [ensureUserExists] Auth Object: ${req.auth ? 'PRESENT' : 'MISSING'}`);
+   
     if (req.auth) {
       console.log('🛡️ [ensureUserExists] UserId:', req.auth.userId);
     }
