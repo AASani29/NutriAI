@@ -29,6 +29,15 @@ router.get(
 // Meal plan optimization
 router.post('/meal-plan', intelligentDashboardController.getOptimizedMealPlan);
 
+// Save meal plan
+router.post('/meal-plans/save', intelligentDashboardController.saveMealPlan);
+
+// Get saved meal plans
+router.get('/meal-plans/saved', intelligentDashboardController.getSavedMealPlans);
+
+// Consume meal
+router.post('/meal-plans/consume', intelligentDashboardController.consumeMeal);
+
 // Nutrition analysis
 router.get(
   '/nutrition-analysis',
