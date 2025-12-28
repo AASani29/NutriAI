@@ -1,6 +1,7 @@
 import Groq from 'groq-sdk';
 import prisma from '../config/database';
 import { inventoryService } from '../modules/inventories/inventory-service';
+import { connection } from '../config/queue';
 
 
 class AIAnalyticsService {
@@ -682,14 +683,28 @@ class AIAnalyticsService {
   }
 
   async getDashboardInsights(userId: string): Promise<any> {
+    const cacheKey = `dashboard:insights:${userId}`;
+
+    // 1. Try to get from Cache
     try {
+      const cached = await connection.get(cacheKey);
+      if (cached) {
+        console.log(`🚀 [AI Service] Returning CACHED dashboard insights for ${userId}`);
+        return JSON.parse(cached);
+      }
+    } catch (err) {
+      console.warn('Redis cache read error:', err);
+    }
+
+    try {
+      console.log(`🧠 [AI Service] Computing FRESH dashboard insights for ${userId}...`);
       const insights = await Promise.all([
         this.analyzeConsumptionPatterns({ userId, timeframe: '7days' }),
         this.generateImpactAnalytics({ userId }),
         this.predictWaste({ userId, items: await this.getCurrentInventoryItems(userId) }),
       ]);
 
-      return {
+      const result = {
         success: true,
         insights: {
           consumption: JSON.parse(insights[0]),
@@ -697,6 +712,15 @@ class AIAnalyticsService {
           waste: JSON.parse(insights[2]),
         },
       };
+
+      // 2. Save to Cache (TTL: 10 minutes)
+      try {
+        await connection.setex(cacheKey, 600, JSON.stringify(result));
+      } catch (err) {
+        console.warn('Redis cache write error:', err);
+      }
+
+      return result;
     } catch (error: any) {
       return { success: false, error: error.message };
     }
