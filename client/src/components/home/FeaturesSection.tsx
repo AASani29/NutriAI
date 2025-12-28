@@ -1,73 +1,97 @@
-import { Leaf, Box, Brain, MapPin, Trophy, ShoppingCart } from 'lucide-react'
+import { ScanBarcode, ChefHat, Recycle, Bell, Share2, BarChart } from 'lucide-react'
 
 export default function FeaturesSection() {
   return (
-    <section id="features" className="relative py-24 bg-gray-50">
+    <section id="features" className="relative py-1 bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <h2 className="text-primary font-semibold tracking-wide uppercase text-sm mb-3">Core Capabilities</h2>
           <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6 leading-tight">
-            Everything you need for a <span className="text-primary font-serif italic">sustainable</span> kitchen.
+            Three powerful modules, <br />
+            <span className="text-primary">One seamless platform.</span>
           </h2>
           <p className="text-xl text-gray-500 leading-relaxed">
-            From smart inventory tracking to AI-driven recipe suggestions, LocaNutri-Smart gives you the tools to reduce waste and eat better.
+            NutriAI bridges the gap between what you buy, what you eat, and how you impact the planet.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 auto-rows-[300px]">
-          {/* Feature 1: Smart Inventory (Large) */}
-          <div className="md:col-span-2 row-span-1 bg-white rounded-3xl p-8 border border-gray-100 shadow-sm hover:shadow-xl transition-shadow duration-300 relative overflow-hidden group">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full -mr-16 -mt-16 group-hover:scale-110 transition-transform duration-500" />
-            <div className="relative z-10 h-full flex flex-col justify-between">
-              <div className="p-3 bg-primary/10 w-fit rounded-xl mb-4">
-                <Box className="w-6 h-6 text-primary" />
-              </div>
-              <div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-2">Smart Inventory Management</h3>
-                <p className="text-gray-600 max-w-md">Real-time tracking of pantry items with automatic expiration alerts. Never let food go to waste again.</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Feature 2: AI Insights */}
-          <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm hover:shadow-xl transition-shadow duration-300 relative overflow-hidden group">
-            <div className="absolute bottom-0 right-0 w-32 h-32 bg-secondary/10 rounded-full -mr-8 -mb-8 group-hover:scale-110 transition-transform duration-500" />
-            <div className="relative z-10">
-              <div className="p-3 bg-secondary/20 w-fit rounded-xl mb-6">
-                <Brain className="w-6 h-6 text-secondary" />
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">AI Recommendations</h3>
-              <p className="text-gray-600 text-sm">Personalized recipe ideas based on what you have and what you like.</p>
-            </div>
-          </div>
-
-          {/* Feature 3: Regional Discovery */}
-          <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm hover:shadow-xl transition-shadow duration-300 relative overflow-hidden group">
-            <div className="absolute top-0 left-0 w-32 h-32 bg-accent/10 rounded-full -ml-8 -mt-8 group-hover:scale-110 transition-transform duration-500" />
-            <div className="relative z-10">
-              <div className="p-3 bg-accent/20 w-fit rounded-xl mb-6">
-                <MapPin className="w-6 h-6 text-accent" />
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">Regional Cuisine</h3>
-              <p className="text-gray-600 text-sm">Discover local recipes (e.g., Bangladeshi, Indian) tailored to your location.</p>
-            </div>
-          </div>
-
-          {/* Feature 4: SDG Goals (Large) */}
-          <div className="md:col-span-2 row-span-1 bg-gray-900 rounded-3xl p-8 border border-gray-800 shadow-sm hover:shadow-xl transition-shadow duration-300 relative overflow-hidden group">
-            <div className="absolute top-0 right-0 w-96 h-96 bg-gray-800/50 rounded-full -mr-20 -mt-20 group-hover:scale-105 transition-transform duration-500" />
-            <div className="relative z-10 h-full flex flex-col justify-between text-white">
-              <div className="p-3 bg-white/10 w-fit rounded-xl mb-4 backdrop-blur-sm">
-                <Trophy className="w-6 h-6 text-yellow-400" />
-              </div>
-              <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-                <div>
-                  <h3 className="text-2xl font-bold mb-2">SDG Impact Gamification</h3>
-                  <p className="text-gray-400 max-w-sm">Earn badges and score points by reducing waste and choosing sustainable options. Contribute to UNSDG 12 directly.</p>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {/* Column 1: Inventory (Manage) */}
+          <div className="space-y-6">
+            <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-300 relative overflow-hidden group h-full">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-gray-100 rounded-full -mr-8 -mt-8 opacity-50" />
+              <div className="relative z-10 text-center">
+                <div className="w-14 h-14 mx-auto bg-gray-100 rounded-2xl flex items-center justify-center mb-6">
+                  <ScanBarcode className="w-7 h-7 text-gray-700" />
                 </div>
-                <div className="bg-white/10 px-4 py-2 rounded-lg backdrop-blur-sm">
-                  <span className="font-mono text-yellow-400 font-bold">Lvl 5</span> <span className="text-sm text-gray-300">Eco-Warrior</span>
+                <h3 className="text-xl font-bold text-gray-900 mb-3">Smart Inventory</h3>
+                <p className="text-gray-500 mb-6">Scan barcodes or receipts to digitize your pantry in seconds.</p>
+
+                <div className="space-y-3 text-left bg-gray-50 p-4 rounded-xl">
+                  <div className="flex items-start gap-3">
+                    <Bell className="w-4 h-4 text-orange-500 mt-1" />
+                    <span className="text-sm text-gray-600"><strong>Expiry Alerts:</strong> Get notified before food goes bad.</span>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <BarChart className="w-4 h-4 text-blue-500 mt-1" />
+                    <span className="text-sm text-gray-600"><strong>Usage Trends:</strong> See what you actually consume.</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Column 2: Nutrition (Nourish) - Highlighted */}
+          <div className="space-y-6">
+            <div className="bg-primary p-8 rounded-3xl shadow-xl shadow-primary/20 transform md:-translate-y-4 hover:translate-y-[-20px] transition-all duration-300 relative overflow-hidden h-full">
+              <div className="absolute top-0 left-0 w-full h-full bg-[url('/grid-pattern.svg')] opacity-10" />
+              <div className="absolute bottom-0 right-0 w-48 h-48 bg-white/10 rounded-full -mr-8 -mb-8" />
+
+              <div className="relative z-10 text-center text-white">
+                <div className="w-14 h-14 mx-auto bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center mb-6 border border-white/20">
+                  <ChefHat className="w-7 h-7 text-white" />
+                </div>
+                <h3 className="text-xl font-bold mb-3">Intelligent Cooking</h3>
+                <p className="text-white/80 mb-6">Turn your inventory into personalized meals tailored to your diet.</p>
+
+                <div className="space-y-3 text-left bg-white/10 p-4 rounded-xl border border-white/10">
+                  <div className="flex items-start gap-3">
+                    <div className="w-4 h-4 rounded-full bg-orange-400 mt-1" />
+                    <span className="text-sm text-white/90"><strong>Recipe Match:</strong> Suggestions based on what you have *right now*.</span>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="w-4 h-4 rounded-full bg-green-300 mt-1" />
+                    <span className="text-sm text-white/90"><strong>Macro Tracking:</strong> Log calories automatically as you cook.</span>
+                  </div>
+                </div>
+
+                <div className="mt-6 pt-6 border-t border-white/20">
+                  <span className="text-xs font-bold uppercase tracking-widest text-white/70">Most Popular Feature</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Column 3: Sustainability (Sustain) */}
+          <div className="space-y-6">
+            <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-300 relative overflow-hidden group h-full">
+              <div className="absolute top-0 left-0 w-32 h-32 bg-green-50 rounded-full -ml-8 -mt-8 opacity-50" />
+              <div className="relative z-10 text-center">
+                <div className="w-14 h-14 mx-auto bg-green-50 rounded-2xl flex items-center justify-center mb-6">
+                  <Recycle className="w-7 h-7 text-green-600" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-3">Zero-Waste Impact</h3>
+                <p className="text-gray-500 mb-6">Close the loop by sharing surplus and tracking your eco-footprint.</p>
+
+                <div className="space-y-3 text-left bg-gray-50 p-4 rounded-xl">
+                  <div className="flex items-start gap-3">
+                    <Share2 className="w-4 h-4 text-purple-500 mt-1" />
+                    <span className="text-sm text-gray-600"><strong>Community Share:</strong> Donate excess food to neighbors.</span>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="w-4 h-4 text-xs font-bold text-center leading-4 bg-yellow-400 rounded-sm mt-0.5">★</div>
+                    <span className="text-sm text-gray-600"><strong>Gamification:</strong> Earn badges for sustainable choices.</span>
+                  </div>
                 </div>
               </div>
             </div>

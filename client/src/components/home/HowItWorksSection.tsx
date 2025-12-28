@@ -1,57 +1,58 @@
-import { Scan, ClipboardList, ChefHat, HeartHandshake } from 'lucide-react';
+import { ScanBarcode, Utensils, Share2, BarChart } from 'lucide-react';
 
 const steps = [
   {
-    icon: Scan,
-    title: 'Scan & Log',
-    description: 'Snap a receipt or scan a barcode. Our AI instantly catalogues your groceries.',
-    color: 'bg-blue-100 text-blue-600'
+    icon: ScanBarcode,
+    title: '1. Scan & Digitize',
+    description: 'Instantly add groceries to your digital pantry using our barcode scanner or receipt upload.',
+    color: 'bg-gray-100 text-gray-900'
   },
   {
-    icon: ClipboardList,
-    title: 'Track Inventory',
-    description: 'Get notified before food expires. Visualized pantry management made easy.',
-    color: 'bg-green-100 text-green-600'
+    icon: Utensils,
+    title: '2. Cook Smart',
+    description: 'Get AI recipe suggestions based on what you have and what expires soon.',
+    color: 'bg-primary/10 text-primary'
   },
   {
-    icon: ChefHat,
-    title: 'Cook Smart',
-    description: 'Discover regional recipes based on what you already have in your kitchen.',
-    color: 'bg-orange-100 text-orange-600'
+    icon: Share2,
+    title: '3. Share Surplus',
+    description: 'Don\'t throw it away! Share excess ingredients with your local community.',
+    color: 'bg-orange-50 text-orange-600'
   },
   {
-    icon: HeartHandshake,
-    title: 'Share & Impact',
-    description: 'Share surplus food with neighbors and track your waste reduction score.',
-    color: 'bg-purple-100 text-purple-600'
+    icon: BarChart,
+    title: '4. Track Impact',
+    description: 'Visualize your waste reduction and nutrition improvements over time.',
+    color: 'bg-blue-50 text-blue-600'
   },
 ]
 
 export default function HowItWorksSection() {
   return (
-    <section id="how-it-works" className="py-16 bg-white border-y border-gray-100">
+    <section id="how-it-works" className="py-24 bg-white border-y border-gray-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col md:flex-row items-center justify-between mb-12 gap-6">
+        <div className="flex flex-col md:flex-row items-center justify-between mb-16 gap-6">
           <div className="max-w-xl">
-            <h2 className="text-3xl font-bold text-gray-900 mb-2">Simple Workflow. Big Impact.</h2>
-            <p className="text-gray-500">From grocery bag to dinner table, we streamline every step.</p>
+            <h2 className="text-3xl font-bold text-gray-900 mb-2">A Complete Food Lifecycle</h2>
+            <p className="text-gray-500">Stop managing specific parts of your kitchen in isolation. Connect them all.</p>
           </div>
-          <div className="hidden md:block h-px w-full bg-gray-100 flex-1 mx-8"></div>
+          {/* Timeline Line */}
+          <div className="hidden md:block h-1 w-full bg-gray-100 flex-1 mx-8 rounded-full"></div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {steps.map((step, index) => {
             const Icon = step.icon;
             return (
-              <div key={index} className="flex flex-col gap-4 p-5 rounded-2xl bg-gray-50 hover:bg-white border border-transparent hover:border-gray-100 hover:shadow-lg transition-all duration-300">
-                <div className={`w-12 h-12 rounded-xl ${step.color} flex items-center justify-center`}>
-                  <Icon className="w-6 h-6" />
+              <div key={index} className="flex flex-col gap-4 p-6 rounded-2xl bg-white border border-gray-100 hover:shadow-xl transition-all duration-300 group">
+                <div className={`w-14 h-14 rounded-2xl ${step.color} flex items-center justify-center transform group-hover:scale-110 transition-transform`}>
+                  <Icon className="w-7 h-7" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-gray-900 mb-1 flex items-center gap-2">
-                    <span className="text-sm font-mono text-gray-400">0{index + 1}</span> {step.title}
+                  <h3 className="font-bold text-gray-900 mb-2 flex items-center gap-2 text-lg">
+                    {step.title}
                   </h3>
-                  <p className="text-sm text-gray-600 leading-relaxed">
+                  <p className="text-gray-500 leading-relaxed text-sm">
                     {step.description}
                   </p>
                 </div>

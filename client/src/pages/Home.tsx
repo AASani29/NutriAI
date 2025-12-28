@@ -27,7 +27,7 @@ export default function Home() {
       <FeaturesSection />
       <HowItWorksSection />
       <ImpactSection />
-      <CTASection />
+      {/* <CTASection /> */}
       <Footer />
     </main>
   );
