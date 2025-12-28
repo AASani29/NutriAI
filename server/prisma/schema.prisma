@@ -31,6 +31,7 @@ model User {
   aiInsights          AiInsight[]
   consumptionPatterns ConsumptionPattern[]
   auditLogs           AuditLog[]
+  resourcesCreated    Resource[]        @relation("CreatedResources")
 }
 
 model UserProfile {
@@ -172,16 +173,19 @@ model Resource {
   description String?
   url         String?
   type        ResourceType
+  createdById String?
+  isPublic    Boolean   @default(true)
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   isDeleted   Boolean   @default(false)
   deletedAt   DateTime?
   tags        ResourceTagOnResource[]
+  createdBy   User?     @relation("CreatedResources", fields: [createdById], references: [id])
 }
 
 model ResourceTag {
   id         String   @id @default(uuid())
-  tag        String
+  tag        String   @unique
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
   isDeleted  Boolean  @default(false)
