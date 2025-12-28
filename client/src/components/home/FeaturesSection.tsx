@@ -64,10 +64,6 @@ export default function FeaturesSection() {
                     <span className="text-sm text-white/90"><strong>Macro Tracking:</strong> Log calories automatically as you cook.</span>
                   </div>
                 </div>
-
-                <div className="mt-6 pt-6 border-t border-white/20">
-                  <span className="text-xs font-bold uppercase tracking-widest text-white/70">Most Popular Feature</span>
-                </div>
               </div>
             </div>
           </div>

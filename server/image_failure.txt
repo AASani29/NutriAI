@@ -6,7 +6,7 @@ Data: {
   "file": {
     "id": "a9413c39-89bf-4cbc-89e2-07cff8c668d9",
     "userId": "b5378684-a574-4b56-8547-5d022fc990a7",
-    "url": "https://res.cloudinary.com/dhmtoyti6/image/upload/v1766784933/nutritrack-receipts/nvlfncrux29kbru3owoe.jpg",
+    "url": "https://res.cloudinary.com/dhmtoyti6/image/upload/v1766784933/NutriAI-receipts/nvlfncrux29kbru3owoe.jpg",
     "filename": "OIP.webp",
     "mimeType": "image/webp",
     "size": 21028,
@@ -19,7 +19,7 @@ Data: {
   },
   "metadata": {
     "inventoryId": "8898bed9-3339-488f-9bd4-206163062f7b",
-    "imageUrl": "https://res.cloudinary.com/dhmtoyti6/image/upload/v1766784933/nutritrack-receipts/nvlfncrux29kbru3owoe.jpg",
+    "imageUrl": "https://res.cloudinary.com/dhmtoyti6/image/upload/v1766784933/NutriAI-receipts/nvlfncrux29kbru3owoe.jpg",
     "extractItems": true
   },
   "type": "process-ocr"

@@ -124,7 +124,7 @@ Data: {
   "file": {
     "id": "dbbb37e6-5d31-4074-96bd-f102e5c2b325",
     "userId": "b5378684-a574-4b56-8547-5d022fc990a7",
-    "url": "https://res.cloudinary.com/dhmtoyti6/image/upload/v1766784050/nutritrack-receipts/rsmjtuv6wkpa2m64tstk.jpg",
+    "url": "https://res.cloudinary.com/dhmtoyti6/image/upload/v1766784050/NutriAI-receipts/rsmjtuv6wkpa2m64tstk.jpg",
     "filename": "veggie-grocery-receipt_orig.jpeg",
     "mimeType": "image/jpeg",
     "size": 39724,
@@ -137,7 +137,7 @@ Data: {
   },
   "metadata": {
     "inventoryId": "ceca3fdc-0734-4b23-93ae-97d2bb83e61d",
-    "imageUrl": "https://res.cloudinary.com/dhmtoyti6/image/upload/v1766784050/nutritrack-receipts/rsmjtuv6wkpa2m64tstk.jpg",
+    "imageUrl": "https://res.cloudinary.com/dhmtoyti6/image/upload/v1766784050/NutriAI-receipts/rsmjtuv6wkpa2m64tstk.jpg",
     "extractItems": true
   },
   "type": "process-ocr"
@@ -165,7 +165,7 @@ Data: {
   "file": {
     "id": "4ed4c594-e199-471f-949f-f87bd0d0f9ef",
     "userId": "b5378684-a574-4b56-8547-5d022fc990a7",
-    "url": "https://res.cloudinary.com/dhmtoyti6/image/upload/v1766783571/nutritrack-receipts/tri9swiswwkeuhwnufcz.jpg",
+    "url": "https://res.cloudinary.com/dhmtoyti6/image/upload/v1766783571/NutriAI-receipts/tri9swiswwkeuhwnufcz.jpg",
     "filename": "veggie-grocery-receipt_orig.jpeg",
     "mimeType": "image/jpeg",
     "size": 39724,
@@ -178,7 +178,7 @@ Data: {
   },
   "metadata": {
     "inventoryId": "6d3ab9d7-bad5-435b-9820-8f7c03992a80",
-    "imageUrl": "https://res.cloudinary.com/dhmtoyti6/image/upload/v1766783571/nutritrack-receipts/tri9swiswwkeuhwnufcz.jpg",
+    "imageUrl": "https://res.cloudinary.com/dhmtoyti6/image/upload/v1766783571/NutriAI-receipts/tri9swiswwkeuhwnufcz.jpg",
     "extractItems": true
   },
   "type": "process-ocr"
@@ -206,7 +206,7 @@ Data: {
   "file": {
     "id": "51f42a33-39bc-4c2b-95ea-ee74f9d00705",
     "userId": "b5378684-a574-4b56-8547-5d022fc990a7",
-    "url": "https://res.cloudinary.com/dhmtoyti6/image/upload/v1766783494/nutritrack-receipts/z1bfqlml6iugvqvpgleg.jpg",
+    "url": "https://res.cloudinary.com/dhmtoyti6/image/upload/v1766783494/NutriAI-receipts/z1bfqlml6iugvqvpgleg.jpg",
     "filename": "veggie-grocery-receipt_orig.jpeg",
     "mimeType": "image/jpeg",
     "size": 39724,
@@ -219,7 +219,7 @@ Data: {
   },
   "metadata": {
     "inventoryId": "53f465fa-455b-446f-9f75-d2a1badf791a",
-    "imageUrl": "https://res.cloudinary.com/dhmtoyti6/image/upload/v1766783494/nutritrack-receipts/z1bfqlml6iugvqvpgleg.jpg",
+    "imageUrl": "https://res.cloudinary.com/dhmtoyti6/image/upload/v1766783494/NutriAI-receipts/z1bfqlml6iugvqvpgleg.jpg",
     "extractItems": true
   },
   "type": "process-ocr"

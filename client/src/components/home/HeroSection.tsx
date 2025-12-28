@@ -97,7 +97,7 @@ export default function HeroSection() {
                   {/* Floating Cards */}
                   <div className="absolute top-1/2 -left-4 bg-white p-4 rounded-2xl shadow-xl border border-gray-100 flex items-center gap-3 animate-float delay-100 z-20">
                      <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                        <Leaf className="w-5 h-5 text-green-700" />
+                        <img className="w-5 h-5 text-green-700" src='/gajor.png'/>
                      </div>
                      <div>
                         <div className="text-xs font-bold text-gray-900">Waste Prevented</div>
