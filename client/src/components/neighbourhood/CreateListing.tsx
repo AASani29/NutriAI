@@ -23,7 +23,11 @@ interface InventoryItem {
   };
 }
 
-export default function CreateListing() {
+interface CreateListingProps {
+  onSuccess?: () => void;
+}
+
+export default function CreateListing({ onSuccess }: CreateListingProps) {
   const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
   const [showItemSelector, setShowItemSelector] = useState(false);
   const [form, setForm] = useState({
@@ -35,20 +39,24 @@ export default function CreateListing() {
   });
   const [error, setError] = useState('');
 
-  const { useGetInventories, useGetInventoryItems } = useInventory();
+  const { useGetInventories, useGetMultipleInventoryItems } = useInventory();
   const { data: inventories = [] } = useGetInventories();
   const createListingMutation = useCreateListing();
 
-  // Get all inventory items from all inventories
-  const inventoryQueries = inventories.map(inventory => 
-    useGetInventoryItems(inventory.id)
-  );
-  
-  const allItems: InventoryItem[] = inventoryQueries.reduce((acc, query) => {
+  // Get all inventory items from all inventories using useQueries via the new hook
+  const inventoryIds = inventories.map(inv => inv.id);
+  const inventoryQueries = useGetMultipleInventoryItems(inventoryIds);
+
+  const allItems: InventoryItem[] = inventoryQueries.reduce((acc: InventoryItem[], query, index) => {
     if (query.data) {
-      const itemsWithInventory = query.data.map(item => ({
+      const inventory = inventories[index];
+      // Type assertion needed because query.data comes from the hook as unknown in map context sometimes, 
+      // but we know it returns InventoryItem[] based on our implementation
+      const items = query.data as InventoryItem[];
+
+      const itemsWithInventory = items.map(item => ({
         ...item,
-        inventory: inventories.find(inv => inv.id === item.inventoryId) || {
+        inventory: inventory || {
           id: item.inventoryId,
           name: 'Unknown Inventory'
         }
@@ -116,8 +124,9 @@ export default function CreateListing() {
         pickupLocation: '',
         availableUntil: '',
       });
-      
+
       setError('');
+      onSuccess?.();
     } catch (err) {
       console.error('Error creating listing:', err);
       setError(err instanceof Error ? err.message : 'Failed to create listing');
@@ -168,7 +177,7 @@ export default function CreateListing() {
           <label className="block text-sm font-medium text-foreground mb-3">
             Select Item to Share *
           </label>
-          
+
           {selectedItem ? (
             <div className="border border-border rounded-lg p-4 bg-secondary/5">
               <div className="flex items-center justify-between mb-2">
@@ -346,7 +355,7 @@ function ItemSelectorModal({ items, onSelect, onClose }: ItemSelectorModalProps)
     const itemName = item.customName || item.foodItem?.name || '';
     const category = item.foodItem?.category || '';
     const inventoryName = item.inventory.name;
-    
+
     return (
       itemName.toLowerCase().includes(search.toLowerCase()) ||
       category.toLowerCase().includes(search.toLowerCase()) ||
@@ -388,7 +397,7 @@ function ItemSelectorModal({ items, onSelect, onClose }: ItemSelectorModalProps)
                 {items.length === 0 ? 'No Items Available' : 'No Matching Items'}
               </h4>
               <p className="text-foreground/60">
-                {items.length === 0 
+                {items.length === 0
                   ? 'Add items to your inventory first to share them.'
                   : 'Try adjusting your search terms.'
                 }

@@ -114,6 +114,7 @@ export type ClaimListingRequest = {
 
 export type CompleteListingRequest = {
   notes?: string;
+  targetInventoryId?: string;
 };
 
 // Filter types
@@ -123,6 +124,7 @@ export type ListingFilters = {
   category?: string;
   search?: string;
   excludeOwnListings?: boolean;
+  claimedBy?: string;
 };
 
 export type SharingLogFilters = {

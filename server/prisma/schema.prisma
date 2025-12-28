@@ -127,7 +127,7 @@ model InventoryItem {
   deletedAt       DateTime?
   consumptionLogs ConsumptionLog[] @relation("InventoryItemConsumptions")
   files           File[]           @relation("InventoryItemFiles")
-  foodListing     FoodListing?     @relation("FoodListings")
+  foodListings    FoodListing[]    @relation("FoodListings")
   addedBy         User?            @relation("AddedInventoryItems", fields: [addedById], references: [id])
   foodItem        FoodItem?        @relation(fields: [foodItemId], references: [id])
   inventory       Inventory        @relation("InventoryItems", fields: [inventoryId], references: [id])
@@ -322,7 +322,7 @@ enum ListingStatus {
 
 model FoodListing {
   id              String         @id @default(uuid())
-  inventoryItemId String         @unique
+  inventoryItemId String
   listerId        String
   title           String
   description     String?

@@ -1,108 +1,75 @@
-import { useState } from "react";
-import { Package, Plus, List, Search } from 'lucide-react';
+import { useState } from 'react';
 import AvailableListings from '../components/neighbourhood/AvailableListings';
 import CreateListing from '../components/neighbourhood/CreateListing';
 import MyListings from '../components/neighbourhood/MyListings';
-
-type TabType = 'available' | 'create' | 'my-listings';
+import MyBookings from '../components/neighbourhood/MyBookings';
+import { ShoppingBag, Share2, List, Search } from 'lucide-react';
 
 export default function NeighbourhoodPage() {
-  const [activeTab, setActiveTab] = useState<TabType>('available');
-
-  const tabs = [
-    {
-      id: 'available' as TabType,
-      label: 'Browse Food',
-      icon: Search,
-      description: 'Find food shared by neighbors'
-    },
-    {
-      id: 'create' as TabType,
-      label: 'Share Food',
-      icon: Plus,
-      description: 'Share your surplus'
-    },
-    {
-      id: 'my-listings' as TabType,
-      label: 'My Listings',
-      icon: List,
-      description: 'Manage your shares'
-    }
-  ];
+  const [activeTab, setActiveTab] = useState<'browse' | 'share' | 'mylistings' | 'mybookings'>('browse');
 
   return (
-    <div className="max-w-6xl mx-auto space-y-8">
-      {/* Header */}
-      <div className="space-y-4">
-        <div className="flex items-center gap-3">
-          <Package className="w-8 h-8 text-primary" />
-          <h1 className="text-3xl font-bold text-foreground">Neighbourhood</h1>
-        </div>
-        <p className="text-foreground/70 text-lg">
-          Connect with your community and share food surplus to reduce waste together.
+    <div className="container mx-auto px-4 py-8">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-foreground mb-2">
+          Neighbourhood Sharing
+        </h1>
+        <p className="text-foreground/70 max-w-2xl">
+          Share surplus food with your neighbours or find what you need.
+          Reduce waste and build community.
         </p>
       </div>
 
       {/* Navigation Tabs */}
-      <div className="bg-card rounded-xl border border-border p-2">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-          {tabs.map((tab) => {
-            const Icon = tab.icon;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`p-4 rounded-lg transition-all duration-200 text-left ${
-                  activeTab === tab.id
-                    ? 'bg-primary text-primary-foreground shadow-md'
-                    : 'hover:bg-secondary/10 text-foreground/80 hover:text-foreground'
-                }`}
-              >
-                <div className="flex items-center gap-3 mb-1">
-                  <Icon className={`w-5 h-5 ${
-                    activeTab === tab.id ? 'text-primary-foreground' : 'text-primary'
-                  }`} />
-                  <span className="font-medium">{tab.label}</span>
-                </div>
-                <p className={`text-sm ${
-                  activeTab === tab.id 
-                    ? 'text-primary-foreground/80' 
-                    : 'text-foreground/60'
-                }`}>
-                  {tab.description}
-                </p>
-              </button>
-            );
-          })}
-        </div>
+      <div className="flex overflow-x-auto pb-4 gap-2 mb-8 no-scrollbar bg-background/50 backdrop-blur-sm sticky top-0 z-10 pt-4 -mt-4">
+        <button
+          onClick={() => setActiveTab('browse')}
+          className={`px-4 py-2 rounded-lg font-medium whitespace-nowrap lg:flex-none flex-1 flex items-center justify-center gap-2 transition-smooth ${activeTab === 'browse'
+              ? 'bg-primary text-primary-foreground shadow-md'
+              : 'bg-card border border-border text-foreground hover:bg-secondary/10'
+            }`}
+        >
+          <Search className="w-4 h-4" />
+          Browse Food
+        </button>
+        <button
+          onClick={() => setActiveTab('mybookings')}
+          className={`px-4 py-2 rounded-lg font-medium whitespace-nowrap lg:flex-none flex-1 flex items-center justify-center gap-2 transition-smooth ${activeTab === 'mybookings'
+              ? 'bg-primary text-primary-foreground shadow-md'
+              : 'bg-card border border-border text-foreground hover:bg-secondary/10'
+            }`}
+        >
+          <ShoppingBag className="w-4 h-4" />
+          My Bookings
+        </button>
+        <button
+          onClick={() => setActiveTab('share')}
+          className={`px-4 py-2 rounded-lg font-medium whitespace-nowrap lg:flex-none flex-1 flex items-center justify-center gap-2 transition-smooth ${activeTab === 'share'
+              ? 'bg-primary text-primary-foreground shadow-md'
+              : 'bg-card border border-border text-foreground hover:bg-secondary/10'
+            }`}
+        >
+          <Share2 className="w-4 h-4" />
+          Share Food
+        </button>
+        <button
+          onClick={() => setActiveTab('mylistings')}
+          className={`px-4 py-2 rounded-lg font-medium whitespace-nowrap lg:flex-none flex-1 flex items-center justify-center gap-2 transition-smooth ${activeTab === 'mylistings'
+              ? 'bg-primary text-primary-foreground shadow-md'
+              : 'bg-card border border-border text-foreground hover:bg-secondary/10'
+            }`}
+        >
+          <List className="w-4 h-4" />
+          My Listings
+        </button>
       </div>
 
-      {/* Tab Content */}
-      <div className="min-h-[600px]">
-        {activeTab === 'available' && <AvailableListings />}
-        {activeTab === 'create' && <CreateListing />}
-        {activeTab === 'my-listings' && <MyListings />}
-      </div>
-
-      {/* Footer Info */}
-      <div className="bg-secondary/5 rounded-xl border border-border p-6">
-        <h3 className="font-semibold text-foreground mb-2">
-          How Food Sharing Works
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-foreground/70">
-          <div>
-            <div className="font-medium text-foreground mb-1">1. Share</div>
-            <p>List surplus food items from your inventory that you want to give away for free.</p>
-          </div>
-          <div>
-            <div className="font-medium text-foreground mb-1">2. Connect</div>
-            <p>Browse available food from neighbors and claim items you can use.</p>
-          </div>
-          <div>
-            <div className="font-medium text-foreground mb-1">3. Reduce Waste</div>
-            <p>Complete the exchange and help reduce food waste in your community.</p>
-          </div>
-        </div>
+      {/* Content Area */}
+      <div className="animate-in fade-in slide-in-from-bottom-4 duration-300">
+        {activeTab === 'browse' && <AvailableListings />}
+        {activeTab === 'mybookings' && <MyBookings />}
+        {activeTab === 'share' && <CreateListing onSuccess={() => setActiveTab('mylistings')} />}
+        {activeTab === 'mylistings' && <MyListings />}
       </div>
     </div>
   );

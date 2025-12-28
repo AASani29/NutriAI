@@ -1,5 +1,5 @@
 import { useAuth } from '@clerk/clerk-react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueries, useQueryClient } from '@tanstack/react-query';
 
 export interface Inventory {
   id: string;
@@ -73,8 +73,8 @@ function useAuthApi() {
       const error = await response.json().catch(() => ({}));
       throw new Error(
         error.error ||
-          error.message ||
-          `API request failed: ${response.status}`,
+        error.message ||
+        `API request failed: ${response.status}`,
       );
     }
 
@@ -112,7 +112,20 @@ export function useInventory() {
         // Handle response based on whether it's wrapped in 'data' property
         return response.items || [];
       },
-      enabled: !!inventoryId,
+    });
+  };
+
+  // Get items for multiple inventories
+  const useGetMultipleInventoryItems = (inventoryIds: string[]) => {
+    return useQueries({
+      queries: inventoryIds.map(id => ({
+        queryKey: ['inventory-items', id],
+        queryFn: async () => {
+          const response = await fetchWithAuth(`/inventories/${id}/items`);
+          return response.items || [];
+        },
+        enabled: !!id,
+      })),
     });
   };
 
@@ -378,7 +391,7 @@ export function useInventory() {
         inventoryId: filters?.inventoryId || null,
       }
     ];
-    
+
     return useQuery<ConsumptionLog[]>({
       queryKey,
       queryFn: async () => {
@@ -402,8 +415,7 @@ export function useInventory() {
           console.log('Making request to:', url);
           console.log(
             'Full URL with base:',
-            `${
-              import.meta.env.VITE_API_URL || 'http://localhost:3000/api'
+            `${import.meta.env.VITE_API_URL || 'http://localhost:3000/api'
             }${url}`,
           );
 
@@ -432,6 +444,7 @@ export function useInventory() {
   return {
     useGetInventories,
     useGetInventoryItems,
+    useGetMultipleInventoryItems,
     useCreateInventory,
     useAddItemToInventory,
     useUpdateInventory,

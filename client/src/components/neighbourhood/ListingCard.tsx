@@ -1,53 +1,67 @@
 import { useState } from 'react';
-import { 
-  MapPin, 
-  Clock, 
-  Package, 
-  User, 
+import {
+  MapPin,
+  Clock,
+  Package,
+  User,
   Calendar,
   AlertCircle,
   CheckCircle,
   Star,
-  MessageSquare
+  MessageSquare,
+  ArrowDownCircle,
+  Trash2
 } from 'lucide-react';
 import type { FoodListing, ClaimListingRequest } from './types';
 import { ListingStatus } from './types';
-import { useClaimListing, useCompleteListing } from './sharing-service';
+import { useClaimListing, useCompleteListing, useDeleteListing } from './sharing-service';
+import ReceiveListingModal from './ReceiveListingModal';
+import { useAuth } from "@clerk/clerk-react";
 
 interface ListingCardProps {
   listing: FoodListing;
   showActions?: boolean;
   isOwner?: boolean;
+  isClaimer?: boolean;
   onUpdate?: () => void;
 }
 
-export default function ListingCard({ 
-  listing, 
-  showActions = true, 
+export default function ListingCard({
+  listing,
+  showActions = true,
   isOwner = false,
-  onUpdate 
+  isClaimer: propIsClaimer = false,
+  onUpdate
 }: ListingCardProps) {
   const [showClaimModal, setShowClaimModal] = useState(false);
   const [showCompleteModal, setShowCompleteModal] = useState(false);
-  
+  const [showReceiveModal, setShowReceiveModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+
   const claimMutation = useClaimListing();
   const completeMutation = useCompleteListing();
+  const deleteMutation = useDeleteListing();
+  const { userId } = useAuth();
 
-  const itemName = listing.inventoryItem.customName || 
-                   listing.inventoryItem.foodItem?.name || 
-                   'Unknown Item';
+  // Use prop if provided, otherwise fallback to check (note: check might be flawed if userId is Clerk ID vs internal ID)
+  // For MyBookings, we will explicitly pass true.
+  const isClaimer = propIsClaimer || (userId && listing.sharingLogs?.some(log => log.claimerId === userId));
+
+  const itemName = listing.inventoryItem.customName ||
+    listing.inventoryItem.foodItem?.name ||
+    'Unknown Item';
   const category = listing.inventoryItem.foodItem?.category || 'Custom';
-  
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case ListingStatus.AVAILABLE:
         return 'bg-green-100 text-green-800 border-green-200';
       case ListingStatus.CLAIMED:
-        return 'bg-orange-100 text-orange-800 border-orange-200';
-      case ListingStatus.COMPLETED:
         return 'bg-blue-100 text-blue-800 border-blue-200';
-      case ListingStatus.CANCELLED:
+      case ListingStatus.COMPLETED:
         return 'bg-gray-100 text-gray-800 border-gray-200';
+      case ListingStatus.CANCELLED:
+        return 'bg-red-100 text-red-800 border-red-200';
       default:
         return 'bg-gray-100 text-gray-800 border-gray-200';
     }
@@ -65,6 +79,23 @@ export default function ListingCard({
         return <AlertCircle className="w-3 h-3" />;
       default:
         return <Package className="w-3 h-3" />;
+    }
+  };
+
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case ListingStatus.AVAILABLE:
+        return 'Listed';
+      case ListingStatus.CLAIMED:
+        return 'Booked';
+      case ListingStatus.COMPLETED:
+        if (isOwner) return 'Delivered';
+        if (isClaimer) return 'Received';
+        return 'Completed';
+      case ListingStatus.CANCELLED:
+        return 'Cancelled';
+      default:
+        return status;
     }
   };
 
@@ -97,7 +128,31 @@ export default function ListingCard({
     }
   };
 
-  const isExpiringSoon = listing.availableUntil && 
+  const handleReceive = async (targetInventoryId: string) => {
+    try {
+      await completeMutation.mutateAsync({
+        id: listing.id,
+        targetInventoryId,
+        notes: 'Received via app'
+      });
+      setShowReceiveModal(false);
+      onUpdate?.();
+    } catch (error) {
+      console.error('Error receiving listing:', error);
+    }
+  };
+
+  const handleDelete = async () => {
+    try {
+      await deleteMutation.mutateAsync(listing.id);
+      setShowDeleteModal(false);
+      onUpdate?.();
+    } catch (error) {
+      console.error('Error deleting listing:', error);
+    }
+  };
+
+  const isExpiringSoon = listing.availableUntil &&
     new Date(listing.availableUntil) < new Date(Date.now() + 24 * 60 * 60 * 1000);
 
   return (
@@ -115,7 +170,7 @@ export default function ListingCard({
           </div>
           <div className={`px-2 py-1 rounded-lg border text-xs font-medium flex items-center gap-1 ${getStatusColor(listing.status)}`}>
             {getStatusIcon(listing.status)}
-            {listing.status}
+            {getStatusText(listing.status)}
           </div>
         </div>
 
@@ -175,13 +230,13 @@ export default function ListingCard({
           </div>
         </div>
 
-        {/* Claims Info */}
-        {listing.sharingLogs.length > 0 && (
+        {/* Claims Info - Only visible to owner or claimer */}
+        {listing.sharingLogs.length > 0 && (isOwner || isClaimer) && (
           <div className="bg-secondary/10 rounded-lg p-3 mb-4">
             <div className="flex items-center gap-2 mb-2">
               <MessageSquare className="w-4 h-4 text-foreground/60" />
               <span className="text-sm font-medium text-foreground">
-                {listing.sharingLogs.length} claim(s)
+                {listing.sharingLogs.length} booking(s)
               </span>
             </div>
             {listing.sharingLogs.slice(0, 2).map(log => (
@@ -197,20 +252,11 @@ export default function ListingCard({
 
         {/* Action Buttons */}
         {showActions && (
-          <div className="flex gap-2">
-            {!isOwner && listing.status === ListingStatus.AVAILABLE && (
-              <button
-                onClick={() => setShowClaimModal(true)}
-                disabled={claimMutation.isPending}
-                className="flex-1 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 disabled:opacity-50 transition-smooth font-medium flex items-center justify-center gap-2"
-              >
-                <Star className="w-4 h-4" />
-                {claimMutation.isPending ? 'Claiming...' : 'Claim'}
-              </button>
-            )}
-            
-            {(isOwner || listing.sharingLogs.some(log => log.claimerId)) && 
-             listing.status === ListingStatus.CLAIMED && (
+          <div className="flex gap-2 flex-wrap">
+            {/* Owner Actions */}
+            {/* Lister can no longer mark as complete - only Booker can receive */}
+            {/* 
+            {isOwner && listing.status === ListingStatus.CLAIMED && (
               <button
                 onClick={() => setShowCompleteModal(true)}
                 disabled={completeMutation.isPending}
@@ -219,19 +265,56 @@ export default function ListingCard({
                 <CheckCircle className="w-4 h-4" />
                 {completeMutation.isPending ? 'Completing...' : 'Mark Complete'}
               </button>
+            )} 
+            */}
+
+            {/* Owner Delete Action - Visible if not completed */}
+            {isOwner && listing.status !== ListingStatus.COMPLETED && (
+              <button
+                onClick={() => setShowDeleteModal(true)}
+                disabled={deleteMutation.isPending}
+                className="px-4 py-2 bg-white border border-red-200 text-red-600 rounded-lg hover:bg-red-50 disabled:opacity-50 transition-smooth font-medium flex items-center justify-center gap-2"
+                title="Delete Listing"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            )}
+
+            {/* Claimer Actions - Receive (Visible when Booked) */}
+            {isClaimer && listing.status === ListingStatus.CLAIMED && (
+              <button
+                onClick={() => setShowReceiveModal(true)}
+                disabled={completeMutation.isPending}
+                className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 transition-smooth font-medium flex items-center justify-center gap-2"
+              >
+                <ArrowDownCircle className="w-4 h-4" />
+                {completeMutation.isPending ? 'Receiving...' : 'Receive'}
+              </button>
+            )}
+
+            {/* Booking Action for non-owner, non-claimer, available items */}
+            {!isOwner && !isClaimer && listing.status === ListingStatus.AVAILABLE && (
+              <button
+                onClick={() => setShowClaimModal(true)}
+                disabled={claimMutation.isPending}
+                className="flex-1 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 disabled:opacity-50 transition-smooth font-medium flex items-center justify-center gap-2"
+              >
+                <Star className="w-4 h-4" />
+                {claimMutation.isPending ? 'Booking...' : 'Book'}
+              </button>
             )}
 
             {listing.status === ListingStatus.COMPLETED && (
-              <div className="flex-1 px-4 py-2 bg-blue-100 text-blue-800 rounded-lg text-center font-medium">
+              <div className="flex-1 px-4 py-2 bg-gray-100 text-gray-800 rounded-lg text-center font-medium">
                 <CheckCircle className="w-4 h-4 inline mr-2" />
-                Completed
+                {isOwner ? 'Delivered' : isClaimer ? 'Received' : 'Completed'}
               </div>
             )}
           </div>
         )}
       </div>
 
-      {/* Claim Modal */}
+      {/* Claim/Book Modal */}
       {showClaimModal && (
         <ClaimModal
           listing={listing}
@@ -249,6 +332,49 @@ export default function ListingCard({
           onComplete={handleComplete}
           isLoading={completeMutation.isPending}
         />
+      )}
+
+      {/* Receive Modal */}
+      {showReceiveModal && (
+        <ReceiveListingModal
+          listingTitle={listing.title}
+          onClose={() => setShowReceiveModal(false)}
+          onReceive={handleReceive}
+          isLoading={completeMutation.isPending}
+        />
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-background/60 backdrop-blur-md flex items-center justify-center z-50 p-4">
+          <div className="bg-card rounded-2xl border border-border shadow-xl p-6 w-full max-w-md">
+            <div className="flex items-center gap-3 mb-4">
+              <Trash2 className="w-6 h-6 text-red-500" />
+              <h3 className="text-lg font-bold text-foreground">
+                Delete Listing
+              </h3>
+            </div>
+            <p className="text-foreground/70 mb-6">
+              Are you sure you want to delete "{listing.title}"? This action cannot be undone.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                disabled={deleteMutation.isPending}
+                className="flex-1 px-4 py-2 border border-border text-foreground rounded-lg hover:bg-secondary/10 transition-smooth disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDelete}
+                disabled={deleteMutation.isPending}
+                className="flex-1 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-smooth disabled:opacity-50"
+              >
+                {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </>
   );
@@ -282,10 +408,10 @@ function ClaimModal({ listing, onClose, onClaim, isLoading }: ClaimModalProps) {
       <div className="bg-card rounded-2xl border border-border shadow-xl w-full max-w-md">
         <div className="p-6 border-b border-border">
           <h3 className="text-lg font-bold text-foreground mb-2">
-            Claim "{listing.title}"
+            Book "{listing.title}"
           </h3>
           <p className="text-foreground/70 text-sm">
-            Let the owner know you're interested in this item.
+            Lock this item to pick it up.
           </p>
         </div>
 
@@ -348,7 +474,7 @@ function ClaimModal({ listing, onClose, onClaim, isLoading }: ClaimModalProps) {
               disabled={isLoading}
               className="flex-1 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 disabled:opacity-50 transition-smooth font-medium"
             >
-              {isLoading ? 'Claiming...' : 'Send Claim'}
+              {isLoading ? 'Booking...' : 'Book'}
             </button>
           </div>
         </form>

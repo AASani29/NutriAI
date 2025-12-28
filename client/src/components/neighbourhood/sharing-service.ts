@@ -1,13 +1,13 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@clerk/clerk-react';
-import type { 
-  FoodListing, 
-  CreateListingRequest, 
-  UpdateListingRequest, 
-  ClaimListingRequest, 
-  ListingFilters, 
+import type {
+  FoodListing,
+  CreateListingRequest,
+  UpdateListingRequest,
+  ClaimListingRequest,
+  ListingFilters,
   SharingStats,
-  ListingStatus 
+  ListingStatus
 } from './types';
 
 const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
@@ -33,14 +33,16 @@ class SharingService {
 
   async getListings(filters?: ListingFilters, token?: string): Promise<{ listings: FoodListing[] }> {
     if (!token) throw new Error('Authentication token required');
-    
+
     const params = new URLSearchParams();
     if (filters?.status) params.append('status', filters.status);
     if (filters?.location) params.append('location', filters.location);
     if (filters?.category) params.append('category', filters.category);
     if (filters?.search) params.append('search', filters.search);
+    if (filters?.search) params.append('search', filters.search);
     if (filters?.excludeOwnListings) params.append('excludeOwnListings', 'true');
-    
+    if (filters?.claimedBy) params.append('claimedBy', filters.claimedBy);
+
     const queryString = params.toString();
     return this.makeRequest(queryString ? `?${queryString}` : '', {}, token);
   }
@@ -76,10 +78,10 @@ class SharingService {
     }, token);
   }
 
-  async completeListing(id: string, notes: string | undefined, token: string): Promise<any> {
+  async completeListing(id: string, notes: string | undefined, targetInventoryId: string | undefined, token: string): Promise<any> {
     return this.makeRequest(`/${id}/complete`, {
       method: 'POST',
-      body: JSON.stringify({ notes }),
+      body: JSON.stringify({ notes, targetInventoryId }),
     }, token);
   }
 
@@ -96,23 +98,24 @@ class SharingService {
 const sharingService = new SharingService();
 
 // React Query hooks
-export const useListings = (filters?: ListingFilters) => {
+export const useListings = (filters?: ListingFilters, options?: { enabled?: boolean }) => {
   const { getToken } = useAuth();
-  
+
   return useQuery({
     queryKey: ['listings', filters],
     queryFn: async () => {
       const token = await getToken();
-      if (!token) throw new Error('Not authenticated');
-      return sharingService.getListings(filters, token);
+      if (!token) throw new Error('No authentication token');
+      const response = await sharingService.getListings(filters, token);
+      return response.listings;
     },
-    select: (data) => data.listings,
+    enabled: options?.enabled !== false && !!filters, // Only run if enabled isn't explicitly false
   });
 };
 
 export const useListing = (id: string) => {
   const { getToken } = useAuth();
-  
+
   return useQuery({
     queryKey: ['listing', id],
     queryFn: async () => {
@@ -127,7 +130,7 @@ export const useListing = (id: string) => {
 
 export const useUserListings = (status?: ListingStatus) => {
   const { getToken } = useAuth();
-  
+
   return useQuery({
     queryKey: ['user-listings', status],
     queryFn: async () => {
@@ -141,7 +144,7 @@ export const useUserListings = (status?: ListingStatus) => {
 
 export const useSharingStats = () => {
   const { getToken } = useAuth();
-  
+
   return useQuery({
     queryKey: ['sharing-stats'],
     queryFn: async () => {
@@ -156,7 +159,7 @@ export const useSharingStats = () => {
 export const useCreateListing = () => {
   const queryClient = useQueryClient();
   const { getToken } = useAuth();
-  
+
   return useMutation({
     mutationFn: async (data: CreateListingRequest) => {
       const token = await getToken();
@@ -174,7 +177,7 @@ export const useCreateListing = () => {
 export const useUpdateListing = () => {
   const queryClient = useQueryClient();
   const { getToken } = useAuth();
-  
+
   return useMutation({
     mutationFn: async ({ id, data }: { id: string; data: UpdateListingRequest }) => {
       const token = await getToken();
@@ -192,7 +195,7 @@ export const useUpdateListing = () => {
 export const useDeleteListing = () => {
   const queryClient = useQueryClient();
   const { getToken } = useAuth();
-  
+
   return useMutation({
     mutationFn: async (id: string) => {
       const token = await getToken();
@@ -210,7 +213,7 @@ export const useDeleteListing = () => {
 export const useClaimListing = () => {
   const queryClient = useQueryClient();
   const { getToken } = useAuth();
-  
+
   return useMutation({
     mutationFn: async ({ id, data }: { id: string; data: ClaimListingRequest }) => {
       const token = await getToken();
@@ -228,12 +231,12 @@ export const useClaimListing = () => {
 export const useCompleteListing = () => {
   const queryClient = useQueryClient();
   const { getToken } = useAuth();
-  
+
   return useMutation({
-    mutationFn: async ({ id, notes }: { id: string; notes?: string }) => {
+    mutationFn: async ({ id, notes, targetInventoryId }: { id: string; notes?: string; targetInventoryId?: string }) => {
       const token = await getToken();
       if (!token) throw new Error('Not authenticated');
-      return sharingService.completeListing(id, notes, token);
+      return sharingService.completeListing(id, notes, targetInventoryId, token);
     },
     onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({ queryKey: ['listings'] });

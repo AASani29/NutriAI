@@ -91,6 +91,7 @@ export interface ListingFilters {
   category?: string;
   search?: string;
   excludeOwnListings?: boolean;
+  claimedBy?: string;
 }
 
 export interface SharingStats {
