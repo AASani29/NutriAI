@@ -338,55 +338,187 @@ export class UserAnalyticsService {
     }
 
     /**
-     * Generate search keywords based on user analytics
+     * Generate recommendation keywords based on user profile and consumption
      */
-    async generateRecommendationKeywords(userId: string): Promise<RecommendationKeywords> {
+    async generateRecommendationKeywords(userId: string): Promise<{
+        primary: string[];
+        secondary: string[];
+        dietary: string[];
+        categorySpecific: string[];
+        consumptionBased: string[];
+    }> {
         const analytics = await this.getUserAnalytics(userId);
-
-        const primary: string[] = [];
-        const secondary: string[] = [];
-        const dietary: string[] = [];
-        const categorySpecific: string[] = [];
+        const keywords = {
+            primary: [] as string[],
+            secondary: [] as string[],
+            dietary: [] as string[],
+            categorySpecific: [] as string[],
+            consumptionBased: [] as string[],
+        };
 
         // Primary keywords based on main concerns
         if (analytics.primaryConcerns.includes('budget')) {
-            primary.push('budget meal planning', 'cheap healthy recipes', 'affordable nutrition');
-            primary.push('budget-friendly cooking', 'save money on groceries');
+            keywords.primary.push('budget meal planning', 'affordable recipes', 'cheap healthy food');
         }
-
         if (analytics.primaryConcerns.includes('waste-reduction')) {
-            primary.push('food waste reduction', 'zero waste cooking', 'leftover recipes');
-            primary.push('reduce food waste', 'food storage tips');
+            keywords.primary.push('reduce food waste', 'leftover recipes', 'zero waste cooking');
+        }
+        if (analytics.primaryConcerns.includes('nutrition')) {
+            keywords.primary.push('healthy eating', 'nutritious meals', 'balanced diet');
         }
 
-        // Dietary-specific keywords
+        // Secondary keywords based on spending tier
+        if (analytics.spendingTier === 'budget-conscious') {
+            keywords.secondary.push('budget cooking tips', 'meal prep on a budget', 'frugal meals');
+        } else if (analytics.spendingTier === 'flexible') {
+            keywords.secondary.push('gourmet recipes', 'premium ingredients', 'fine dining at home');
+        } else {
+            keywords.secondary.push('everyday meals', 'family recipes', 'simple cooking');
+        }
+
+        // Dietary preference keywords
         if (analytics.dietaryPreference) {
             const pref = analytics.dietaryPreference.toLowerCase();
-            dietary.push(`${pref} recipes`, `${pref} meal prep`, `${pref} nutrition`);
+            if (pref.includes('vegetarian')) {
+                keywords.dietary.push('vegetarian recipes', 'plant-based meals', 'meatless cooking');
+            }
+            if (pref.includes('vegan')) {
+                keywords.dietary.push('vegan recipes', 'vegan nutrition', 'plant-based diet');
+            }
+            if (pref.includes('keto')) {
+                keywords.dietary.push('keto recipes', 'low carb meals', 'ketogenic diet');
+            }
+            if (pref.includes('paleo')) {
+                keywords.dietary.push('paleo recipes', 'paleo diet', 'whole food cooking');
+            }
         }
 
-        // Category-specific keywords
-        analytics.topFoodCategories.forEach(category => {
-            categorySpecific.push(`${category} storage tips`, `${category} recipes`);
-            categorySpecific.push(`how to use ${category}`);
-        });
-
-        // Secondary general keywords
-        secondary.push('meal planning', 'healthy eating', 'nutrition tips');
-        secondary.push('food sustainability', 'grocery shopping tips');
-
-        // Add health condition specific keywords
+        // Health condition keywords
         if (analytics.healthConditions) {
             const conditions = analytics.healthConditions.toLowerCase();
-            secondary.push(`${conditions} diet`, `${conditions} nutrition`);
+            if (conditions.includes('diabetes')) {
+                keywords.dietary.push('diabetic-friendly recipes', 'low sugar meals', 'blood sugar control');
+            }
+            if (conditions.includes('hypertension') || conditions.includes('high blood pressure')) {
+                keywords.dietary.push('low sodium recipes', 'heart-healthy meals', 'DASH diet');
+            }
         }
 
-        return {
-            primary,
-            secondary,
-            dietary,
-            categorySpecific,
-        };
+        // Category-specific keywords from inventory
+        analytics.topFoodCategories.forEach((category: string) => {
+            const categoryLower = category.toLowerCase();
+            keywords.categorySpecific.push(
+                `${category} recipes`,
+                `how to cook ${category}`,
+                `${category} storage tips`
+            );
+        });
+
+        // NEW: Consumption-based keywords from ALL consumption logs
+        const consumptionKeywords = await this.getConsumptionBasedKeywords(userId);
+        keywords.consumptionBased.push(...consumptionKeywords);
+
+        console.log(`🎯 Recommendation keywords for user ${userId}:`);
+        console.log(`  Primary (${keywords.primary.length}):`, keywords.primary);
+        console.log(`  Consumption-based (${keywords.consumptionBased.length}):`, keywords.consumptionBased);
+        console.log(`  Dietary (${keywords.dietary.length}):`, keywords.dietary);
+        console.log(`  Category-specific (${keywords.categorySpecific.length}):`, keywords.categorySpecific);
+        console.log(`  Secondary (${keywords.secondary.length}):`, keywords.secondary);
+
+        return keywords;
+    }
+
+    /**
+     * Get keywords from user's consumption history
+     */
+    private async getConsumptionBasedKeywords(userId: string): Promise<string[]> {
+        try {
+            // Get all consumption logs for the user (last 90 days)
+            const ninetyDaysAgo = new Date();
+            ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
+
+            console.log(`🔍 Fetching consumption logs for user ${userId} since ${ninetyDaysAgo.toISOString()}`);
+
+            const consumptionLogs = await prisma.consumptionLog.findMany({
+                where: {
+                    OR: [
+                        {
+                            inventory: {
+                                createdById: userId,
+                            },
+                        },
+                        {
+                            inventory: {
+                                members: {
+                                    some: {
+                                        userId: userId,
+                                    },
+                                },
+                            },
+                        },
+                    ],
+                    consumedAt: {
+                        gte: ninetyDaysAgo,
+                    },
+                    isDeleted: false,
+                },
+                select: {
+                    itemName: true,
+                    foodItem: {
+                        select: {
+                            name: true,
+                            category: true,
+                        },
+                    },
+                },
+                orderBy: {
+                    consumedAt: 'desc',
+                },
+                take: 100, // Last 100 consumption items
+            });
+
+            console.log(`📦 Found ${consumptionLogs.length} consumption logs`);
+            if (consumptionLogs.length > 0) {
+                console.log(`📦 Sample consumption log:`, {
+                    itemName: consumptionLogs[0].itemName,
+                    foodItemName: consumptionLogs[0].foodItem?.name,
+                    foodItemCategory: consumptionLogs[0].foodItem?.category,
+                });
+            }
+
+            const keywords = new Set<string>();
+
+            // Extract food names and categories
+            consumptionLogs.forEach(log => {
+                // Add item name
+                if (log.itemName) {
+                    const cleanName = log.itemName.toLowerCase().trim();
+                    keywords.add(`${cleanName} recipes`);
+                    keywords.add(`how to cook ${cleanName}`);
+                }
+
+                // Add food item name and category
+                if (log.foodItem) {
+                    if (log.foodItem.name) {
+                        const cleanName = log.foodItem.name.toLowerCase().trim();
+                        keywords.add(`${cleanName} recipes`);
+                    }
+                    if (log.foodItem.category) {
+                        const cleanCategory = log.foodItem.category.toLowerCase().trim();
+                        keywords.add(`${cleanCategory} recipes`);
+                        keywords.add(`${cleanCategory} meal ideas`);
+                    }
+                }
+            });
+
+            // Return top 20 most relevant keywords
+            const keywordArray = Array.from(keywords).slice(0, 20);
+            console.log(`📊 Generated ${keywordArray.length} consumption-based keywords for user ${userId}:`, keywordArray);
+            return keywordArray;
+        } catch (error) {
+            console.error('Error getting consumption-based keywords:', error);
+            return [];
+        }
     }
 }
 

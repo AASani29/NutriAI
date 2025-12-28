@@ -79,32 +79,35 @@ export class RecommendationService {
      * Fetch articles based on keywords and concerns
      */
     private async fetchArticles(
-        keywords: { primary: string[]; secondary: string[]; dietary: string[]; categorySpecific: string[] },
+        keywords: { primary: string[]; secondary: string[]; dietary: string[]; categorySpecific: string[]; consumptionBased: string[] },
         primaryConcerns: string[]
     ): Promise<Article[]> {
         const allArticles: Article[] = [];
 
         try {
-            // Fetch articles for primary keywords (highest priority)
+            // 1. Consumption-based (TOP PRIORITY - Fetch 8)
+            // These are what the user actually eats, so they are most relevant
+            if (keywords.consumptionBased.length > 0) {
+                // Shuffle keywords to get variety if there are many
+                const shuffled = [...keywords.consumptionBased].sort(() => 0.5 - Math.random());
+                const consumptionArticles = await newsAPIService.searchArticles(shuffled.slice(0, 5), 8);
+                allArticles.push(...consumptionArticles);
+            }
+
+            // 2. Primary Concerns (Fetching 4)
             if (keywords.primary.length > 0) {
-                const primaryArticles = await newsAPIService.searchArticles(keywords.primary, 6);
+                const primaryArticles = await newsAPIService.searchArticles(keywords.primary, 4);
                 allArticles.push(...primaryArticles);
             }
 
-            // Fetch articles for dietary keywords
+            // 3. Dietary Preferences (Fetching 2)
             if (keywords.dietary.length > 0) {
-                const dietaryArticles = await newsAPIService.searchArticles(keywords.dietary, 3);
+                const dietaryArticles = await newsAPIService.searchArticles(keywords.dietary, 2);
                 allArticles.push(...dietaryArticles);
             }
 
-            // Fetch articles for category-specific keywords
-            if (keywords.categorySpecific.length > 0) {
-                const categoryArticles = await newsAPIService.searchArticles(keywords.categorySpecific, 3);
-                allArticles.push(...categoryArticles);
-            }
-
-            // If we don't have enough articles, fetch some general ones
-            if (allArticles.length < 8) {
+            // 4. Fill with General/Secondary if needed
+            if (allArticles.length < 10 && keywords.secondary.length > 0) {
                 const generalArticles = await newsAPIService.searchArticles(keywords.secondary, 4);
                 allArticles.push(...generalArticles);
             }
@@ -112,35 +115,42 @@ export class RecommendationService {
             console.error('Error fetching articles:', error);
         }
 
-        // Remove duplicates based on URL
-        const uniqueArticles = this.removeDuplicateArticles(allArticles);
-        return uniqueArticles;
+        // Remove duplicates within the fetched list
+        return this.removeDuplicateArticles(allArticles);
     }
 
     /**
      * Fetch videos based on keywords and concerns
      */
     private async fetchVideos(
-        keywords: { primary: string[]; secondary: string[]; dietary: string[]; categorySpecific: string[] },
+        keywords: { primary: string[]; secondary: string[]; dietary: string[]; categorySpecific: string[]; consumptionBased: string[] },
         primaryConcerns: string[]
     ): Promise<Video[]> {
         const allVideos: Video[] = [];
 
         try {
-            // Fetch videos for primary keywords
+            // 1. Consumption-based (TOP PRIORITY - Fetch 6)
+            if (keywords.consumptionBased.length > 0) {
+                // Shuffle keywords to get variety
+                const shuffled = [...keywords.consumptionBased].sort(() => 0.5 - Math.random());
+                const consumptionVideos = await youtubeAPIService.searchVideos(shuffled.slice(0, 5), 6);
+                allVideos.push(...consumptionVideos);
+            }
+
+            // 2. Primary Concerns (Fetch 3)
             if (keywords.primary.length > 0) {
-                const primaryVideos = await youtubeAPIService.searchVideos(keywords.primary, 5);
+                const primaryVideos = await youtubeAPIService.searchVideos(keywords.primary, 3);
                 allVideos.push(...primaryVideos);
             }
 
-            // Fetch videos for dietary keywords
+            // 3. Dietary Preferences (Fetch 2)
             if (keywords.dietary.length > 0) {
-                const dietaryVideos = await youtubeAPIService.searchVideos(keywords.dietary, 3);
+                const dietaryVideos = await youtubeAPIService.searchVideos(keywords.dietary, 2);
                 allVideos.push(...dietaryVideos);
             }
 
-            // If we don't have enough videos, fetch some general ones
-            if (allVideos.length < 6) {
+            // 4. Fill with General if needed
+            if (allVideos.length < 8 && keywords.secondary.length > 0) {
                 const generalVideos = await youtubeAPIService.searchVideos(keywords.secondary, 3);
                 allVideos.push(...generalVideos);
             }
@@ -148,9 +158,8 @@ export class RecommendationService {
             console.error('Error fetching videos:', error);
         }
 
-        // Remove duplicates based on videoId
-        const uniqueVideos = this.removeDuplicateVideos(allVideos);
-        return uniqueVideos;
+        // Remove duplicates
+        return this.removeDuplicateVideos(allVideos);
     }
 
     /**
