@@ -23,6 +23,10 @@ export interface InventoryItem {
     name: string;
     category: string;
     typicalExpirationDays?: number;
+    nutritionPerUnit?: Record<string, number>;
+    nutritionUnit?: string;
+    nutritionBasis?: number;
+    basePrice?: number;
   };
 }
 

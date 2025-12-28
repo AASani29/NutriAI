@@ -1,7 +1,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useAuth } from '@clerk/clerk-react';
-import { CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { ReviewScanModal } from '../components/food/ReviewScanModal';
 
 interface Job {
@@ -66,20 +66,20 @@ export const BackgroundJobProvider: React.FC<{ children: React.ReactNode }> = ({
               headers: { Authorization: `Bearer ${token}` },
             });
             const data = await res.json();
-            
+
             if (data.status === 'completed') {
-                return { 
-                    ...job, 
-                    status: 'completed', 
-                    result: data.result, 
-                    inventoryId: data.inventoryId 
-                } as Job;
+              return {
+                ...job,
+                status: 'completed',
+                result: data.result,
+                inventoryId: data.inventoryId
+              } as Job;
             } else if (data.status === 'failed') {
-                return { 
-                    ...job, 
-                    status: 'failed', 
-                    error: data.error 
-                } as Job;
+              return {
+                ...job,
+                status: 'failed',
+                error: data.error
+              } as Job;
             }
             return job; // Still processing
           } catch (err) {
@@ -91,23 +91,23 @@ export const BackgroundJobProvider: React.FC<{ children: React.ReactNode }> = ({
 
       // Diff check
       updatedJobs.forEach(job => {
-          if (job.status === 'completed' && activeJobs.find(j => j.id === job.id)?.status === 'active') {
-              // Newly completed!
-              setCompletedJobToReview(job);
-              // We can also trigger a toast here if we had a toast system
-          }
+        if (job.status === 'completed' && activeJobs.find(j => j.id === job.id)?.status === 'active') {
+          // Newly completed!
+          setCompletedJobToReview(job);
+          // We can also trigger a toast here if we had a toast system
+        }
       });
-      
+
       // Update state if anything changed
       // (This is a simple replace, optimization possible but fine for now)
       setActiveJobs(prev => {
-          // Merge old non-active jobs with updated jobs
-          const others = prev.filter(p => !jobsToCheck.find(c => c.id === p.id));
-          return [...others, ...updatedJobs].filter(j => j.status === 'active'); // Remove completed/failed from Active list?
-          // Actually we probably want to keep them in a "history" or just remove them. 
-          // Implementation Plan says: "Add to completedJobs"
+        // Merge old non-active jobs with updated jobs
+        const others = prev.filter(p => !jobsToCheck.find(c => c.id === p.id));
+        return [...others, ...updatedJobs].filter(j => j.status === 'active'); // Remove completed/failed from Active list?
+        // Actually we probably want to keep them in a "history" or just remove them. 
+        // Implementation Plan says: "Add to completedJobs"
       });
-      
+
       // If we remove them from activeJobs, the next poll won't check them.
     };
 
@@ -117,89 +117,89 @@ export const BackgroundJobProvider: React.FC<{ children: React.ReactNode }> = ({
 
 
   const handleReviewClose = () => {
-      setCompletedJobToReview(null);
+    setCompletedJobToReview(null);
   };
 
   const addInventoryTask = async (items: any[], inventoryId: string, token: string) => {
-      // Create a local "job" for UI tracking
-      const taskId = `task-${Date.now()}`;
-      setActiveJobs(prev => [...prev, { id: taskId, status: 'active', timestamp: Date.now() }]);
+    // Create a local "job" for UI tracking
+    const taskId = `task-${Date.now()}`;
+    setActiveJobs(prev => [...prev, { id: taskId, status: 'active', timestamp: Date.now() }]);
 
-      // Fire and forget processing
-      (async () => {
-          const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
-          let successCount = 0;
-          let failCount = 0;
+    // Fire and forget processing
+    (async () => {
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+      let successCount = 0;
+      let failCount = 0;
 
-          for (const item of items) {
-              try {
-                const payload = {
-                    foodItemId: undefined,
-                    customName: item.name,
-                    quantity: Number(item.quantity),
-                    unit: item.unit,
-                    notes: `Added via OCR Scan${item.confidence ? ` (${Math.round(item.confidence * 100)}% conf)` : ''}`,
-                    // Pass nutrition data to create smart FoodItems
-                    nutritionPerUnit: item.nutrition,
-                    nutritionUnit: item.nutritionUnit || item.unit, 
-                    nutritionBasis: item.nutritionBasis || (['g', 'ml'].includes(item.unit || '') ? 100 : 1),
-                    basePrice: item.basePrice,
-                };
+      for (const item of items) {
+        try {
+          const payload = {
+            foodItemId: undefined,
+            customName: item.name,
+            quantity: Number(item.quantity),
+            unit: item.unit,
+            notes: `Added via OCR Scan${item.confidence ? ` (${Math.round(item.confidence * 100)}% conf)` : ''}`,
+            // Pass nutrition data to create smart FoodItems
+            nutritionPerUnit: item.nutrition,
+            nutritionUnit: item.nutritionUnit || item.unit,
+            nutritionBasis: item.nutritionBasis || (['g', 'ml'].includes(item.unit || '') ? 100 : 1),
+            basePrice: item.basePrice,
+          };
 
-                const res = await fetch(`${API_URL}/inventories/${inventoryId}/items`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                         Authorization: `Bearer ${token}`,
-                    },
-                    body: JSON.stringify(payload)
-                });
-                
-                if (res.ok) successCount++;
-                else failCount++;
+          const res = await fetch(`${API_URL}/inventories/${inventoryId}/items`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify(payload)
+          });
 
-              } catch (e) {
-                  console.error('Task item add failed', e);
-                  failCount++;
-              }
-          }
+          if (res.ok) successCount++;
+          else failCount++;
 
-          // Update job to completed
-          setActiveJobs(prev => prev.map(j => j.id === taskId ? { ...j, status: 'completed', result: { successCount, failCount } } : j));
-          
-          // Remove from active list after a delay so user sees "Done"
-          setTimeout(() => {
-              setActiveJobs(prev => prev.filter(j => j.id !== taskId));
-          }, 5000);
+        } catch (e) {
+          console.error('Task item add failed', e);
+          failCount++;
+        }
+      }
 
-      })();
+      // Update job to completed
+      setActiveJobs(prev => prev.map(j => j.id === taskId ? { ...j, status: 'completed', result: { successCount, failCount } } : j));
+
+      // Remove from active list after a delay so user sees "Done"
+      setTimeout(() => {
+        setActiveJobs(prev => prev.filter(j => j.id !== taskId));
+      }, 5000);
+
+    })();
   };
 
   return (
     <BackgroundJobContext.Provider value={{ activeJobs, addJob, removeJob, addInventoryTask }}>
       {children}
-      
+
       {/* Global Job Status Indicator */}
       {activeJobs.length > 0 && (
-          <div className="fixed bottom-4 right-4 bg-blue-600 text-white px-4 py-3 rounded-xl shadow-lg flex items-center gap-3 z-50 animate-in slide-in-from-bottom-5">
-              <Loader2 className="w-5 h-5 animate-spin" />
-              <div>
-                  <p className="font-semibold text-sm">Processing {activeJobs.length} active tasks</p>
-                  <p className="text-xs opacity-80">You can keep using the app</p>
-              </div>
+        <div className="fixed bottom-4 right-4 bg-blue-600 text-white px-4 py-3 rounded-xl shadow-lg flex items-center gap-3 z-50 animate-in slide-in-from-bottom-5">
+          <Loader2 className="w-5 h-5 animate-spin" />
+          <div>
+            <p className="font-semibold text-sm">Processing {activeJobs.length} active tasks</p>
+            <p className="text-xs opacity-80">You can keep using the app</p>
           </div>
+        </div>
       )}
 
       {/* Global Review Modal */}
       {completedJobToReview && (
-          <ReviewScanModal
-              initialItems={completedJobToReview.result?.data || []}
-              inventoryId={completedJobToReview.inventoryId || ''}
-              onClose={handleReviewClose}
-              onSuccess={() => {
-                  handleReviewClose();
-              }}
-          />
+        <ReviewScanModal
+          initialItems={completedJobToReview.result?.data || []}
+          inventoryId={completedJobToReview.inventoryId || ''}
+          onClose={handleReviewClose}
+          onSuccess={() => {
+            handleReviewClose();
+          }}
+        />
       )}
     </BackgroundJobContext.Provider>
   );

@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
+import { aiAnalyticsService } from '../../services/aiAnalyticsService';
 
 const prisma = new PrismaClient();
 
@@ -89,7 +90,7 @@ export const getFoodItemById = async (req: Request, res: Response) => {
 // Create a new food item
 export const createFoodItem = async (req: Request, res: Response) => {
   try {
-    const { name, unit, category, typicalExpirationDays, sampleCostPerUnit, description } = req.body;
+    let { name, unit, category, typicalExpirationDays, sampleCostPerUnit, description } = req.body;
 
     // Validation
     if (!name) {
@@ -97,6 +98,42 @@ export const createFoodItem = async (req: Request, res: Response) => {
         success: false,
         message: 'Name is required',
       });
+    }
+
+    // AI Enrichment
+    let nutritionPerUnit = null;
+    let nutritionUnit = null;
+    let nutritionBasis = null;
+    let basePrice = null;
+
+    try {
+      const aiDetails = await aiAnalyticsService.estimateItemDetails(name);
+      if (aiDetails) {
+        if (!category && aiDetails.category) category = aiDetails.category;
+        if (!typicalExpirationDays && aiDetails.typicalExpirationDays) typicalExpirationDays = aiDetails.typicalExpirationDays;
+
+        // Use AI base price if user didn't provide cost
+        if (!sampleCostPerUnit && aiDetails.basePrice) {
+          sampleCostPerUnit = aiDetails.basePrice;
+          basePrice = aiDetails.basePrice;
+        }
+
+        if (aiDetails.nutritionPerUnit) {
+          nutritionPerUnit = aiDetails.nutritionPerUnit;
+          nutritionUnit = aiDetails.nutritionUnit;
+          nutritionBasis = aiDetails.nutritionBasis;
+        }
+
+        // If unit is missing, try to infer from AI (though AI returns nutritionUnit, which might be 'g' or 'piece')
+        // We generally want 'kg', 'l', 'piece', etc. for the item unit.
+        // For now, let's leave 'unit' as is unless it's completely empty and AI says 'piece'
+        if (!unit && aiDetails.nutritionUnit === 'piece') {
+          unit = 'piece';
+        }
+      }
+    } catch (error) {
+      console.warn('Failed to enrich food item with AI:', error);
+      // Continue without AI data
     }
 
     const newFoodItem = await prisma.foodItem.create({
@@ -107,6 +144,10 @@ export const createFoodItem = async (req: Request, res: Response) => {
         typicalExpirationDays: typicalExpirationDays ? parseInt(typicalExpirationDays) : null,
         sampleCostPerUnit: sampleCostPerUnit ? parseFloat(sampleCostPerUnit) : null,
         description,
+        nutritionPerUnit: nutritionPerUnit || undefined,
+        nutritionUnit: nutritionUnit || undefined,
+        nutritionBasis: nutritionBasis || undefined,
+        basePrice: basePrice || undefined,
       },
     });
 
@@ -128,7 +169,18 @@ export const createFoodItem = async (req: Request, res: Response) => {
 export const updateFoodItem = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const { name, unit, category, typicalExpirationDays, sampleCostPerUnit, description } = req.body;
+    const {
+      name,
+      unit,
+      category,
+      typicalExpirationDays,
+      sampleCostPerUnit,
+      description,
+      nutritionPerUnit,
+      nutritionUnit,
+      nutritionBasis,
+      basePrice
+    } = req.body;
 
     const existingItem = await prisma.foodItem.findUnique({
       where: { id },
@@ -150,6 +202,10 @@ export const updateFoodItem = async (req: Request, res: Response) => {
         typicalExpirationDays: typicalExpirationDays !== undefined ? parseInt(typicalExpirationDays) : undefined,
         sampleCostPerUnit: sampleCostPerUnit !== undefined ? parseFloat(sampleCostPerUnit) : undefined,
         description,
+        nutritionPerUnit: nutritionPerUnit ?? undefined,
+        nutritionUnit: nutritionUnit ?? undefined,
+        nutritionBasis: nutritionBasis !== undefined ? parseFloat(nutritionBasis) : undefined,
+        basePrice: basePrice !== undefined ? parseFloat(basePrice) : undefined,
       },
     });
 

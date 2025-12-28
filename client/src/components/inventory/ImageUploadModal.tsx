@@ -2,7 +2,6 @@ import { useAuth } from '@clerk/clerk-react';
 import {
   AlertCircle,
   Camera,
-  CheckCircle,
   Loader2,
   Upload,
   X,
@@ -19,11 +18,11 @@ interface ImageUploadModalProps {
 export default function ImageUploadModal({
   inventoryId,
   onClose,
-  onSuccess,
+  onSuccess: _onSuccess,
 }: ImageUploadModalProps) {
   const { getToken } = useAuth();
   const { addJob } = useBackgroundJob();
-  
+
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -101,13 +100,13 @@ export default function ImageUploadModal({
       }
 
       const result = await ocrResponse.json();
-      
+
       if (result.data && result.data.jobId) {
-          // Hand off to background worker
-          addJob(result.data.jobId);
-          onClose(); // Close modal immediately
+        // Hand off to background worker
+        addJob(result.data.jobId);
+        onClose(); // Close modal immediately
       } else {
-          throw new Error('No Job ID returned from server');
+        throw new Error('No Job ID returned from server');
       }
 
     } catch (err: any) {

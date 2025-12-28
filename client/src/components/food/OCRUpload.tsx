@@ -1,5 +1,5 @@
 import { useAuth } from '@clerk/clerk-react';
-import { AlertCircle, CheckCircle, Loader2, Upload, X } from 'lucide-react';
+import { AlertCircle, Loader2, Upload, X } from 'lucide-react';
 import React, { useState } from 'react';
 import { ReviewScanModal } from './ReviewScanModal';
 
@@ -20,7 +20,7 @@ export const OCRUpload: React.FC<OCRUploadProps> = ({
   const [uploading, setUploading] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
+
   // New state for Review Flow
   const [showReview, setShowReview] = useState(false);
   const [scannedItems, setScannedItems] = useState<any[]>([]);
@@ -57,42 +57,42 @@ export const OCRUpload: React.FC<OCRUploadProps> = ({
     let attempts = 0;
 
     const checkStatus = async () => {
-        try {
-            const response = await fetch(`${API_URL}/images/job/${jobId}`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            const data = await response.json();
-            console.log('Poll Response:', data);
+      try {
+        const response = await fetch(`${API_URL}/images/job/${jobId}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const data = await response.json();
+        console.log('Poll Response:', data);
 
-            if (data.status === 'completed') {
-                console.log('✅ Polling Completed. Result:', data.result);
-                if (data.result && data.result.data) {
-                     setProcessing(false);
-                     setScannedItems(data.result.data);
-                     setShowReview(true);
-                     return;
-                } else {
-                     console.error('❌ Missing data in completed result:', data);
-                     // Fallback to empty array to allow modal to open
-                     setProcessing(false);
-                     setScannedItems([]);
-                     setShowReview(true);
-                     return;
-                }
-            } else if (data.status === 'failed') {
-                throw new Error(data.error || 'Job failed');
-            } else {
-                if (attempts < MAX_ATTEMPTS) {
-                    attempts++;
-                    setTimeout(checkStatus, POLL_INTERVAL);
-                } else {
-                    throw new Error('Processing timeout');
-                }
-            }
-        } catch (err: any) {
-            setError(err.message || 'Polling failed');
+        if (data.status === 'completed') {
+          console.log('✅ Polling Completed. Result:', data.result);
+          if (data.result && data.result.data) {
             setProcessing(false);
+            setScannedItems(data.result.data);
+            setShowReview(true);
+            return;
+          } else {
+            console.error('❌ Missing data in completed result:', data);
+            // Fallback to empty array to allow modal to open
+            setProcessing(false);
+            setScannedItems([]);
+            setShowReview(true);
+            return;
+          }
+        } else if (data.status === 'failed') {
+          throw new Error(data.error || 'Job failed');
+        } else {
+          if (attempts < MAX_ATTEMPTS) {
+            attempts++;
+            setTimeout(checkStatus, POLL_INTERVAL);
+          } else {
+            throw new Error('Processing timeout');
+          }
         }
+      } catch (err: any) {
+        setError(err.message || 'Polling failed');
+        setProcessing(false);
+      }
     };
 
     checkStatus();
@@ -132,12 +132,12 @@ export const OCRUpload: React.FC<OCRUploadProps> = ({
       const result = await response.json();
       setUploading(false);
       setProcessing(true); // Start processing UI
-      
+
       // Start polling with the returned Job ID
       if (result.data && result.data.jobId) {
-          pollJobStatus(result.data.jobId, token || '');
+        pollJobStatus(result.data.jobId, token || '');
       } else {
-          throw new Error('No Job ID returned from server');
+        throw new Error('No Job ID returned from server');
       }
 
     } catch (err: any) {
@@ -156,17 +156,17 @@ export const OCRUpload: React.FC<OCRUploadProps> = ({
 
   // If Review Modal is active, show it instead
   if (showReview) {
-      return (
-          <ReviewScanModal 
-              initialItems={scannedItems}
-              inventoryId={inventoryId}
-              onClose={onClose}
-              onSuccess={() => {
-                  onSuccess(); // Refresh parent
-                  onClose(); // Close all
-              }}
-          />
-      );
+    return (
+      <ReviewScanModal
+        initialItems={scannedItems}
+        inventoryId={inventoryId}
+        onClose={onClose}
+        onSuccess={() => {
+          onSuccess(); // Refresh parent
+          onClose(); // Close all
+        }}
+      />
+    );
   }
 
   return (
@@ -263,8 +263,8 @@ export const OCRUpload: React.FC<OCRUploadProps> = ({
             {uploading
               ? 'Uploading...'
               : processing
-              ? 'Processing...'
-              : 'Scan Receipt'}
+                ? 'Processing...'
+                : 'Scan Receipt'}
           </button>
         </div>
       </div>

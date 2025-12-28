@@ -16,3 +16,4 @@ export const auditQueue = new Queue('audit-queue', { connection });
 
 import { QueueEvents } from 'bullmq';
 export const aiQueueEvents = new QueueEvents('ai-queue', { connection });
+export const imageQueueEvents = new QueueEvents('image-queue', { connection });
