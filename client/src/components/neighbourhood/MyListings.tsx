@@ -77,18 +77,12 @@ export default function MyListings() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-3 gap-4">
         <div className="bg-card rounded-lg border border-border p-4 text-center">
           <div className="text-2xl font-bold text-green-600">
             {listings.filter((l: FoodListing) => l.status === ListingStatus.AVAILABLE).length}
           </div>
           <div className="text-sm text-foreground/70">Available</div>
-        </div>
-        <div className="bg-card rounded-lg border border-border p-4 text-center">
-          <div className="text-2xl font-bold text-yellow-600">
-            {listings.filter((l: FoodListing) => l.status === ListingStatus.CLAIMED).length}
-          </div>
-          <div className="text-sm text-foreground/70">Booked</div>
         </div>
         <div className="bg-card rounded-lg border border-border p-4 text-center">
           <div className="text-2xl font-bold text-blue-600">

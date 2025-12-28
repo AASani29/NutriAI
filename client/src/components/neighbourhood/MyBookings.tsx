@@ -5,6 +5,7 @@ import {
 import { useAuth } from "@clerk/clerk-react";
 import ListingCard from './ListingCard';
 import { useListings } from './sharing-service';
+import { ListingStatus } from './types';
 import type { FoodListing } from './types';
 
 export default function MyBookings() {
@@ -33,6 +34,21 @@ export default function MyBookings() {
                 <div>
                     <h2 className="text-2xl font-bold text-foreground">My Bookings</h2>
                     <p className="text-foreground/70">Manage food you have booked or received.</p>
+                </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+                <div className="bg-card rounded-lg border border-border p-4 text-center">
+                    <div className="text-2xl font-bold text-yellow-600">
+                        {bookedListings.filter((l: FoodListing) => l.status === ListingStatus.CLAIMED).length}
+                    </div>
+                    <div className="text-sm text-foreground/70">Booked</div>
+                </div>
+                <div className="bg-card rounded-lg border border-border p-4 text-center">
+                    <div className="text-2xl font-bold text-green-600">
+                        {bookedListings.filter((l: FoodListing) => l.status === ListingStatus.COMPLETED).length}
+                    </div>
+                    <div className="text-sm text-foreground/70">Received</div>
                 </div>
             </div>
 
