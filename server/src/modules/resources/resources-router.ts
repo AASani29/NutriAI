@@ -1,6 +1,7 @@
 import express from "express";
 import { resourcesController } from "./resources-controller";
-    
+import { requireAuth } from "@clerk/express";
+
 const router = express.Router();
 
 
@@ -8,22 +9,20 @@ router.get("/", resourcesController.getAllResources);
 
 router.get("/tags", resourcesController.getAllResourceTags);
 
+router.get("/personalized", requireAuth(), resourcesController.getPersonalizedRecommendations);
+
+// Search endpoints (no auth required)
+router.get("/search/articles", resourcesController.searchExternalArticles);
+router.get("/search/videos", resourcesController.searchExternalVideos);
+
 router.get("/:id", resourcesController.getResourceById);
 
-router.post("/", (req, res) => {
-    // complete implementation
-    res.status(201).json({ message: "Resource created", data: req.body });
-});
+// CRUD operations (auth required)
+router.post("/", requireAuth(), resourcesController.createResource);
 
-router.put("/:id", (req, res) => {
-    // complete implementation
-    res.json({ message: `Resource ${req.params.id} updated`, data: req.body });
-});
+router.put("/:id", requireAuth(), resourcesController.updateResource);
 
-router.delete("/:id", (req, res) => {
-    // complete implementation
-    res.json({ message: `Resource ${req.params.id} deleted` });
-});
+router.delete("/:id", requireAuth(), resourcesController.deleteResource);
 
-    
+
 export { router as resourcesRouter };

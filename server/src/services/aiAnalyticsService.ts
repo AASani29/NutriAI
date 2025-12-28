@@ -471,10 +471,12 @@ class AIAnalyticsService {
           weight: (user.profile as any)?.weight,
           preference: (user.profile as any)?.weightPreference,
           allergies: (user.profile as any)?.allergies,
+          healthConditions: (user.profile as any)?.healthConditions,
           dietaryPreference: user.profile?.dietaryPreference
         },
         inventory: inventory.map(i => ({
           name: i.customName || i.foodItem?.name,
+          category: (i.foodItem as any)?.category || 'Uncategorized',
           quantity: i.quantity,
           unit: i.unit,
           expiry: i.expiryDate
@@ -501,42 +503,39 @@ class AIAnalyticsService {
       generate_price_smart_meal_plan: this.generatePriceSmartMealPlan.bind(this),
     };
 
-    const systemPrompt = `You are an AI assistant for a food waste management app. You help users by:
-        - Analyzing consumption patterns and providing insights
-        - Predicting potential food waste and suggesting prevention
-        - Generating environmental and financial impact analytics
-        - Generating Price-Smart Meal Plans considering market prices in Bangladesh and user inventory
+    const systemPrompt = `You are an AI assistant for NutriAI, a health-focused food waste management app in Bangladesh. You help users by:
+        - Analyzing consumption patterns and providing high-level lifestyle insights.
+        - Predicting food waste with specific prevention strategies.
+        - Generating impact analytics (environmental, financial, health).
+        - Generating Price-Smart Meal Plans that are budget-aware and inventory-optimized.
 
         IMPORTANT: For Price-Smart Meal Plans, follow these rules:
-        1. Consider the user's health metrics and allergies.
-        2. Calculate the required nutrition based on their profile.
-        3. For EACH meal, provide TWO distinct options:
-           - Option 1 (Inventory-Based): Use ingredients from the user's currently available inventory.
-           - Option 2 (Market-Based): Suggest a health-conscious and budget-friendly option.
-        4. Respect the BDT budget strictly for the ENTIRE period.
-        5. For single meals, 1 meal. For one day, 5 meals. For one week, 21 meals.
-        6. Always state if inventory ingredients are insufficient. 
-        7. MANDATORY: For meal plans, you MUST return a structured JSON object as your ONLY response. 
-           CRITICAL: DO NOT include any conversational text, explanations, or markdown code blocks.
-           The response MUST start with '{' and end with '}'. 
-           Any text before or after the JSON will cause the system to fail.
-        8. REQUIRED JSON STRUCTURE:
+        1. HEALTH FIRST: Consider the user's health metrics, dietary preferences, allergies, and health conditions (e.g., Diabetes, Hypertension).
+        2. RECIPE FOCUS: For EACH meal slot, provide TWO distinct options that are actual DISHES or RECIPES, not just raw ingredients.
+           - Option 1 (Inventory-Based): A specific dish (e.g., "Spinach & Egg Bhurji") using available inventory. If multiple dishes are possible, list them (e.g., "Bhurji or Omelette").
+           - Option 2 (Market-Based): A healthy, budget-friendly dish (e.g., "Shakshuka" or "Vegetable Khichuri") requiring market purchases.
+        3. NO GENERIC NAMES: Do NOT use names like "Inventory Version" or "Market Option". Use actual dish names.
+        4. LOCAL CUISINE: Prioritize common Bangladeshi/South Asian recipes (e.g., Bhorta, Curry, Dal, Khichuri, Roti) when ingredients align.
+        5. FALLBACK: Only if no recipe can be logically formed with available ingredients, suggest the raw items themselves.
+        6. BUDGET: Respect the BDT budget strictly for the ENTIRE plan period.
+        7. SCALE: For single meals, 1 meal. For 'one_day', 5 meals (Breakfast, Snack, Lunch, Snack, Dinner). For 'one_week', 21-35 meals.
+        8. MANDATORY JSON RESPONSE: You MUST return ONLY a structured JSON object. No conversational text.
+        9. REQUIRED JSON STRUCTURE:
            {
              "isMealPlan": true,
-             "summary": "Contextual summary",
+             "summary": "Concise rationale for this plan (e.g., Focus on using expiring eggs and cost efficiency)",
              "meals": [
                {
-                 "type": "Breakfast/Lunch/Dinner",
-                 "name": "Meal Name",
+                 "type": "Breakfast/Lunch/Dinner/Snack",
+                 "name": "Catchy Slot Title (e.g., Energizing Protein Morning)",
                  "nutrition": { "calories": 400, "protein": "20g", "carbs": "50g", "fat": "15g" },
-                 "option1": { "name": "Inventory Version", "items": ["item1"], "cost": 0 },
-                 "option2": { "name": "Market Version", "items": ["item2"], "cost": 150 }
+                 "option1": { "name": "Recipe Name from Inventory (e.g., Spinach Omelette)", "items": ["Egg", "Spinach"], "cost": 0 },
+                 "option2": { "name": "Market-Buy Recipe Name (e.g., Veggie Oats)", "items": ["Oats", "Banana"], "cost": 150 }
                }
              ],
              "totalEstimatedCost": 1200
            }
-        9. Avoid ANY preamble like "Sure, here is your plan". Output ONLY the JSON.
-        10. For weekly plans, if the JSON is too long, keep descriptions very short to ensure it fits.
+        10. Avoid any preamble like "Sure, here is your plan". Output ONLY the JSON.
 
         User ID is "${userId}". Always use the tools to get data.`;
 
@@ -901,6 +900,50 @@ class AIAnalyticsService {
     } catch (error: any) {
       console.error('Item details estimation error:', error);
       throw new Error(`Failed to estimate item details: ${error.message}`);
+    }
+  }
+
+  /**
+   * Generate a recipe for a specified dish name and ingredients
+   */
+  async generateRecipe(dishName: string, ingredients: string[]): Promise<any> {
+    try {
+      const prompt = `Generate a detailed recipe for the dish: "${dishName}". 
+        It MUST use these primary ingredients: ${ingredients.join(', ')}.
+        
+        Return ONLY a JSON object with this schema:
+        {
+          "title": "Dish Name",
+          "description": "Short appetizing description",
+          "prepTime": "e.g. 15 mins",
+          "cookTime": "e.g. 20 mins",
+          "ingredients": [
+            { "item": "Name", "amount": "quantity/unit" }
+          ],
+          "instructions": [
+            "Step 1...",
+            "Step 2..."
+          ],
+          "nutritionalKeyFacts": "e.g. High in protein, 450 calories",
+          "chefTips": "A quick tip for better taste"
+        }
+        Do not include any other text or markdown coding blocks. Output ONLY valid JSON.`;
+
+      const completion = await this.groqClient.chat.completions.create({
+        model: 'llama-3.3-70b-versatile',
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0.7,
+        max_tokens: 2048,
+      });
+
+      const responseText = completion.choices[0].message.content || '{}';
+      const cleanJson = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
+      const recipe = JSON.parse(cleanJson);
+
+      return recipe;
+    } catch (error: any) {
+      console.error('Recipe generation error:', error);
+      throw new Error(`Failed to generate recipe: ${error.message}`);
     }
   }
 }

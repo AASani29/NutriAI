@@ -49,8 +49,10 @@
   },
   "dependencies": {
     "@clerk/clerk-sdk-node": "^4.13.23",
+    "@clerk/express": "^1.7.60",
     "@prisma/adapter-pg": "^6.15.0",
     "@prisma/client": "^6.15.0",
+    "axios": "^1.13.2",
     "bullmq": "^5.66.3",
     "cloudinary": "^2.8.0",
     "compression": "^1.8.1",

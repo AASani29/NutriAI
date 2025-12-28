@@ -16,6 +16,7 @@ export interface UpdateUserProfileDTO {
   weight?: number;
   weightPreference?: string;
   allergies?: string;
+  healthConditions?: string;
 }
 
 export interface UserResponse {
@@ -34,6 +35,7 @@ export interface UserResponse {
     weight: number | null;
     weightPreference: string | null;
     allergies: string | null;
+    healthConditions: string | null;
   } | null;
   isNewUser?: boolean;
 }

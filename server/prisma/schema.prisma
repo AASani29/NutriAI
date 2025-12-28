@@ -32,6 +32,7 @@ model User {
   consumptionPatterns ConsumptionPattern[]
   auditLogs           AuditLog[]
   consumptions        ConsumptionLog[]  @relation("UserConsumptionLogs")
+  resourcesCreated    Resource[]        @relation("CreatedResources")
 }
 
 model UserProfile {
@@ -45,6 +46,7 @@ model UserProfile {
   weight            Float?
   weightPreference  String?   // "lose", "gain", "maintain"
   allergies         String?
+  healthConditions  String?   // e.g. "Diabetes", "Hypertension", etc.
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
   isDeleted         Boolean   @default(false)
@@ -174,16 +176,19 @@ model Resource {
   description String?
   url         String?
   type        ResourceType
+  createdById String?
+  isPublic    Boolean   @default(true)
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   isDeleted   Boolean   @default(false)
   deletedAt   DateTime?
   tags        ResourceTagOnResource[]
+  createdBy   User?     @relation("CreatedResources", fields: [createdById], references: [id])
 }
 
 model ResourceTag {
   id         String   @id @default(uuid())
-  tag        String
+  tag        String   @unique
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
   isDeleted  Boolean  @default(false)

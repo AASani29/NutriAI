@@ -152,6 +152,29 @@ export class IntelligentDashboardController {
     }
   }
 
+  // Get recipe for a specific dish and ingredients
+  async getRecipe(req: Request, res: Response) {
+    try {
+      const { dishName, ingredients } = req.body;
+      if (!dishName) {
+        return res.status(400).json({ error: 'Dish name is required' });
+      }
+
+      const recipe = await aiAnalyticsService.generateRecipe(dishName, ingredients);
+
+      res.json({
+        success: true,
+        data: recipe,
+      });
+    } catch (error: any) {
+      console.error('Get recipe error:', error);
+      res.status(500).json({
+        success: false,
+        error: error.message || 'Failed to generate recipe',
+      });
+    }
+  }
+
   // Get AI-powered dashboard insights
   async getDashboardInsights(req: Request, res: Response) {
     try {
@@ -285,12 +308,14 @@ export class IntelligentDashboardController {
         return res.status(401).json({ error: 'Unauthorized' });
       }
 
-      const { budget, timePeriod, preferences } = req.body;
+      const { budget, timePeriod, preferences, notes } = req.body;
 
       let query = `Generate a price-smart meal plan for the period: ${timePeriod || 'one_day'}. `;
       if (budget) query += `The total budget for this entire period is ${budget} BDT. `;
       if (preferences)
         query += `Dietary preferences: ${JSON.stringify(preferences)}. `;
+      if (notes)
+        query += `IMPORTANT USER CONSIDERATION/NOTE: "${notes}". Adapt the meal choices according to this note. `;
       query += `Use my inventory where possible. Return the result in the requested JSON format.`;
 
       const mealPlan = await aiAnalyticsService.generateIntelligentInsights(
