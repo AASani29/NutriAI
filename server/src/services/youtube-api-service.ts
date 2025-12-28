@@ -85,7 +85,7 @@ export class YouTubeAPIService {
                     videoDuration: 'medium', // 4-20 minutes
                     key: this.apiKey,
                 },
-                timeout: 5000,
+                timeout: 3000,
             });
 
             if (!searchResponse.data.items || searchResponse.data.items.length === 0) {
@@ -105,7 +105,7 @@ export class YouTubeAPIService {
                     id: videoIds,
                     key: this.apiKey,
                 },
-                timeout: 5000,
+                timeout: 3000,
             });
 
             // Create a map of video statistics

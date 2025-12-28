@@ -725,6 +725,53 @@ export class IntelligentDashboardController {
       });
     }
   }
+
+
+  // Analyze voice for direct consumption (Transcription)
+  async analyzeVoice(req: Request, res: Response) {
+    try {
+      const userId = req.auth?.userId;
+      if (!userId) {
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
+
+      if (!req.files || !req.files.audio) {
+        return res.status(400).json({ error: 'No audio file provided' });
+      }
+
+      const audioFile = req.files.audio as UploadedFile;
+      const tempFilePath = `/tmp/upload_${Date.now()}_${audioFile.name}`;
+      await audioFile.mv(tempFilePath);
+      console.log('🎤 [Intelligence] Audio uploaded to temp:', tempFilePath);
+
+      // Dynamically import VoiceService to avoid circular deps if any
+      const { voiceService } = await import('../../services/voice-service');
+      const result = await voiceService.transcribeAudio(tempFilePath);
+
+      // Cleanup
+      try {
+        const fs = await import('fs');
+        fs.unlinkSync(tempFilePath);
+      } catch (e) {
+        console.warn('Failed to cleanup temp audio file:', e);
+      }
+
+      res.json({
+        success: true,
+        data: {
+          text: result.text,
+          language: result.language,
+        },
+        message: 'Voice transcribed successfully',
+      });
+    } catch (error: any) {
+      console.error('Voice analysis error:', error);
+      res.status(500).json({
+        success: false,
+        error: error.message || 'Failed to analyze voice',
+      });
+    }
+  }
 }
 
 export const intelligentDashboardController =

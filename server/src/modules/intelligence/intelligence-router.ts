@@ -95,6 +95,13 @@ router.post(
 
 // Analyze image for direct consumption (OCR)
 router.post(
+  '/analyze-voice',
+  fileUploadMiddleware,
+  intelligentDashboardController.analyzeVoice,
+);
+
+// Analyze image for direct consumption (OCR)
+router.post(
   '/analyze-image',
   fileUploadMiddleware,
   intelligentDashboardController.analyzeImage,
