@@ -521,7 +521,7 @@ export default function Dashboard() {
       {dashboardStats.totalItems === 0 && (
         <div className="bg-linear-to-br from-primary/10 to-accent/10 rounded-2xl border border-border p-8">
           <h2 className="text-2xl font-bold text-foreground mb-4">
-            Welcome to NutriTrack! 🌱
+            Welcome to NutriAI! 🌱
           </h2>
           <p className="text-foreground/70 mb-6">
             Start tracking your food consumption and reduce waste. Here are some quick actions to get you started:

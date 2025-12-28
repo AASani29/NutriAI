@@ -82,15 +82,13 @@ export default function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
         <div className="relative">
           <div className="flex items-center justify-between p-4 border-b border-border">
             <div className="flex items-center gap-3 overflow-hidden">
-              <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center flex-shrink-0 shadow-sm">
-                <Leaf className="w-5 h-5 text-primary-foreground" />
-              </div>
+                <img width={50} height={25} className='rounded-xl' src='/gajor.png'/>
               <div
                 className={`font-bold text-lg text-foreground truncate transition-opacity duration-200 ${
                   collapsed ? 'opacity-0 w-0' : 'opacity-100'
                 }`}
               >
-                NutriTrack
+                NutriAI
               </div>
             </div>
             {!collapsed && (

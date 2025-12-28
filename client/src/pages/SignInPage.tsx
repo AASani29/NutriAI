@@ -7,10 +7,8 @@ export default function SignInPage() {
     <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5 flex items-center justify-center p-4">
       <div className="absolute top-6 left-6">
         <Link to="/" className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-            <Leaf className="w-5 h-5 text-primary-foreground" />
-          </div>
-          <span className="font-bold text-lg text-foreground hidden sm:inline">NutriTrack</span>
+          <img src='/gajor.png' width={50} height={25} className='rounded-xl'/>
+          <span className="font-bold text-lg text-foreground hidden sm:inline">NutriAI</span>
         </Link>
       </div>
       

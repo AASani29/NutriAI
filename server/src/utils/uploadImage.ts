@@ -7,7 +7,7 @@ export const uploadToCloudinary = async (file: UploadedFile): Promise<string> =>
     const result = await cloudinary.uploader.upload(
       `data:${file.mimetype};base64,${file.data.toString('base64')}`,
       {
-        folder: 'nutritrack-receipts',
+        folder: 'NutriAI-receipts',
         resource_type: 'image',
         transformation: [
           { width: 1200, height: 1600, crop: 'limit' },
@@ -28,7 +28,7 @@ export const deleteFromCloudinary = async (imageUrl: string): Promise<void> => {
   try {
     const parts = imageUrl.split('/');
     const filename = parts[parts.length - 1];
-    const publicId = `nutritrack-receipts/${filename.split('.')[0]}`;
+    const publicId = `NutriAI-receipts/${filename.split('.')[0]}`;
     
     await cloudinary.uploader.destroy(publicId);
   } catch (error) {

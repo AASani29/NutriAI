@@ -41,11 +41,9 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <Link to="/" className="flex items-center gap-2 group">
-            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-              <Leaf className="w-5 h-5 text-primary-foreground" />
-            </div>
+              <img src='/gajor.png' width={50} height={25} className='rounded-xl'/>
             <span className="font-bold text-lg text-foreground hidden sm:inline">
-              NutriTrack
+              NutriAI
             </span>
           </Link>
 
@@ -54,7 +52,7 @@ export default function Navbar() {
               <a
                 key={link.href}
                 href={link.href}
-                className="text-foreground/80 hover:text-primary transition-smooth text-sm font-medium"
+                className="text-foreground/80 hover:text-primary transition-smooth text-md font-medium"
               >
                 {link.label}
               </a>
