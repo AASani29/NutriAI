@@ -31,6 +31,7 @@ model User {
   aiInsights          AiInsight[]
   consumptionPatterns ConsumptionPattern[]
   auditLogs           AuditLog[]
+  consumptions        ConsumptionLog[]  @relation("UserConsumptionLogs")
 }
 
 model UserProfile {
@@ -158,6 +159,8 @@ model ConsumptionLog {
   foodItem        FoodItem?        @relation("FoodItemConsumptions", fields: [foodItemId], references: [id])
   inventory       Inventory?       @relation("InventoryConsumptions", fields: [inventoryId], references: [id])
   inventoryItem   InventoryItem?   @relation("InventoryItemConsumptions", fields: [inventoryItemId], references: [id])
+  userId          String?
+  user            User?            @relation("UserConsumptionLogs", fields: [userId], references: [id])
 }
 
 enum ResourceType {

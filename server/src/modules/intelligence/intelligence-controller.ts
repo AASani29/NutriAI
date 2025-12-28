@@ -1,8 +1,10 @@
 import { Request, Response } from 'express';
+import { UploadedFile } from 'express-fileupload';
 import { aiAnalyticsService } from '../../services/aiAnalyticsService';
-import { aiQueue, aiQueueEvents } from '../../config/queue';
+import { aiQueue, aiQueueEvents, imageQueue, imageQueueEvents } from '../../config/queue';
 import prisma from '../../config/database';
 import { inventoryService } from '../inventories/inventory-service';
+import { imageService } from '../images/image-service';
 
 export class IntelligentDashboardController {
   // Save a meal plan
@@ -640,6 +642,61 @@ export class IntelligentDashboardController {
       res.status(500).json({
         success: false,
         error: error.message || 'Failed to estimate item details',
+      });
+    }
+  }
+
+  // Analyze image for direct consumption (OCR) - Synchronous-ish
+  async analyzeImage(req: Request, res: Response) {
+    try {
+      const userId = req.auth?.userId;
+      if (!userId) {
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
+
+      if (!req.files || !req.files.image) {
+        return res.status(400).json({ error: 'No image file provided' });
+      }
+
+      const imageFile = req.files.image as UploadedFile;
+
+      // 1. Upload to Cloudinary (Stores as File record but unlinked to inventory)
+      console.log('🖼️ [Intelligence] Uploading image for analysis...');
+      const savedFile = await imageService.uploadImage(imageFile, userId, {});
+
+      console.log('✅ [Intelligence] Image uploaded:', savedFile.url);
+
+      // 2. Queue OCR job
+      const job = await imageQueue.add('process-ocr', {
+        userId,
+        file: { ...savedFile },
+        metadata: {
+          imageUrl: savedFile.url,
+          extractItems: true,
+        },
+        type: 'process-ocr',
+      });
+
+      console.log(`🧠 [Intelligence] Queued OCR job: ${job.id}`);
+
+      // 3. Wait for result (timeout 30s)
+      // Note: We need imageQueueEvents to wait for this specific queue
+      const result = await job.waitUntilFinished(imageQueueEvents, 30000);
+
+      res.json({
+        success: true,
+        data: {
+          items: result.data || [],
+          imageId: savedFile.id,
+          imageUrl: savedFile.url,
+        },
+        message: 'Image analyzed successfully',
+      });
+    } catch (error: any) {
+      console.error('Image analysis error:', error);
+      res.status(500).json({
+        success: false,
+        error: error.message || 'Failed to analyze image',
       });
     }
   }

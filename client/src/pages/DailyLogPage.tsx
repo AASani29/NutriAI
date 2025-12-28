@@ -34,7 +34,7 @@ export default function DailyLogPage() {
   const { useGetConsumptionLogs, useGetInventories } = useInventory();
   const { data: inventories, isLoading: inventoriesLoading, isError: inventoriesError } =
     useGetInventories();
-    
+
   // Memoize the consumption logs query parameters to prevent unnecessary refetches
   const consumptionParams = useMemo(() => ({
     startDate: dateRange.startDate,
@@ -132,7 +132,7 @@ export default function DailyLogPage() {
   const hasActiveFilters = filters.inventoryId || filters.category;
 
   // Optimized date change handlers to prevent unnecessary cache invalidation
-  const handleStartDateChange = useMemo(() => 
+  const handleStartDateChange = useMemo(() =>
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const newDate = new Date(e.target.value);
       newDate.setHours(0, 0, 0, 0); // Start of day
@@ -143,7 +143,7 @@ export default function DailyLogPage() {
     }, []
   );
 
-  const handleEndDateChange = useMemo(() => 
+  const handleEndDateChange = useMemo(() =>
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const newDate = new Date(e.target.value);
       newDate.setHours(23, 59, 59, 999); // End of day
@@ -287,11 +287,10 @@ export default function DailyLogPage() {
         <div className="flex items-center justify-between">
           <button
             onClick={() => setShowFilters(!showFilters)}
-            className={`px-4 py-2 border border-border rounded-lg transition-colors flex items-center gap-2 ${
-              showFilters || hasActiveFilters
+            className={`px-4 py-2 border border-border rounded-lg transition-colors flex items-center gap-2 ${showFilters || hasActiveFilters
                 ? 'bg-primary text-primary-foreground'
                 : 'bg-background text-foreground hover:bg-secondary/10'
-            }`}
+              }`}
           >
             <Filter className="w-4 h-4" />
             Filters
@@ -527,7 +526,7 @@ export default function DailyLogPage() {
                                     </span>
                                     <span className="flex items-center gap-1">
                                       <Package className="w-3 h-3" />
-                                      {log.inventory.name}
+                                      {log.inventory?.name || 'Direct Consumption'}
                                     </span>
                                   </div>
 

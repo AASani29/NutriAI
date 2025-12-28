@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { ensureUserExists, requireAuth } from '../../middleware/auth';
+import { fileUploadMiddleware } from '../../middleware/fileUpload';
 import { intelligentDashboardController } from './intelligence-controller';
 
 const router = Router();
@@ -78,6 +79,13 @@ router.post('/estimate-price', intelligentDashboardController.estimatePrice);
 router.post(
   '/estimate-details',
   intelligentDashboardController.estimateItemDetails,
+);
+
+// Analyze image for direct consumption (OCR)
+router.post(
+  '/analyze-image',
+  fileUploadMiddleware,
+  intelligentDashboardController.analyzeImage,
 );
 
 export { router as intelligenceRouter };

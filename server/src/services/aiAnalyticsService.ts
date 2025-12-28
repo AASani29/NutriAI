@@ -126,11 +126,10 @@ class AIAnalyticsService {
 
       const consumptionLogs = await prisma.consumptionLog.findMany({
         where: {
-          inventory: {
-            createdBy: {
-              clerkId: data.userId,
-            },
-          },
+          OR: [
+            { inventory: { createdBy: { clerkId: data.userId } } },
+            { userId: user.id },
+          ],
           consumedAt: {
             gte: startDate,
           },
@@ -141,6 +140,7 @@ class AIAnalyticsService {
               foodItem: true,
             },
           },
+          foodItem: true,
         },
         orderBy: {
           consumedAt: 'desc',
@@ -152,9 +152,10 @@ class AIAnalyticsService {
       const timePatterns: Record<string, number> = {};
 
       consumptionLogs.forEach(log => {
-        const category = log.inventoryItem?.foodItem?.category || 'Unknown';
+        const l = log as any;
+        const category = l.inventoryItem?.foodItem?.category || l.foodItem?.category || 'Unknown';
         categoryBreakdown[category] =
-          (categoryBreakdown[category] || 0) + (log.quantity || 1);
+          (categoryBreakdown[category] || 0) + (l.quantity || 1);
       });
 
       consumptionLogs.forEach(log => {
@@ -321,16 +322,16 @@ class AIAnalyticsService {
 
       const consumptionLogs = await prisma.consumptionLog.findMany({
         where: {
-          inventory: {
-            createdBy: {
-              clerkId: data.userId,
-            },
-          },
-        },
+          OR: [
+            { inventory: { createdBy: { clerkId: data.userId } } },
+            { userId: user.id },
+          ],
+        } as any,
         include: {
           inventoryItem: {
             include: { foodItem: true },
           },
+          foodItem: true,
         },
       });
 
@@ -348,7 +349,10 @@ class AIAnalyticsService {
       const moneySaved = estimatedWastePrevented * 3;
 
       const uniqueCategories = new Set(
-        recentLogs.map(log => log.inventoryItem?.foodItem?.category),
+        recentLogs.map(log => {
+          const l = log as any;
+          return l.inventoryItem?.foodItem?.category || l.foodItem?.category;
+        }),
       ).size;
       const diversityScore = Math.min(
         Math.round((uniqueCategories / 10) * 100),
@@ -855,6 +859,7 @@ class AIAnalyticsService {
               "nutritionUnit": string, // 'g', 'ml', 'piece'
               "nutritionBasis": number, // 100 or 1
               "basePrice": number, // Price in BDT for the basis amount
+              "typicalExpirationDays": number, // Estimated shelf life in days (e.g. 7 for milk, 365 for rice)
               "category": string // One of: "Vegetables", "Fruits", "Meat", "Dairy", "Grains", "Snacks", "Beverages", "Spices", "Other"
             }
             Do not include any explanation or markdown formatting.`,

@@ -89,9 +89,9 @@ const SystemHealth: React.FC = () => {
   }
 
   const queueData = [
-    { name: 'Image', ...metrics.queues.image },
-    { name: 'AI', ...metrics.queues.ai },
-    { name: 'Audit', ...metrics.queues.audit },
+    { ...metrics.queues.image, name: 'Image' },
+    { ...metrics.queues.ai, name: 'AI' },
+    { ...metrics.queues.audit, name: 'Audit' },
   ];
 
   return (
@@ -156,7 +156,7 @@ const SystemHealth: React.FC = () => {
               {queueData.reduce((acc, q) => acc + q.completed + q.failed + q.waiting + q.active, 0)}
             </p>
             <p className="text-xs text-emerald-600 uppercase font-bold">
-               {queueData.reduce((acc, q) => acc + q.active, 0) > 0 ? 'Processing...' : 'Idle'}
+              {queueData.reduce((acc, q) => acc + q.active, 0) > 0 ? 'Processing...' : 'Idle'}
             </p>
           </div>
         </div>
@@ -211,20 +211,20 @@ const SystemHealth: React.FC = () => {
           </div>
         </div>
       </div>
-       
-        {/* Failed Jobs Alert Area */}
-       {queueData.some(q => q.failed > 0) && (
+
+      {/* Failed Jobs Alert Area */}
+      {queueData.some(q => q.failed > 0) && (
         <div className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-start gap-3">
-             <AlertTriangle className="w-5 h-5 text-red-600 mt-0.5" />
-             <div>
-                 <h4 className="font-semibold text-red-900">Failed Jobs Detected</h4>
-                 <p className="text-sm text-red-700 mt-1">
-                     There are failed jobs in the queues. 
-                     {queueData.filter(q => q.failed > 0).map(q => ` ${q.name}: ${q.failed}`).join(',')}
-                 </p>
-             </div>
+          <AlertTriangle className="w-5 h-5 text-red-600 mt-0.5" />
+          <div>
+            <h4 className="font-semibold text-red-900">Failed Jobs Detected</h4>
+            <p className="text-sm text-red-700 mt-1">
+              There are failed jobs in the queues.
+              {queueData.filter(q => q.failed > 0).map(q => ` ${q.name}: ${q.failed}`).join(',')}
+            </p>
+          </div>
         </div>
-       )}
+      )}
     </div>
   );
 };
