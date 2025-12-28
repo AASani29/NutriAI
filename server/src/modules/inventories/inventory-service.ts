@@ -84,6 +84,10 @@ export class InventoryService {
                 unit: true,
                 typicalExpirationDays: true,
                 description: true,
+                nutritionPerUnit: true,
+                nutritionUnit: true,
+                nutritionBasis: true,
+                basePrice: true,
               },
             },
           },
@@ -235,7 +239,6 @@ export class InventoryService {
       });
 
       // 2. If NO private item found, and we have custom data (nutrition/price), FORCE CREATE NEW PRIVATE ITEM
-      // This ensures we don't accidentally link to a generic item when the user has specific OCR data.
       if (!matchingFoodItem) {
         try {
           let itemData = {
@@ -250,7 +253,7 @@ export class InventoryService {
           if (!itemData.basePrice) {
             console.log(`🤖 Estimating details for new item: ${data.customName}`);
             try {
-              const estimated = await aiAnalyticsService.estimateItemDetails(data.customName!);
+              const estimated = await aiAnalyticsService.estimateItemDetails(data.customName);
               if (estimated && estimated.basePrice) {
                 console.log(`✅ AI Estimated price: ${estimated.basePrice}`);
                 itemData.basePrice = estimated.basePrice;
@@ -290,7 +293,6 @@ export class InventoryService {
         }
       }
 
-
       // 3. If STILL no item found (meaning no private existing, and no custom data provided),
       // Try to find a GLOBAL food item (createdById: null)
       if (!matchingFoodItem) {
@@ -312,8 +314,9 @@ export class InventoryService {
         finalCustomName = matchingFoodItem.name;
         finalUnit = data.unit || matchingFoodItem.unit || undefined;
       }
-      // If still no match, finalFoodItemId remains null -> it's a raw custom inventory item.
     }
+    // If still no match, finalFoodItemId remains null -> it's a raw custom inventory item.
+
 
     return await prisma.inventoryItem.create({
       data: {
@@ -470,6 +473,10 @@ export class InventoryService {
             name: true,
             category: true,
             typicalExpirationDays: true,
+            nutritionPerUnit: true,
+            nutritionUnit: true,
+            nutritionBasis: true,
+            basePrice: true,
           },
         },
       },
@@ -510,6 +517,7 @@ export class InventoryService {
             inventoryId: data.inventoryId,
             isDeleted: false,
           },
+          include: { foodItem: true },
         });
 
         if (!inventoryItem) throw new Error('Inventory item not found');
@@ -527,92 +535,157 @@ export class InventoryService {
       sodium: data.sodium,
     };
 
+
     let calculatedCost: number | null = null;
 
-    if (data.foodItemId) {
+    // Resolve Food Item ID (prefer explicit, fallback to inventory item's link)
+    let effectiveFoodItemId = data.foodItemId || inventoryItem?.foodItemId;
+
+    // 0. Auto-resolve or Auto-create FoodItem for Direct Consumption (if missing)
+    if (!effectiveFoodItemId && data.itemName) {
+      try {
+        // Try to find existing
+        let foodItem = await prisma.foodItem.findFirst({
+          where: {
+            name: { equals: data.itemName.trim(), mode: 'insensitive' },
+            isDeleted: false,
+          },
+        });
+
+        // If not found, JIT create with AI estimation
+        if (!foodItem) {
+          console.log(
+            `🤖 JIT Creating FoodItem for direct consumption: ${data.itemName}`,
+          );
+          const estimated = await aiAnalyticsService.estimateItemDetails(
+            data.itemName,
+          );
+
+          if (estimated) {
+            foodItem = await prisma.foodItem.create({
+              data: {
+                name: estimated.name || data.itemName, // Use estimated name if better, or fallback
+                category: estimated.category || 'other',
+                unit: estimated.nutritionUnit || data.unit || 'pcs',
+                basePrice: estimated.basePrice,
+                nutritionPerUnit: estimated.nutritionPerUnit,
+                nutritionBasis: estimated.nutritionBasis,
+                nutritionUnit: estimated.nutritionUnit,
+                typicalExpirationDays: estimated.typicalExpirationDays || 7,
+              } as any,
+            });
+            console.log(`✅ JIT Created FoodItem: ${foodItem.id}`);
+          }
+        }
+
+        if (foodItem) {
+          effectiveFoodItemId = foodItem.id;
+        }
+      } catch (e) {
+        console.warn('Failed to auto-resolve/create FoodItem for consumption:', e);
+      }
+    }
+
+    if (effectiveFoodItemId) {
       const foodItem = await prisma.foodItem.findFirst({
-        where: { id: data.foodItemId, isDeleted: false },
+        where: { id: effectiveFoodItemId, isDeleted: false },
       });
 
-      if (!foodItem) throw new Error('Food item not found');
+      if (!foodItem) {
+        if (data.foodItemId) throw new Error('Food item not found');
+        // If inferred from inventory but missing in DB, we skip cost calc logic
+      } else {
+        // 1. If FoodItem has base nutrition, CALCULATE
+        const foodItemAny = foodItem as any;
+        if (foodItemAny.nutritionPerUnit && foodItemAny.nutritionBasis) {
+          const base = foodItemAny.nutritionPerUnit;
+          // Normalize basis if needed (simple ratio for now)
+          // If cost basis and consumption unit mismatch, this simple ratio might be off, 
+          // but assuming compatible units for MVP.
+          const ratio = data.quantity / (foodItemAny.nutritionBasis || 1);
 
-      // 1. If FoodItem has base nutrition, CALCULATE
-      const foodItemAny = foodItem as any;
-      if (foodItemAny.nutritionPerUnit && foodItemAny.nutritionBasis) {
-        const base = foodItemAny.nutritionPerUnit;
-        const basis = foodItemAny.nutritionBasis; // e.g. 100 (g)
-        const ratio = data.quantity / basis; // e.g. 200g / 100g = 2
-
-        logNutrients = {
-          calories: (base.calories || 0) * ratio,
-          protein: (base.protein || 0) * ratio,
-          carbohydrates: (base.carbohydrates || 0) * ratio,
-          fat: (base.fat || 0) * ratio,
-          fiber: (base.fiber || 0) * ratio,
-          sugar: (base.sugar || 0) * ratio,
-          sodium: (base.sodium || 0) * ratio,
-        };
-      }
-
-      // --- COST CALCULATION START ---
-      // If we have basePrice, calculate cost
-      if (foodItemAny.basePrice && foodItemAny.nutritionBasis) {
-        calculatedCost = (foodItemAny.basePrice / foodItemAny.nutritionBasis) * data.quantity;
-      }
-      // If NO basePrice, try to predict it now (JIT Prediction)
-      else if (data.itemName) {
-        try {
-          console.log(`🤖 JIT Price Estimating for: ${data.itemName}`);
-          const estimated = await aiAnalyticsService.estimateItemDetails(data.itemName);
-          if (estimated && estimated.basePrice && estimated.nutritionBasis) {
-            calculatedCost = (estimated.basePrice / estimated.nutritionBasis) * data.quantity;
-            console.log(`✅ JIT Estimated Cost: ${calculatedCost}`);
-
-            // Update FoodItem so we don't pay for this again
-            await prisma.foodItem.update({
-              where: { id: foodItem.id },
-              data: {
-                basePrice: estimated.basePrice,
-                nutritionBasis: estimated.nutritionBasis, // Ensure basis matches price
-                nutritionUnit: estimated.nutritionUnit,
-                category: estimated.category || foodItem.category
-              } as any
-            });
-          }
-        } catch (e) {
-          console.warn('Failed to JIT estimate price:', e);
+          logNutrients = {
+            calories: (base.calories || 0) * ratio,
+            protein: (base.protein || 0) * ratio,
+            carbohydrates: (base.carbohydrates || 0) * ratio,
+            fat: (base.fat || 0) * ratio,
+            fiber: (base.fiber || 0) * ratio,
+            sugar: (base.sugar || 0) * ratio,
+            sodium: (base.sodium || 0) * ratio,
+          };
         }
-      }
-      // --- COST CALCULATION END ---
 
-      // 2. If FoodItem has NO base nutrition but we have incoming AI data, CACHE IT
-      if (!foodItemAny.nutritionPerUnit && data.calories !== undefined) {
-        // Assume incoming data is for the consumed quantity.
-        // We'll standardize to 100 units as a convention if unit is 'g'/'ml', or 1 unit otherwise.
-        const isStandardizable = ['g', 'ml', 'gram', 'grams', 'milliliter', 'milliliters'].includes((data.unit || '').toLowerCase());
-        const standardBasis = isStandardizable ? 100 : 1;
+        // --- COST CALCULATION START ---
+        // If we have basePrice, calculate cost
+        if (foodItemAny.basePrice && foodItemAny.nutritionBasis) {
+          const ratio = data.quantity / foodItemAny.nutritionBasis;
+          calculatedCost = foodItemAny.basePrice * ratio;
+        }
+        // If NO basePrice, try to predict it now (JIT Prediction) - OLD LOGIC RETAINED AS FALLBACK
+        else if (data.itemName) {
+          try {
+            console.log(`🤖 JIT Price Estimating for: ${data.itemName}`);
+            const estimated = await aiAnalyticsService.estimateItemDetails(
+              data.itemName,
+            );
+            if (estimated && estimated.basePrice && estimated.nutritionBasis) {
+              const ratio = data.quantity / estimated.nutritionBasis;
+              calculatedCost = estimated.basePrice * ratio;
+              console.log(`✅ JIT Estimated Cost: ${calculatedCost}`);
 
-        const ratio = standardBasis / (data.quantity || 1);
+              // Update FoodItem so we don't pay for this again
+              await prisma.foodItem.update({
+                where: { id: foodItem.id },
+                data: {
+                  basePrice: estimated.basePrice,
+                  nutritionBasis: estimated.nutritionBasis, // Ensure basis matches price
+                  nutritionUnit: estimated.nutritionUnit,
+                  category: estimated.category || foodItem.category,
+                } as any,
+              });
+            }
+          } catch (e) {
+            console.warn('Failed to JIT estimate price:', e);
+          }
+        }
+        // --- COST CALCULATION END ---
 
-        const baseNutrition = {
-          calories: (data.calories || 0) * ratio,
-          protein: (data.protein || 0) * ratio,
-          carbohydrates: (data.carbohydrates || 0) * ratio,
-          fat: (data.fat || 0) * ratio,
-          fiber: (data.fiber || 0) * ratio,
-          sugar: (data.sugar || 0) * ratio,
-          sodium: (data.sodium || 0) * ratio,
-        };
+        // 2. If FoodItem has NO base nutrition but we have incoming AI data, CACHE IT
+        if (!foodItemAny.nutritionPerUnit && data.calories !== undefined) {
+          // Assume incoming data is for the consumed quantity.
+          // We'll standardize to 100 units as a convention if unit is 'g'/'ml', or 1 unit otherwise.
+          const isStandardizable = [
+            'g',
+            'ml',
+            'gram',
+            'grams',
+            'milliliter',
+            'milliliters',
+          ].includes((data.unit || '').toLowerCase());
+          const standardBasis = isStandardizable ? 100 : 1;
 
-        // Update FoodItem (Source of Truth)
-        await prisma.foodItem.update({
-          where: { id: foodItem.id },
-          data: {
-            nutritionPerUnit: baseNutrition,
-            nutritionBasis: standardBasis,
-            nutritionUnit: data.unit,
-          } as any,
-        });
+          const ratio = standardBasis / (data.quantity || 1);
+
+          const baseNutrition = {
+            calories: (data.calories || 0) * ratio,
+            protein: (data.protein || 0) * ratio,
+            carbohydrates: (data.carbohydrates || 0) * ratio,
+            fat: (data.fat || 0) * ratio,
+            fiber: (data.fiber || 0) * ratio,
+            sugar: (data.sugar || 0) * ratio,
+            sodium: (data.sodium || 0) * ratio,
+          };
+
+          // Update FoodItem (Source of Truth)
+          await prisma.foodItem.update({
+            where: { id: foodItem.id },
+            data: {
+              nutritionPerUnit: baseNutrition,
+              nutritionBasis: standardBasis,
+              nutritionUnit: data.unit,
+            } as any,
+          });
+        }
       }
     }
 
@@ -622,7 +695,7 @@ export class InventoryService {
       inventoryItemId: data.inventoryItemId?.startsWith('temp-')
         ? null
         : data.inventoryItemId,
-      foodItemId: data.foodItemId,
+      foodItemId: effectiveFoodItemId, // Use resolved ID
       itemName: data.itemName,
       quantity: data.quantity,
       unit: data.unit,
@@ -633,7 +706,10 @@ export class InventoryService {
     };
 
     const consumptionLog = await prisma.consumptionLog.create({
-      data: consumptionLogData as any,
+      data: {
+        ...consumptionLogData,
+        userId: user.id,
+      } as any,
     });
 
     // IMPORTANT: Invalidate recommendation cache immediately when consumption is logged
@@ -727,10 +803,17 @@ export class InventoryService {
 
       // Initialize whereClause first
       const whereClause: any = {
-        inventory: {
-          createdById: user.id,
-          isDeleted: false,
-        },
+        OR: [
+          {
+            inventory: {
+              createdById: user.id,
+              isDeleted: false,
+            },
+          },
+          {
+            userId: user.id,
+          },
+        ],
         isDeleted: false,
       };
 
@@ -975,19 +1058,22 @@ export class InventoryService {
 
     const consumptionLogs = await prisma.consumptionLog.findMany({
       where: {
-        inventory: {
-          createdById: user.id,
-        },
+        OR: [
+          { inventory: { createdById: user.id } },
+          { userId: user.id },
+        ],
         consumedAt: {
           gte: startDate,
           lte: endDate,
         },
         isDeleted: false,
-      },
+      } as any,
       include: {
         foodItem: {
           select: {
             category: true,
+            basePrice: true,
+            nutritionBasis: true
           },
         },
       },
@@ -1018,8 +1104,9 @@ export class InventoryService {
     const dailyCost: Record<string, { date: string; cost: number }> = {};
 
     for (const log of consumptionLogs) {
-      const category = log.foodItem?.category || 'Uncategorized';
-      const dateKey = log.consumedAt.toISOString().split('T')[0];
+      const l = log as any;
+      const category = l.foodItem?.category || 'Uncategorized';
+      const dateKey = l.consumedAt.toISOString().split('T')[0];
 
       // 1. Category Aggregation
       if (!byCategory[category]) {
@@ -1055,7 +1142,6 @@ export class InventoryService {
         };
       }
       // Cast to any to access potentially missing types if generation hasn't run
-      const l = log as any;
       dailyNutrition[dateKey].calories += l.calories || 0;
       dailyNutrition[dateKey].protein += l.protein || 0;
       dailyNutrition[dateKey].carbohydrates += l.carbohydrates || 0;
@@ -1069,14 +1155,19 @@ export class InventoryService {
         dailyCost[dateKey] = { date: dateKey, cost: 0 };
       }
 
-      const pricePerUnit = log.foodItem && (log.foodItem as any).basePrice ? (log.foodItem as any).basePrice : 0;
-
+      // Use persisted cost if available, otherwise calculate on fly
       let cost = 0;
-      if (pricePerUnit > 0) {
-        const basis = (log.foodItem as any).nutritionBasis || 1;
-        const ratio = log.quantity / basis;
-        cost = pricePerUnit * ratio;
+      if ((log as any).cost !== null && (log as any).cost !== undefined) {
+        cost = (log as any).cost;
+      } else {
+        const pricePerUnit = l.foodItem && l.foodItem.basePrice ? l.foodItem.basePrice : 0;
+        if (pricePerUnit > 0) {
+          const basis = l.foodItem.nutritionBasis || 1;
+          const ratio = l.quantity / basis;
+          cost = pricePerUnit * ratio;
+        }
       }
+
 
       dailyCost[dateKey].cost += cost;
     }

@@ -6,7 +6,7 @@ import { Link } from 'react-router-dom';
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
-  const { isSignedIn, userId } = useAuth();
+  const { isSignedIn } = useAuth();
   const { signOut } = useClerk();
   const userMenuRef = useRef<HTMLDivElement>(null);
 

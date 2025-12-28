@@ -23,6 +23,10 @@ export interface InventoryItem {
     name: string;
     category: string;
     typicalExpirationDays?: number;
+    nutritionPerUnit?: Record<string, number>;
+    nutritionUnit?: string;
+    nutritionBasis?: number;
+    basePrice?: number;
   };
 }
 
@@ -73,8 +77,8 @@ function useAuthApi() {
       const error = await response.json().catch(() => ({}));
       throw new Error(
         error.error ||
-          error.message ||
-          `API request failed: ${response.status}`,
+        error.message ||
+        `API request failed: ${response.status}`,
       );
     }
 
@@ -378,7 +382,7 @@ export function useInventory() {
         inventoryId: filters?.inventoryId || null,
       }
     ];
-    
+
     return useQuery<ConsumptionLog[]>({
       queryKey,
       queryFn: async () => {
@@ -402,8 +406,7 @@ export function useInventory() {
           console.log('Making request to:', url);
           console.log(
             'Full URL with base:',
-            `${
-              import.meta.env.VITE_API_URL || 'http://localhost:3000/api'
+            `${import.meta.env.VITE_API_URL || 'http://localhost:3000/api'
             }${url}`,
           );
 

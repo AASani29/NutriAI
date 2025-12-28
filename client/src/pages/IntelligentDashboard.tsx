@@ -10,10 +10,12 @@ import {
   MessageSquare,
   Target,
   TrendingUp,
+  Plus,
 } from 'lucide-react';
 import React, { useCallback, useEffect, useState } from 'react';
 import MarkdownRenderer from '../components/MarkdownRenderer';
 import AIResponseDisplay from '../components/AIResponseDisplay';
+import DirectConsumption from '../components/DirectConsumption';
 import {
   Area,
   AreaChart,
@@ -287,6 +289,7 @@ const IntelligentDashboard: React.FC = () => {
             <nav className="-mb-px flex space-x-8">
               {[
                 { id: 'overview', label: 'Overview', icon: BarChart3 },
+                { id: 'direct-consumption', label: 'Direct Consume', icon: Plus },
                 { id: 'consumption', label: 'Consumption', icon: TrendingUp },
                 { id: 'waste', label: 'Waste Prevention', icon: AlertTriangle },
                 { id: 'nutrition', label: 'Nutrition', icon: Target },
@@ -301,11 +304,10 @@ const IntelligentDashboard: React.FC = () => {
                     if (tab.id !== 'overview') setQuickActionResponse(null);
                     if (tab.id !== 'nutrition') setNutritionInsights(null);
                   }}
-                  className={`flex items-center gap-2 py-2 px-1 border-b-2 font-medium text-sm ${
-                    activeTab === tab.id
-                      ? 'border-purple-500 text-purple-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  }`}
+                  className={`flex items-center gap-2 py-2 px-1 border-b-2 font-medium text-sm ${activeTab === tab.id
+                    ? 'border-purple-500 text-purple-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    }`}
                 >
                   <tab.icon className="w-4 h-4" />
                   {tab.label}
@@ -369,39 +371,39 @@ const IntelligentDashboard: React.FC = () => {
               </div>
             </div>
 
-             {/* Cost Chart - Overview */}
-             <div className="bg-white p-6 rounded-lg shadow">
-                 <h3 className="font-medium text-gray-900 mb-4">
-                   Spending Trend (Last 7 Days)
-                 </h3>
-                 {insights.consumption?.patterns?.dailyCost &&
-                 insights.consumption.patterns.dailyCost.length > 0 ? (
-                   <div className="h-64 w-full">
-                     <ResponsiveContainer width="100%" height="100%">
-                       <LineChart
-                         data={insights.consumption.patterns.dailyCost}
-                       >
-                         <CartesianGrid strokeDasharray="3 3" />
-                         <XAxis 
-                           dataKey="date" 
-                           tickFormatter={(str) => {
-                               const date = new Date(str);
-                               return `${date.getDate()}/${date.getMonth()+1}`;
-                           }}
-                         />
-                         <YAxis />
-                         <Tooltip formatter={(value) => [`$${value}`, 'Cost']} />
-                         <Legend />
-                         <Line type="monotone" dataKey="cost" stroke="#82ca9d" name="Cost ($)" strokeWidth={2} />
-                       </LineChart>
-                     </ResponsiveContainer>
-                   </div>
-                 ) : (
-                   <div className="h-32 flex items-center justify-center text-gray-500">
-                     <p>Not enough data to show spending trends.</p>
-                   </div>
-                 )}
-             </div>
+            {/* Cost Chart - Overview */}
+            <div className="bg-white p-6 rounded-lg shadow">
+              <h3 className="font-medium text-gray-900 mb-4">
+                Spending Trend (Last 7 Days)
+              </h3>
+              {insights.consumption?.patterns?.dailyCost &&
+                insights.consumption.patterns.dailyCost.length > 0 ? (
+                <div className="h-64 w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart
+                      data={insights.consumption.patterns.dailyCost}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis
+                        dataKey="date"
+                        tickFormatter={(str) => {
+                          const date = new Date(str);
+                          return `${date.getDate()}/${date.getMonth() + 1}`;
+                        }}
+                      />
+                      <YAxis />
+                      <Tooltip formatter={(value) => [`$${value}`, 'Cost']} />
+                      <Legend />
+                      <Line type="monotone" dataKey="cost" stroke="#82ca9d" name="Cost ($)" strokeWidth={2} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              ) : (
+                <div className="h-32 flex items-center justify-center text-gray-500">
+                  <p>Not enough data to show spending trends.</p>
+                </div>
+              )}
+            </div>
 
             {/* Quick Actions */}
             <div className="bg-white rounded-lg shadow">
@@ -459,16 +461,16 @@ const IntelligentDashboard: React.FC = () => {
                     >
                       <div className="flex items-center gap-3 mb-2">
                         {loadingInsight &&
-                        ((action.title === 'Consumption Analysis' &&
-                          loadingInsight === 'consumption-analysis') ||
-                          (action.title === 'Waste Prediction' &&
-                            loadingInsight === 'waste-prediction') ||
-                          (action.title === 'Nutrition Analysis' &&
-                            loadingInsight === 'nutrition-analysis') ||
-                          (action.title === 'Impact Analytics' &&
-                            loadingInsight === 'impact-analytics') ||
-                          (action.title === 'Get Recommendations' &&
-                            loadingInsight === 'recommendations')) ? (
+                          ((action.title === 'Consumption Analysis' &&
+                            loadingInsight === 'consumption-analysis') ||
+                            (action.title === 'Waste Prediction' &&
+                              loadingInsight === 'waste-prediction') ||
+                            (action.title === 'Nutrition Analysis' &&
+                              loadingInsight === 'nutrition-analysis') ||
+                            (action.title === 'Impact Analytics' &&
+                              loadingInsight === 'impact-analytics') ||
+                            (action.title === 'Get Recommendations' &&
+                              loadingInsight === 'recommendations')) ? (
                           <div className="w-5 h-5 border-2 border-purple-600 border-t-transparent rounded-full animate-spin" />
                         ) : (
                           <action.icon className="w-5 h-5 text-purple-600" />
@@ -584,6 +586,13 @@ const IntelligentDashboard: React.FC = () => {
                 </div>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* Direct Consumption Tab */}
+        {activeTab === 'direct-consumption' && (
+          <div className="space-y-6">
+            <DirectConsumption />
           </div>
         )}
 
@@ -713,13 +722,12 @@ const IntelligentDashboard: React.FC = () => {
                               </div>
                             </div>
                             <div
-                              className={`px-2 py-1 rounded text-xs font-medium ${
-                                item.wasteRisk === 'High'
-                                  ? 'bg-red-100 text-red-800'
-                                  : item.wasteRisk === 'Medium'
+                              className={`px-2 py-1 rounded text-xs font-medium ${item.wasteRisk === 'High'
+                                ? 'bg-red-100 text-red-800'
+                                : item.wasteRisk === 'Medium'
                                   ? 'bg-orange-100 text-orange-800'
                                   : 'bg-yellow-100 text-yellow-800'
-                              }`}
+                                }`}
                             >
                               {item.wasteRisk} Risk
                             </div>
@@ -893,11 +901,11 @@ const IntelligentDashboard: React.FC = () => {
                               />
                             </linearGradient>
                           </defs>
-                          <XAxis 
-                            dataKey="date" 
+                          <XAxis
+                            dataKey="date"
                             tickFormatter={(str) => {
-                                const date = new Date(str);
-                                return `${date.getDate()}/${date.getMonth()+1}`;
+                              const date = new Date(str);
+                              return `${date.getDate()}/${date.getMonth() + 1}`;
                             }}
                           />
                           <YAxis />
@@ -918,7 +926,7 @@ const IntelligentDashboard: React.FC = () => {
                   </div>
 
                   {/* Macros Breakdown */}
-                   <div className="bg-white p-6 rounded-lg shadow">
+                  <div className="bg-white p-6 rounded-lg shadow">
                     <h3 className="font-medium text-gray-900 mb-4">
                       Macronutrients Trend
                     </h3>
@@ -928,11 +936,11 @@ const IntelligentDashboard: React.FC = () => {
                           data={insights.consumption.patterns.dailyNutrition}
                         >
                           <CartesianGrid strokeDasharray="3 3" />
-                          <XAxis 
-                            dataKey="date" 
+                          <XAxis
+                            dataKey="date"
                             tickFormatter={(str) => {
-                                const date = new Date(str);
-                                return `${date.getDate()}/${date.getMonth()+1}`;
+                              const date = new Date(str);
+                              return `${date.getDate()}/${date.getMonth() + 1}`;
                             }}
                           />
                           <YAxis />
@@ -947,42 +955,42 @@ const IntelligentDashboard: React.FC = () => {
                   </div>
                 </div>
               )}
-              {(!insights.consumption?.patterns?.dailyNutrition ||
-                insights.consumption.patterns.dailyNutrition.length === 0) && (
-                 <div className="bg-white p-6 rounded-lg shadow mb-6 text-center">
-                    <p className="text-gray-500">Log consumption to see nutrition trends.</p>
-                 </div>
+            {(!insights.consumption?.patterns?.dailyNutrition ||
+              insights.consumption.patterns.dailyNutrition.length === 0) && (
+                <div className="bg-white p-6 rounded-lg shadow mb-6 text-center">
+                  <p className="text-gray-500">Log consumption to see nutrition trends.</p>
+                </div>
               )}
 
-             {/* Cost Chart */}
-             {insights.consumption?.patterns?.dailyCost &&
+            {/* Cost Chart */}
+            {insights.consumption?.patterns?.dailyCost &&
               insights.consumption.patterns.dailyCost.length > 0 && (
                 <div className="bg-white p-6 rounded-lg shadow mb-6">
-                    <h3 className="font-medium text-gray-900 mb-4">
-                      Daily Food Cost
-                    </h3>
-                    <div className="h-80 w-full">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <LineChart
-                          data={insights.consumption.patterns.dailyCost}
-                        >
-                          <CartesianGrid strokeDasharray="3 3" />
-                          <XAxis 
-                            dataKey="date" 
-                            tickFormatter={(str) => {
-                                const date = new Date(str);
-                                return `${date.getDate()}/${date.getMonth()+1}`;
-                            }}
-                          />
-                          <YAxis />
-                          <Tooltip formatter={(value) => [`$${value}`, 'Cost']} />
-                          <Legend />
-                          <Line type="monotone" dataKey="cost" stroke="#82ca9d" name="Cost ($)" strokeWidth={2} />
-                        </LineChart>
-                      </ResponsiveContainer>
-                    </div>
+                  <h3 className="font-medium text-gray-900 mb-4">
+                    Daily Food Cost
+                  </h3>
+                  <div className="h-80 w-full">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart
+                        data={insights.consumption.patterns.dailyCost}
+                      >
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis
+                          dataKey="date"
+                          tickFormatter={(str) => {
+                            const date = new Date(str);
+                            return `${date.getDate()}/${date.getMonth() + 1}`;
+                          }}
+                        />
+                        <YAxis />
+                        <Tooltip formatter={(value) => [`$${value}`, 'Cost']} />
+                        <Legend />
+                        <Line type="monotone" dataKey="cost" stroke="#82ca9d" name="Cost ($)" strokeWidth={2} />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
                 </div>
-             )}
+              )}
 
             {/* Display AI Insights if available */}
             {nutritionInsights && (

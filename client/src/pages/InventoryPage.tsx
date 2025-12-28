@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, Package, Calendar, AlertCircle, Apple, ShoppingCart, Utensils, ArrowRight } from 'lucide-react';
-import { useAuth } from '@clerk/clerk-react';
+import { Plus, Package, Calendar, AlertCircle, Apple, Utensils, ArrowRight } from 'lucide-react';
 import { useInventory } from '../hooks/useInventory';
 
 import { useNavigate } from 'react-router-dom';
