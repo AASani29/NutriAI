@@ -12,7 +12,8 @@
     "start": "node dist/index.js",
     "dev": "nodemon --exec ts-node src/index.ts",
     "build": "tsc",
-    "seed": "ts-node prisma/seed.ts"
+    "seed": "ts-node prisma/seed.ts",
+    "mcp": "ts-node src/mcp-server.ts"
   },
   "prisma": {
     "seed": "ts-node prisma/seed.ts"
@@ -50,6 +51,8 @@
   "dependencies": {
     "@clerk/clerk-sdk-node": "^4.13.23",
     "@clerk/express": "^1.7.60",
+    "@google/generative-ai": "^0.24.1",
+    "@modelcontextprotocol/sdk": "^1.25.1",
     "@prisma/adapter-pg": "^6.15.0",
     "@prisma/client": "^6.15.0",
     "axios": "^1.13.2",
@@ -60,6 +63,7 @@
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
     "express-fileupload": "^1.5.2",
+    "form-data": "^4.0.5",
     "groq-sdk": "^0.36.0",
     "helmet": "^8.1.0",
     "ioredis": "^5.8.2",

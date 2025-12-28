@@ -245,7 +245,7 @@ export default function OnboardingPage() {
                     min="0"
                     step="0.01"
                     className="w-full px-4 py-3 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-foreground"
-                    placeholder="e.g., 5000"
+                    placeholder="e.g., 3000"
                   />
                 </div>
               </div>

@@ -6,6 +6,8 @@ import IntelligentDashboard from './pages/IntelligentDashboard';
 import OnboardingPage from './pages/OnboardingPage';
 import SignInPage from './pages/SignInPage';
 import SignUpPage from './pages/SignUpPage';
+import { ChatBot } from './components/ChatBot';
+
 // Layout
 import Layout from './components/Layout';
 
@@ -31,61 +33,62 @@ export default function App() {
       <ProfileProvider>
         <BackgroundJobProvider>
           <Routes>
-          {/* Public routes */}
-          <Route path="/" element={<Home />} />
-          <Route path="/sign-in" element={<SignInPage />} />
-          <Route path="/sign-up" element={<SignUpPage />} />
-          {/* Protected routes */}
-          <Route
-            path="/onboarding"
-            element={
-              <SignedIn>
-                <OnboardingPage />
-              </SignedIn>
-            }
-          />
-          {/* Protected routes with layout */}
-          <Route
-            path="/"
-            element={
-              <SignedIn>
-                <Layout />
-              </SignedIn>
-            }
-          >
-            <Route path="dashboard" element={<Dashboard />} />
-            <Route path="daily-log" element={<DailyLogPage />} />
-            <Route path="inventory" element={<InventoryPage />} />
+            {/* Public routes */}
+            <Route path="/" element={<Home />} />
+            <Route path="/sign-in" element={<SignInPage />} />
+            <Route path="/sign-up" element={<SignUpPage />} />
+            {/* Protected routes */}
             <Route
-              path="inventory/:inventoryId"
-              element={<InventoryDetailPage />}
+              path="/onboarding"
+              element={
+                <SignedIn>
+                  <OnboardingPage />
+                </SignedIn>
+              }
             />
-            <Route path="resources" element={<ResourcesPage />} />
-            <Route path="neighbourhood" element={<NeighbourhoodPage />} />
-            <Route path="profile" element={<ProfilePage />} />
-            <Route path="profile/edit" element={<EditProfilePage />} />
-            <Route path="intelligence" element={<IntelligentDashboard />} />
-            <Route path="meal-planner" element={<MealPlannerPage />} />
-          </Route>{' '}
-          {/* Admin Dashboard */}
-          <Route
-            path="/admin"
-            element={
-              <SignedIn>
-                <AdminDashboard />
-              </SignedIn>
-            }
-          />
-          {/* Redirect to sign in when signed out */}
-          <Route
-            path="*"
-            element={
-              <SignedOut>
-                <RedirectToSignIn />
-              </SignedOut>
-            }
-          />
-        </Routes>
+            {/* Protected routes with layout */}
+            <Route
+              path="/"
+              element={
+                <SignedIn>
+                  <Layout />
+                  <ChatBot />
+                </SignedIn>
+              }
+            >
+              <Route path="dashboard" element={<Dashboard />} />
+              <Route path="daily-log" element={<DailyLogPage />} />
+              <Route path="inventory" element={<InventoryPage />} />
+              <Route
+                path="inventory/:inventoryId"
+                element={<InventoryDetailPage />}
+              />
+              <Route path="resources" element={<ResourcesPage />} />
+              <Route path="neighbourhood" element={<NeighbourhoodPage />} />
+              <Route path="profile" element={<ProfilePage />} />
+              <Route path="profile/edit" element={<EditProfilePage />} />
+              <Route path="intelligence" element={<IntelligentDashboard />} />
+              <Route path="meal-planner" element={<MealPlannerPage />} />
+            </Route>{' '}
+            {/* Admin Dashboard */}
+            <Route
+              path="/admin"
+              element={
+                <SignedIn>
+                  <AdminDashboard />
+                </SignedIn>
+              }
+            />
+            {/* Redirect to sign in when signed out */}
+            <Route
+              path="*"
+              element={
+                <SignedOut>
+                  <RedirectToSignIn />
+                </SignedOut>
+              }
+            />
+          </Routes>
         </BackgroundJobProvider>
       </ProfileProvider>
     </QueryClientProvider>

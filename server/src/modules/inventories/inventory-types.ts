@@ -24,6 +24,7 @@ export type InventoryItemRequest = {
   unit?: string;
   expiryDate?: Date;
   notes?: string;
+  category?: string;
   // Nutrition Data (for creating FoodItem on the fly)
   nutritionPerUnit?: any;
   nutritionUnit?: string;

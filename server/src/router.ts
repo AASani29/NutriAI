@@ -45,4 +45,9 @@ router.use('/weather', weatherRouter);
 // Admin routes (require admin role)
 router.use('/admin', adminRouter);
 
+import { chatController } from './modules/chat/chat-controller';
+
+// Chatbot route
+router.post('/chat', (req, res) => chatController.handleChat(req, res));
+
 export default router;

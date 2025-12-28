@@ -1,4 +1,5 @@
 import express, { Application, Request, Response, NextFunction } from 'express';
+// Trigger restart 7
 import client from 'prom-client';
 import cors from 'cors';
 import router from './router';
@@ -8,7 +9,7 @@ const app: Application = express();
 // Create registry and collect default metrics FIRST
 const register = new client.Registry();
 
-client.collectDefaultMetrics({ 
+client.collectDefaultMetrics({
   register,
 });
 
@@ -31,13 +32,13 @@ const httpRequestTotal = new client.Counter({
 // Helper function to get system info
 async function getSystemInfo() {
   const metrics = await register.getMetricsAsJSON();
-  
+
   const memoryMetric = metrics.find(m => m.name === 'process_resident_memory_bytes');
   const cpuMetric = metrics.find(m => m.name === 'process_cpu_user_seconds_total');
-  
+
   console.log('Memory:', memoryMetric?.values);
   console.log('CPU:', cpuMetric?.values);
-  
+
   return metrics;
 }
 
@@ -53,25 +54,25 @@ app.use(cors({
 // ✅ Metrics tracking middleware - should come AFTER body parsers
 app.use((req: Request, res: Response, next: NextFunction) => {
   const start = Date.now();
-  
+
   res.on('finish', () => {
     const duration = (Date.now() - start) / 1000;
-    
+
     // ✅ Better route detection
     const route = req.route?.path || req.path || req.originalUrl;
-    
+
     httpRequestDuration.observe(
       { method: req.method, route, status_code: res.statusCode },
       duration
     );
-    
+
     httpRequestTotal.inc({
       method: req.method,
       route,
       status_code: res.statusCode,
     });
   });
-  
+
   next();
 });
 
@@ -91,14 +92,14 @@ async function getQueueMetrics(queue: any, name: string) {
   const completedJobs = await queue.getJobs(['completed'], 0, 4);
   let totalLatency = 0;
   let count = 0;
-  
+
   for (const job of completedJobs) {
     if (job.finishedOn && job.processedOn) {
       totalLatency += (job.finishedOn - job.processedOn);
       count++;
     }
   }
-  
+
   const avgLatency = count > 0 ? Math.round(totalLatency / count) : 0;
 
   return {
@@ -115,7 +116,7 @@ async function getQueueMetrics(queue: any, name: string) {
 app.get('/api/system-health', async (req: Request, res: Response) => {
   try {
     const memoryUsage = process.memoryUsage();
-    
+
     // DB Ping
     const dbStart = Date.now();
     await prisma.$queryRaw`SELECT 1`;

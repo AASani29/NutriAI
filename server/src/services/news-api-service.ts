@@ -63,7 +63,7 @@ export class NewsAPIService {
                     pageSize: limit,
                     apiKey: this.apiKey,
                 },
-                timeout: 5000, // 5 second timeout
+                timeout: 3000, // 5 second timeout
             });
 
             if (response.data.status !== 'ok') {

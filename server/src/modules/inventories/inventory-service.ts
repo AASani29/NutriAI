@@ -246,7 +246,7 @@ export class InventoryService {
             nutritionUnit: data.nutritionUnit || data.unit,
             nutritionBasis: data.nutritionBasis || (['g', 'ml'].includes(data.unit || '') ? 100 : 1),
             basePrice: data.basePrice,
-            category: 'Uncategorized'
+            category: data.category || 'Uncategorized'
           };
 
           // If price is missing, try to estimate it using AI
