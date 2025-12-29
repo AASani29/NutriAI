@@ -844,7 +844,7 @@ class AIAnalyticsService {
     }
   }
 
-  // Estimate price for a food item
+  // Estimate price for a food item with REGION AWARENESS
   async estimatePrice(
     foodName: string,
     quantity: number,
@@ -854,19 +854,44 @@ class AIAnalyticsService {
       nutritionUnit?: string;
       nutritionBasis?: number;
     },
+    coordinates?: { lat: number; lng: number },
+    region?: string
   ): Promise<any> {
     try {
       let systemContent = `You are a grocery pricing expert. Estimate the market price for the given food item.
-            Return ONLY a JSON object with this exact schema (all values are numbers):
+            
+            CRITICAL INSTRUCTION:
+            1. First, estimate the price in the LOCAL CURRENCY of the region detected or provided.
+            2. THEN, CONVERT that price to BDT (Bangladeshi Taka) using current approximate exchange rates.
+            3. The "estimatedPrice" field MUST BE in BDT.
+
+            Return ONLY a JSON object with this exact schema (all values are numbers except strings):
             {
-              "sampleCostPerUnit": number, // Cost for 1 unit of this item (e.g. 1 kg, 1 piece)
-              "estimatedPrice": number // Total price for the requested quantity (in BDT)
+              "sampleCostPerUnit": number, // Cost for 1 unit in BDT
+              "estimatedPrice": number, // Total price for the requested quantity in BDT
+              "currency": "BDT", // Always return BDT here as this is the converted currency
+              "originalPrice": number, // The price in the local currency before conversion
+              "originalCurrency": string, // The local currency code (e.g. USD, EUR, GBP)
+              "regionDetected": string // The region/country used for estimation
             }
             Do not include any explanation or markdown formatting.`;
 
+      if (region) {
+        systemContent += `\n\nLOCATION CONTEXT:
+          The user has explicitly specified the region/country: "${region}".
+          INSTRUCTION: Limit your search to prices in "${region}", then convert to BDT.`;
+      } else if (coordinates) {
+        systemContent += `\n\nLOCATION CONTEXT:
+        The user is located at Latitude: ${coordinates.lat}, Longitude: ${coordinates.lng}.
+        INSTRUCTION: Identify the country/region from these coordinates. Estimate local price, then convert to BDT.`;
+      } else {
+        systemContent += `\n\nLOCATION CONTEXT:
+        No specific location provided. Default to Bangladesh (BDT).`;
+      }
+
       if (baseData?.basePrice && baseData?.nutritionBasis) {
         systemContent += `\n\nKNOWN BASE DATA:
-        - Base Price: ${baseData.basePrice} BDT per ${baseData.nutritionBasis} ${baseData.nutritionUnit}
+        - Base Price: ${baseData.basePrice} per ${baseData.nutritionBasis} ${baseData.nutritionUnit}
         
         INSTRUCTION: Use this KNOWN BASE DATA to calculate the estimated price. Perform the math precisely.`;
       }

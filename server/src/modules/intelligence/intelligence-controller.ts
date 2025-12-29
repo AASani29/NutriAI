@@ -610,6 +610,8 @@ export class IntelligentDashboardController {
         basePrice,
         nutritionUnit,
         nutritionBasis,
+        coordinates,
+        region // Add region
       } = req.body;
       if (!foodName || !quantity || !unit) {
         return res.status(400).json({
@@ -627,6 +629,8 @@ export class IntelligentDashboardController {
         Number(quantity),
         unit,
         baseData,
+        coordinates,
+        region // Pass region
       );
 
       res.json({
