@@ -272,14 +272,41 @@ export class InventoryService {
         },
       });
 
+      // If we found a private item and have a new basePrice, update it to reflect the latest estimation
+      if (matchingFoodItem && data.basePrice) {
+        // Recalculate normalized price for the existing item's basis
+        const basis = matchingFoodItem.nutritionBasis || 1;
+        const newNormalizedPrice = (data.basePrice / data.quantity) * basis;
+
+        // Allow a small tolerance for floating point diffs or significant changes
+        if (Math.abs((matchingFoodItem.basePrice || 0) - newNormalizedPrice) > 0.1) {
+          console.log(`🔄 Updating base price for private item ${matchingFoodItem.name}: ${matchingFoodItem.basePrice} -> ${newNormalizedPrice} (per ${basis})`);
+          matchingFoodItem = await prisma.foodItem.update({
+            where: { id: matchingFoodItem.id },
+            data: { basePrice: newNormalizedPrice }
+          });
+        }
+      }
+
       // 2. If NO private item found, and we have custom data (nutrition/price), FORCE CREATE NEW PRIVATE ITEM
       if (!matchingFoodItem) {
         try {
+          // Determine basis first
+          const nutritionBasis = data.nutritionBasis || (['g', 'ml'].includes(data.unit || '') ? 100 : 1);
+
+          // Calculate normalized basePrice (Price Per Basis) derived from the Total Price provided by frontend
+          // Frontend sends 'basePrice' as the TOTAL estimated price for 'quantity'
+          let normalizedBasePrice: number | undefined = undefined;
+          if (data.basePrice) {
+            normalizedBasePrice = (data.basePrice / data.quantity) * nutritionBasis;
+            console.log(`🧮 Normalized Price: Total ${data.basePrice} for ${data.quantity} -> ${normalizedBasePrice} per ${nutritionBasis}`);
+          }
+
           let itemData = {
             nutritionPerUnit: data.nutritionPerUnit,
             nutritionUnit: data.nutritionUnit || data.unit,
-            nutritionBasis: data.nutritionBasis || (['g', 'ml'].includes(data.unit || '') ? 100 : 1),
-            basePrice: data.basePrice,
+            nutritionBasis: nutritionBasis,
+            basePrice: normalizedBasePrice, // Use normalized price
             category: data.category || 'Uncategorized'
           };
 
