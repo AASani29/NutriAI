@@ -1,6 +1,7 @@
 import Groq from 'groq-sdk';
 import prisma from '../config/database';
 import { inventoryService } from '../modules/inventories/inventory-service';
+import { usdaFoodService } from './usda-food-service';
 import { connection } from '../config/queue';
 
 
@@ -99,6 +100,23 @@ class AIAnalyticsService {
             required: ['userId', 'timePeriod', 'budget']
           }
         }
+      },
+      {
+        type: 'function' as const,
+        function: {
+          name: 'search_food_nutrients',
+          description: 'Searches for accurate nutritional information from the USDA Food API for a specific food item.',
+          parameters: {
+            type: 'object',
+            properties: {
+              foodName: {
+                type: 'string',
+                description: 'The name of the food to search for'
+              }
+            },
+            required: ['foodName']
+          }
+        }
       }
     ];
   }
@@ -146,7 +164,7 @@ class AIAnalyticsService {
         orderBy: {
           consumedAt: 'desc',
         },
-      });
+      } as any);
 
       // Analyze patterns (Legacy Logic for Time of Day & Category)
       const categoryBreakdown: Record<string, number> = {};
@@ -495,12 +513,42 @@ class AIAnalyticsService {
     }
   }
 
+  private async searchFoodNutrients(data: { foodName: string }): Promise<string> {
+    try {
+      console.log(`📡 AI Tool searching USDA for: ${data.foodName}`);
+      const results = await usdaFoodService.searchFood(data.foodName, 3);
+      if (results.length === 0) {
+        return JSON.stringify({
+          success: false,
+          message: `No nutritional information found for "${data.foodName}" in USDA database.`,
+        });
+      }
+
+      return JSON.stringify({
+        success: true,
+        foodName: data.foodName,
+        results: results.map(r => ({
+          name: r.description,
+          nutrients: r.nutrients,
+          basis: '100g'
+        })),
+        disclaimer: 'Nutrient values are per 100g basis.'
+      });
+    } catch (error: any) {
+      return JSON.stringify({
+        success: false,
+        error: error.message,
+      });
+    }
+  }
+
   async generateIntelligentInsights(userId: string, query: string): Promise<any> {
     const tools = {
       analyze_consumption_patterns: this.analyzeConsumptionPatterns.bind(this),
       predict_waste: this.predictWaste.bind(this),
       generate_impact_analytics: this.generateImpactAnalytics.bind(this),
       generate_price_smart_meal_plan: this.generatePriceSmartMealPlan.bind(this),
+      search_food_nutrients: this.searchFoodNutrients.bind(this),
     };
 
     const systemPrompt = `You are an AI assistant for NutriAI, a health-focused food waste management app in Bangladesh. You help users by:

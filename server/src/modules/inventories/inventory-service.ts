@@ -1,5 +1,6 @@
 import prisma from '../../config/database';
 import { aiAnalyticsService } from '../../services/aiAnalyticsService';
+import { usdaFoodService } from '../../services/usda-food-service';
 import {
   ConsumptionLogRequest,
   InventoryItemFilters,
@@ -249,17 +250,35 @@ export class InventoryService {
             category: data.category || 'Uncategorized'
           };
 
-          // If price is missing, try to estimate it using AI
-          if (!itemData.basePrice) {
-            console.log(`🤖 Estimating details for new item: ${data.customName}`);
+          // If nutrition is missing, try USDA Food API first
+          if (!itemData.nutritionPerUnit && data.customName) {
+            console.log(`📡 Searching USDA Food API for: ${data.customName}`);
+            const usdaFoods = await usdaFoodService.searchFood(data.customName, 1);
+            if (usdaFoods.length > 0) {
+              const usdaFood = usdaFoods[0];
+              console.log(`✅ Found USDA data for: ${usdaFood.description}`);
+              itemData.nutritionPerUnit = usdaFood.nutrients;
+              itemData.nutritionUnit = 'g'; // USDA is per 100g
+              itemData.nutritionBasis = 100;
+              // If category is missing, USDA doesn't give a simple category, we might still need AI for category/price
+            }
+          }
+
+          // If price/category is still missing, try to estimate it using AI
+          if (!itemData.basePrice || !itemData.nutritionPerUnit) {
+            console.log(`🤖 Estimating remaining details for new item: ${data.customName}`);
             try {
               const estimated = await aiAnalyticsService.estimateItemDetails(data.customName);
-              if (estimated && estimated.basePrice) {
-                console.log(`✅ AI Estimated price: ${estimated.basePrice}`);
-                itemData.basePrice = estimated.basePrice;
-                if (estimated.category) itemData.category = estimated.category;
+              if (estimated) {
+                if (!itemData.basePrice) {
+                  console.log(`✅ AI Estimated price: ${estimated.basePrice}`);
+                  itemData.basePrice = estimated.basePrice;
+                }
+                if (estimated.category && itemData.category === 'Uncategorized') {
+                  itemData.category = estimated.category;
+                }
 
-                // Also fill nutrition if missing
+                // Also fill nutrition if still missing after USDA check
                 if (!itemData.nutritionPerUnit) {
                   itemData.nutritionPerUnit = estimated.nutritionPerUnit;
                   itemData.nutritionUnit = estimated.nutritionUnit;
@@ -285,7 +304,7 @@ export class InventoryService {
                 createdById: user.id
               }
             });
-            console.log('Creates new PRIVATE FoodItem from OCR:', newFoodItem.name);
+            console.log('Creates new PRIVATE FoodItem from USDA/AI:', newFoodItem.name);
             matchingFoodItem = newFoodItem;
           }
         } catch (err) {
@@ -552,29 +571,43 @@ export class InventoryService {
           },
         });
 
-        // If not found, JIT create with AI estimation
+        // If not found, JIT create with USDA/AI estimation
         if (!foodItem) {
           console.log(
             `🤖 JIT Creating FoodItem for direct consumption: ${data.itemName}`,
           );
+
+          // Try USDA first
+          let nutritionData = null;
+          try {
+            console.log(`📡 Searching USDA Food API for JIT: ${data.itemName}`);
+            const usdaFoods = await usdaFoodService.searchFood(data.itemName, 1);
+            if (usdaFoods.length > 0) {
+              nutritionData = usdaFoods[0];
+              console.log(`✅ Found USDA data for JIT: ${nutritionData.description}`);
+            }
+          } catch (e) {
+            console.warn('USDA search failed for JIT:', e);
+          }
+
           const estimated = await aiAnalyticsService.estimateItemDetails(
             data.itemName,
           );
 
-          if (estimated) {
+          if (estimated || nutritionData) {
             foodItem = await prisma.foodItem.create({
               data: {
-                name: estimated.name || data.itemName, // Use estimated name if better, or fallback
-                category: estimated.category || 'other',
-                unit: estimated.nutritionUnit || data.unit || 'pcs',
-                basePrice: estimated.basePrice,
-                nutritionPerUnit: estimated.nutritionPerUnit,
-                nutritionBasis: estimated.nutritionBasis,
-                nutritionUnit: estimated.nutritionUnit,
-                typicalExpirationDays: estimated.typicalExpirationDays || 7,
+                name: (nutritionData?.description) || estimated?.name || data.itemName,
+                category: estimated?.category || 'other',
+                unit: (nutritionData ? 'g' : (estimated?.nutritionUnit || data.unit || 'pcs')),
+                basePrice: estimated?.basePrice,
+                nutritionPerUnit: nutritionData?.nutrients || estimated?.nutritionPerUnit,
+                nutritionBasis: nutritionData ? 100 : estimated?.nutritionBasis,
+                nutritionUnit: nutritionData ? 'g' : estimated?.nutritionUnit,
+                typicalExpirationDays: estimated?.typicalExpirationDays || 7,
               } as any,
             });
-            console.log(`✅ JIT Created FoodItem: ${foodItem.id}`);
+            console.log(`✅ JIT Created FoodItem (USDA/AI): ${foodItem.id}`);
           }
         }
 
@@ -1067,7 +1100,7 @@ export class InventoryService {
           lte: endDate,
         },
         isDeleted: false,
-      } as any,
+      },
       include: {
         foodItem: {
           select: {
@@ -1077,7 +1110,7 @@ export class InventoryService {
           },
         },
       },
-    });
+    } as any);
 
     // Group by category
     const byCategory: Record<
@@ -1182,6 +1215,13 @@ export class InventoryService {
         wasteReductionPercentage: 15,
       },
     };
+  }
+
+  /**
+   * Search for food items using USDA API
+   */
+  async searchUSDAFood(query: string) {
+    return usdaFoodService.searchFood(query);
   }
 }
 

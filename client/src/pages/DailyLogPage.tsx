@@ -83,11 +83,12 @@ export default function DailyLogPage() {
 
     const totalItems = todayLogs.length;
     const totalQuantity = todayLogs.reduce((sum, log) => sum + log.quantity, 0);
+    const totalCalories = todayLogs.reduce((sum, log) => sum + (log.calories || 0), 0);
     const uniqueCategories = new Set(
       todayLogs.map(log => log.foodItem?.category).filter(Boolean),
     ).size;
 
-    return { totalItems, totalQuantity, uniqueCategories };
+    return { totalItems, totalQuantity, uniqueCategories, totalCalories };
   }, [logsByDate]);
 
   // Get category icon
@@ -267,10 +268,10 @@ export default function DailyLogPage() {
               <Apple className="w-5 h-5 text-orange-600" />
             </div>
             <div>
-              <p className="text-sm text-foreground/70">Food Categories</p>
+              <p className="text-sm text-foreground/70">Calories Today</p>
               <div className="flex items-center gap-2">
                 <p className="text-2xl font-bold text-foreground">
-                  {dailyStats.uniqueCategories}
+                  {Math.round(dailyStats.totalCalories)}
                 </p>
                 {isLoading && (
                   <div className="w-4 h-4 border-2 border-orange-600 border-t-transparent rounded-full animate-spin opacity-70" />
@@ -288,8 +289,8 @@ export default function DailyLogPage() {
           <button
             onClick={() => setShowFilters(!showFilters)}
             className={`px-4 py-2 border border-border rounded-lg transition-colors flex items-center gap-2 ${showFilters || hasActiveFilters
-                ? 'bg-primary text-primary-foreground'
-                : 'bg-background text-foreground hover:bg-secondary/10'
+              ? 'bg-primary text-primary-foreground'
+              : 'bg-background text-foreground hover:bg-secondary/10'
               }`}
           >
             <Filter className="w-4 h-4" />
@@ -529,6 +530,15 @@ export default function DailyLogPage() {
                                       {log.inventory?.name || 'Direct Consumption'}
                                     </span>
                                   </div>
+
+                                  {(log.calories || log.protein || log.carbohydrates || log.fat) && (
+                                    <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2 text-xs text-foreground/60 border-t border-border pt-2">
+                                      {log.calories != null && <span>Calories: <strong>{Math.round(log.calories)}</strong> kcal</span>}
+                                      {log.protein != null && <span>Protein: <strong>{log.protein.toFixed(1)}</strong>g</span>}
+                                      {log.carbohydrates != null && <span>Carbs: <strong>{log.carbohydrates.toFixed(1)}</strong>g</span>}
+                                      {log.fat != null && <span>Fat: <strong>{log.fat.toFixed(1)}</strong>g</span>}
+                                    </div>
+                                  )}
 
                                   {log.notes && (
                                     <p className="text-sm text-foreground/80 mt-2 italic">
