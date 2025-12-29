@@ -86,6 +86,7 @@ export class SharingService {
               select: {
                 id: true,
                 name: true,
+                createdById: true,
               },
             },
           },
@@ -104,6 +105,22 @@ export class SharingService {
       },
     });
 
+    // Reduce inventory quantity
+    const listingQuantity = data.quantity || inventoryItem.quantity;
+    const newQuantity = inventoryItem.quantity - listingQuantity;
+
+    if (newQuantity <= 0) {
+      await prisma.inventoryItem.update({
+        where: { id: inventoryItem.id },
+        data: { quantity: 0, removed: true, updatedAt: new Date() },
+      });
+    } else {
+      await prisma.inventoryItem.update({
+        where: { id: inventoryItem.id },
+        data: { quantity: newQuantity, updatedAt: new Date() },
+      });
+    }
+
     return listing;
   }
 
@@ -113,8 +130,16 @@ export class SharingService {
   async getListings(filters: ListingFilters = {}, userId?: string) {
     const whereClause: any = {
       isDeleted: false,
-      status: filters.status || ListingStatus.AVAILABLE,
     };
+
+    // If a specific status is requested, use it
+    if (filters.status) {
+      whereClause.status = filters.status;
+    } else if (!filters.claimedBy) {
+      // Default to AVAILABLE only if NOT filtering by claimedBy
+      // When looking for bookings, we want to see CLAIMED and COMPLETED items
+      whereClause.status = ListingStatus.AVAILABLE;
+    }
 
     // Exclude own listings if requested
     if (filters.excludeOwnListings && userId) {
@@ -125,6 +150,24 @@ export class SharingService {
         whereClause.listerId = {
           not: user.id,
         };
+      }
+    }
+
+    // Filter by claimedBy (clerkId) to show bookings
+    if (filters.claimedBy) {
+      const claimerUser = await prisma.user.findUnique({
+        where: { clerkId: filters.claimedBy },
+      });
+
+      if (claimerUser) {
+        whereClause.sharingLogs = {
+          some: {
+            claimerId: claimerUser.id,
+          },
+        };
+      } else {
+        // If user not found, return no listings
+        return [];
       }
     }
 
@@ -550,6 +593,11 @@ export class SharingService {
         isDeleted: false,
       },
       include: {
+        inventoryItem: {
+          include: {
+            foodItem: true
+          }
+        },
         sharingLogs: {
           where: {
             status: 'CLAIMED',
@@ -594,6 +642,41 @@ export class SharingService {
         notes: data.notes,
       },
     });
+
+    // Handle "Receive" flow - add to claimer's inventory
+    if (data.targetInventoryId && isClaimer) {
+      // Find the specific claim log for this user
+      const userClaimLog = await prisma.sharingLog.findFirst({
+        where: {
+          listingId,
+          claimerId: user.id,
+          status: 'COMPLETED',
+          isDeleted: false,
+        }
+      });
+
+      if (userClaimLog) {
+        try {
+          // Create new inventory item
+          // We need to fetch the original inventory item to get foodItem details if not present in listing
+          await prisma.inventoryItem.create({
+            data: {
+              inventoryId: data.targetInventoryId,
+              foodItemId: listing.inventoryItem.foodItemId,
+              customName: listing.inventoryItem.customName || listing.title,
+              quantity: userClaimLog.quantityClaimed || listing.quantity,
+              unit: listing.unit || listing.inventoryItem.unit,
+              addedById: user.id,
+              notes: `Received from ${listing.listerId === user.id ? 'Self' : 'Neighbor'} via Sharing`,
+              expiryDate: listing.inventoryItem.expiryDate // Transfer expiry date if available
+            }
+          });
+        } catch (error) {
+          console.error("Failed to add received item to inventory", error);
+          // We don't fail the completion if inventory add fails, but we should probably log it.
+        }
+      }
+    }
 
     return { listing, updatedLogsCount: updatedLogs.count };
   }
@@ -810,11 +893,11 @@ export class SharingService {
 
     // Process top categories manually
     const categoryMap = new Map<string, { count: number; quantityShared: number }>();
-    
+
     completedListingsWithCategories.forEach(listing => {
       const category = listing.inventoryItem.foodItem?.category || 'Uncategorized';
       const quantityShared = listing.sharingLogs.reduce((sum, log) => sum + (log.quantityClaimed || 0), 0);
-      
+
       if (categoryMap.has(category)) {
         const existing = categoryMap.get(category)!;
         categoryMap.set(category, {

@@ -1,5 +1,5 @@
 import { useAuth } from '@clerk/clerk-react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueries, useQueryClient } from '@tanstack/react-query';
 
 export interface Inventory {
   id: string;
@@ -116,7 +116,20 @@ export function useInventory() {
         // Handle response based on whether it's wrapped in 'data' property
         return response.items || [];
       },
-      enabled: !!inventoryId,
+    });
+  };
+
+  // Get items for multiple inventories
+  const useGetMultipleInventoryItems = (inventoryIds: string[]) => {
+    return useQueries({
+      queries: inventoryIds.map(id => ({
+        queryKey: ['inventory-items', id],
+        queryFn: async () => {
+          const response = await fetchWithAuth(`/inventories/${id}/items`);
+          return response.items || [];
+        },
+        enabled: !!id,
+      })),
     });
   };
 
@@ -435,6 +448,7 @@ export function useInventory() {
   return {
     useGetInventories,
     useGetInventoryItems,
+    useGetMultipleInventoryItems,
     useCreateInventory,
     useAddItemToInventory,
     useUpdateInventory,

@@ -36,8 +36,8 @@ export class SharingController {
       }
 
       if (!inventoryItemId || !title) {
-        res.status(400).json({ 
-          error: 'Inventory item ID and title are required' 
+        res.status(400).json({
+          error: 'Inventory item ID and title are required'
         });
         return;
       }
@@ -94,6 +94,9 @@ export class SharingController {
       }
       if (excludeOwnListings === 'true') {
         filters.excludeOwnListings = true;
+      }
+      if (req.query.claimedBy) {
+        filters.claimedBy = req.query.claimedBy as string;
       }
 
       const listings = await this.sharingService.getListings(filters, userId);
@@ -266,7 +269,7 @@ export class SharingController {
     try {
       const userId = req.auth?.userId;
       const { listingId } = req.params;
-      const { notes }: CompleteListingRequest = req.body;
+      const { notes, targetInventoryId }: CompleteListingRequest = req.body;
 
       if (!userId) {
         res.status(401).json({ error: 'User not authenticated' });
@@ -281,7 +284,7 @@ export class SharingController {
       const result = await this.sharingService.completeListing(
         listingId,
         userId,
-        { notes },
+        { notes, targetInventoryId },
       );
 
       res.status(200).json(result);
