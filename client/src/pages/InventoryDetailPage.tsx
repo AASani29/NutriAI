@@ -841,12 +841,19 @@ function AddItemModal({ onClose, onAdd, onScan }: {
 
   /* --- GEOLOCATION & PRICE ESTIMATION --- */
   const { estimatePrice } = useInventory();
-  const [useLocation, setUseLocation] = useState(false);
+  const [locationMode, setLocationMode] = useState<'auto' | 'manual' | 'none'>('none');
   const [coordinates, setCoordinates] = useState<{ lat: number, lng: number } | undefined>(undefined);
+  const [manualRegion, setManualRegion] = useState('');
   const [locating, setLocating] = useState(false);
   const [priceLoading, setPriceLoading] = useState(false);
 
   const handleUseLocation = () => {
+    if (locationMode === 'auto') {
+      setLocationMode('none');
+      setCoordinates(undefined);
+      return;
+    }
+
     setLocating(true);
     if ('geolocation' in navigator) {
       navigator.geolocation.getCurrentPosition(
@@ -855,7 +862,7 @@ function AddItemModal({ onClose, onAdd, onScan }: {
             lat: position.coords.latitude,
             lng: position.coords.longitude
           });
-          setUseLocation(true);
+          setLocationMode('auto');
           setLocating(false);
         },
         (error) => {
@@ -870,17 +877,22 @@ function AddItemModal({ onClose, onAdd, onScan }: {
     }
   };
 
-  // Trigger price estimation when name, quantity, or coordinates change
+  // Trigger price estimation
   useEffect(() => {
     const fetchPrice = async () => {
-      if (form.name && form.quantity > 0 && useLocation && coordinates) {
+      // Check if we have enough info to estimate (valid item + explicit location intent)
+      const hasLocation = (locationMode === 'auto' && coordinates) || (locationMode === 'manual' && manualRegion.length > 2);
+
+      if (form.name && form.quantity > 0 && hasLocation) {
         setPriceLoading(true);
         const result = await estimatePrice({
           foodName: form.name,
           quantity: form.quantity,
           unit: form.unit,
-          coordinates
+          coordinates: locationMode === 'auto' ? coordinates : undefined,
+          region: locationMode === 'manual' ? manualRegion : undefined
         });
+
         if (result && result.estimatedPrice) {
           setForm(prev => ({ ...prev, basePrice: result.estimatedPrice }));
         }
@@ -890,7 +902,7 @@ function AddItemModal({ onClose, onAdd, onScan }: {
 
     const debounce = setTimeout(fetchPrice, 800);
     return () => clearTimeout(debounce);
-  }, [form.name, form.quantity, form.unit, useLocation, coordinates]);
+  }, [form.name, form.quantity, form.unit, locationMode, coordinates, manualRegion]);
 
 
   return (
@@ -978,23 +990,54 @@ function AddItemModal({ onClose, onAdd, onScan }: {
           <div className="p-3 bg-gray-50 rounded-xl border border-gray-100">
             <div className="flex items-center justify-between mb-2">
               <label className="text-sm font-semibold text-gray-700">Price Estimation</label>
-              <button
-                type="button"
-                onClick={handleUseLocation}
-                disabled={locating || useLocation}
-                className={`text-xs px-2 py-1 rounded-lg border flex items-center gap-1 transition-all ${useLocation
-                  ? 'bg-green-100 text-green-700 border-green-200'
-                  : 'bg-white text-gray-600 border-gray-200 hover:bg-purple-50 hover:text-purple-700'
-                  }`}
-              >
-                {locating ? (
-                  <div className="w-3 h-3 border-2 border-purple-600 border-t-transparent rounded-full animate-spin" />
-                ) : (
-                  <div className="w-3 h-3">📍</div>
-                )}
-                {useLocation ? 'Location Active' : 'Use My Location'}
-              </button>
+
+              <div className="flex gap-2">
+                {/* Auto Location Toggle */}
+                <button
+                  type="button"
+                  onClick={handleUseLocation}
+                  disabled={locating || locationMode === 'manual'}
+                  className={`text-xs px-2 py-1 rounded-lg border flex items-center gap-1 transition-all ${locationMode === 'auto'
+                      ? 'bg-green-100 text-green-700 border-green-200'
+                      : 'bg-white text-gray-600 border-gray-200 hover:bg-purple-50 hover:text-purple-700 disabled:opacity-50'
+                    }`}
+                >
+                  {locating ? (
+                    <div className="w-3 h-3 border-2 border-purple-600 border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <div className="w-3 h-3">📍</div>
+                  )}
+                  {locationMode === 'auto' ? 'Active' : 'Auto'}
+                </button>
+
+                {/* Manual Location Toggle */}
+                <button
+                  type="button"
+                  onClick={() => setLocationMode(prev => prev === 'manual' ? 'none' : 'manual')}
+                  disabled={locating || locationMode === 'auto'}
+                  className={`text-xs px-2 py-1 rounded-lg border flex items-center gap-1 transition-all ${locationMode === 'manual'
+                      ? 'bg-blue-100 text-blue-700 border-blue-200'
+                      : 'bg-white text-gray-600 border-gray-200 hover:bg-blue-50 hover:text-blue-700 disabled:opacity-50'
+                    }`}
+                >
+                  <div className="w-3 h-3">📝</div>
+                  {locationMode === 'manual' ? 'Manual' : 'Manual'}
+                </button>
+              </div>
             </div>
+
+            {/* Manual Region Input */}
+            {locationMode === 'manual' && (
+              <div className="mb-2 animate-in slide-in-from-top-2 fade-in duration-200">
+                <input
+                  type="text"
+                  placeholder="Enter Country or City (e.g. London, UK)"
+                  className="w-full border p-2 text-sm rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={manualRegion}
+                  onChange={e => setManualRegion(e.target.value)}
+                />
+              </div>
+            )}
 
             <div className="relative">
               <input
@@ -1012,9 +1055,9 @@ function AddItemModal({ onClose, onAdd, onScan }: {
                 </div>
               )}
             </div>
-            {useLocation && form.basePrice && (
+            {locationMode !== 'none' && form.basePrice && (
               <p className="text-[10px] text-gray-500 mt-1 text-right">
-                *Estimated for your region
+                *Estimated for {locationMode === 'manual' ? (manualRegion || 'your region') : 'your location'}
               </p>
             )}
           </div>

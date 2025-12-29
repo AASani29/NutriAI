@@ -477,6 +477,7 @@ export function useInventory() {
     quantity: number;
     unit: string;
     coordinates?: { lat: number; lng: number };
+    region?: string;
   }) => {
     try {
       const response = await fetchWithAuth('/intelligence/estimate-price', {
