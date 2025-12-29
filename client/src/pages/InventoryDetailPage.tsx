@@ -242,8 +242,7 @@ export default function InventoryDetailPage() {
     const itemName =
       selectedItem.customName || selectedItem.foodItem?.name || 'Unknown Item';
 
-    // Use EXACT nutrition values from inventory - NO calculations, NO conversions
-    // Just pass through the exact values shown in the inventory card
+    // Calculate total nutrition for the consumed quantity
     const nutrition = selectedItem.foodItem?.nutritionPerUnit as
       | {
           calories?: number;
@@ -256,11 +255,28 @@ export default function InventoryDetailPage() {
         }
       | undefined;
 
-    const hasNutrition = nutrition && (
-      nutrition.calories !== undefined ||
-      nutrition.protein !== undefined ||
-      nutrition.carbohydrates !== undefined ||
-      nutrition.fat !== undefined
+    const unit = consumptionData.unit || selectedItem.unit;
+    const unitMatch = unit ? unit.match(/^(\d+)(.*)$/) : null;
+    const multiplier = unitMatch ? parseInt(unitMatch[1]) : 1;
+    const effectiveQuantity = consumptionData.quantity * multiplier;
+    const basis = selectedItem.foodItem?.nutritionBasis || 1;
+    const ratio = effectiveQuantity / basis;
+
+    const totalNutrition = nutrition ? {
+      calories: nutrition.calories ? nutrition.calories * ratio : undefined,
+      protein: nutrition.protein ? nutrition.protein * ratio : undefined,
+      carbohydrates: nutrition.carbohydrates ? nutrition.carbohydrates * ratio : undefined,
+      fat: nutrition.fat ? nutrition.fat * ratio : undefined,
+      fiber: nutrition.fiber ? nutrition.fiber * ratio : undefined,
+      sugar: nutrition.sugar ? nutrition.sugar * ratio : undefined,
+      sodium: nutrition.sodium ? nutrition.sodium * ratio : undefined,
+    } : undefined;
+
+    const hasNutrition = totalNutrition && (
+      totalNutrition.calories !== undefined ||
+      totalNutrition.protein !== undefined ||
+      totalNutrition.carbohydrates !== undefined ||
+      totalNutrition.fat !== undefined
     );
 
     try {
@@ -272,16 +288,8 @@ export default function InventoryDetailPage() {
         quantity: consumptionData.quantity,
         unit: consumptionData.unit || selectedItem.unit,
         notes: consumptionData.notes,
-        // Pass EXACT values from inventory - no calculations!
-        ...(hasNutrition && {
-          calories: nutrition.calories,
-          protein: nutrition.protein,
-          carbohydrates: nutrition.carbohydrates,
-          fat: nutrition.fat,
-          fiber: nutrition.fiber,
-          sugar: nutrition.sugar,
-          sodium: nutrition.sodium,
-        }),
+        // Pass calculated total nutrition for the consumed quantity
+        ...(hasNutrition && totalNutrition),
       } as any);
       setShowConsumptionModal(false);
       setSelectedItem(null);

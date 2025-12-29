@@ -725,12 +725,16 @@ export class InventoryService {
     if (!hasClientNutrition && foodItemAny && foodItemAny.nutritionPerUnit) {
       const base = foodItemAny.nutritionPerUnit;
 
-      // Ratio Calculation:
-      // If stored basis is 100 (e.g. 100g), and we consume 200 (g), ratio should be 2.
-      // If stored basis is 1 (e.g. 1 apple), and we consume 2 (apples), ratio should be 2.
-      const ratio = data.quantity / storedBasis;
+      // Parse unit to get effective quantity
+      const unitMatch = data.unit ? data.unit.match(/^(\d+)(.*)$/) : null;
+      const multiplier = unitMatch ? parseInt(unitMatch[1]) : 1;
+      const effectiveQuantity = data.quantity * multiplier;
 
-      console.log(`📊 calculating nutrition for ${data.itemName}: Stored Basis ${storedBasis}, Consumed ${data.quantity}, Ratio ${ratio}`);
+      // Ratio Calculation:
+      // energy x effective_quantity / basis
+      const ratio = effectiveQuantity / storedBasis;
+
+      console.log(`📊 calculating nutrition for ${data.itemName}: Unit ${data.unit}, Quantity ${data.quantity}, Multiplier ${multiplier}, Effective ${effectiveQuantity}, Basis ${storedBasis}, Ratio ${ratio}`);
 
       logNutrients = {
         calories: (base.calories || 0) * ratio,
