@@ -23,8 +23,8 @@ export const authService = {
  * Authenticated fetch wrapper
  * Makes API calls with authentication headers
  */
-export async function authFetch(url: string, options: RequestInit = {}): Promise<Response> {
-  const token = authService.getAuthToken();
+export async function authFetch(url: string, options: RequestInit = {}, customToken?: string | null): Promise<Response> {
+  const token = customToken || authService.getAuthToken();
 
   const headers = new Headers(options.headers);
   if (token) {

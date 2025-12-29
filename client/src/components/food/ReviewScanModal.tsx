@@ -1,7 +1,6 @@
 
 import React, { useState } from 'react';
 import { Loader2, Check, X, Plus, Edit2, Save } from 'lucide-react';
-import { useAuth } from '@clerk/clerk-react';
 import { useBackgroundJob } from '../../context/BackgroundJobContext';
 
 interface ScannedItem {
@@ -10,6 +9,7 @@ interface ScannedItem {
   unit: string;
   confidence?: number;
   nutrition?: any;
+  usdaName?: string;
   basePrice?: number;
   nutritionUnit?: string;
   nutritionBasis?: number;
@@ -28,7 +28,6 @@ export const ReviewScanModal: React.FC<ReviewScanModalProps> = ({
   onClose,
   onSuccess,
 }) => {
-  const { getToken } = useAuth();
   const [items, setItems] = useState<ScannedItem[]>(initialItems);
   const [loading, setLoading] = useState(false);
 
@@ -48,10 +47,7 @@ export const ReviewScanModal: React.FC<ReviewScanModalProps> = ({
 
   const handleSaveToInventory = async () => {
     // Fire and forget via context
-    const token = await getToken();
-    if (token) {
-      addInventoryTask(items, inventoryId, token);
-    }
+    addInventoryTask(items, inventoryId);
 
     // Close immediately
     setLoading(false);
@@ -142,15 +138,18 @@ export const ReviewScanModal: React.FC<ReviewScanModalProps> = ({
                       {item.basePrice && <span className="text-green-600 font-medium">Est. {item.basePrice} BDT</span>}
                       {item.nutrition && (
                         <div className="group relative">
-                          <span className="text-purple-600 text-xs cursor-help border-b border-purple-200">Has Nutrition Info</span>
+                          <span className="bg-purple-100 text-purple-700 text-[10px] font-bold px-2 py-0.5 rounded-full cursor-help hover:bg-purple-200 transition-colors">
+                            {item.usdaName ? 'USDA Match' : 'Has Nutrition Info'}
+                          </span>
                           {/* Tooltip for Nutrition */}
                           <div className="absolute top-full left-0 mt-2 w-48 bg-white p-3 rounded-xl shadow-xl border border-gray-100 z-10 hidden group-hover:block animate-in fade-in zoom-in-95">
                             <p className="text-xs font-semibold text-gray-500 mb-2">Per {item.nutritionBasis || 100}{item.nutritionUnit || item.unit}</p>
                             <div className="space-y-1 text-xs">
-                              <div className="flex justify-between"><span>Calories:</span> <b>{Math.round(item.nutrition?.calories || 0)}</b></div>
-                              <div className="flex justify-between"><span>Protein:</span> <span>{item.nutrition?.protein}g</span></div>
-                              <div className="flex justify-between"><span>Carbs:</span> <span>{item.nutrition?.carbohydrates}g</span></div>
-                              <div className="flex justify-between"><span>Fat:</span> <span>{item.nutrition?.fat}g</span></div>
+                              {item.usdaName && <div className="mb-2 pb-2 border-b border-gray-100 text-gray-900 italic">"{item.usdaName}"</div>}
+                              <div className="flex justify-between"><span>Calories:</span> <b>{item.nutrition?.calories != null ? `${Math.round(item.nutrition.calories)} kcal` : '-'}</b></div>
+                              <div className="flex justify-between"><span>Protein:</span> <span>{item.nutrition?.protein != null ? `${item.nutrition.protein}g` : '-'}</span></div>
+                              <div className="flex justify-between"><span>Carbs:</span> <span>{item.nutrition?.carbohydrates != null ? `${item.nutrition.carbohydrates}g` : '-'}</span></div>
+                              <div className="flex justify-between"><span>Fat:</span> <span>{item.nutrition?.fat != null ? `${item.nutrition.fat}g` : '-'}</span></div>
                             </div>
                           </div>
                         </div>

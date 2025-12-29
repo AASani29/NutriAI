@@ -12,6 +12,7 @@ router.use(ensureUserExists);
 // Consumption routes - put before parameterized routes
 router.post('/consumption', inventoryController.logConsumption);
 router.get('/consumption', inventoryController.getConsumptionLogs);
+router.get('/search-usda', inventoryController.searchUSDAFood);
 
 // Analytics routes - put before parameterized routes
 router.get(

@@ -8,6 +8,8 @@ export interface Inventory {
   isPrivate?: boolean;
   createdAt: string;
   updatedAt: string;
+  itemCount?: number;
+  expiringCount?: number;
 }
 
 export interface InventoryItem {
@@ -40,6 +42,13 @@ export interface ConsumptionLog {
   unit?: string;
   consumedAt: string;
   notes?: string;
+  calories?: number;
+  protein?: number;
+  carbohydrates?: number;
+  fat?: number;
+  fiber?: number;
+  sugar?: number;
+  sodium?: number;
   foodItem?: {
     name: string;
     category: string;
@@ -162,6 +171,11 @@ export function useInventory() {
         unit?: string;
         expiryDate?: Date;
         notes?: string;
+        category?: string;
+        nutritionPerUnit?: any;
+        nutritionUnit?: string;
+        nutritionBasis?: number;
+        basePrice?: number;
       }) => {
         const response = await fetchWithAuth(
           `/inventories/${inventoryId}/items`,
@@ -445,6 +459,18 @@ export function useInventory() {
     });
   };
 
+  // Search USDA food
+  const searchFood = async (query: string) => {
+    if (!query) return [];
+    try {
+      const response = await fetchWithAuth(`/inventories/search-usda?query=${encodeURIComponent(query)}`);
+      return response.results || [];
+    } catch (error) {
+      console.error('Error searching food:', error);
+      return [];
+    }
+  };
+
   return {
     useGetInventories,
     useGetInventoryItems,
@@ -457,5 +483,6 @@ export function useInventory() {
     useRemoveItemFromInventory,
     useLogConsumption,
     useGetConsumptionLogs,
+    searchFood,
   };
 }

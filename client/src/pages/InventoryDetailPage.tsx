@@ -1,3 +1,4 @@
+import { useAuth } from '@clerk/clerk-react';
 import { useQueryClient } from '@tanstack/react-query';
 import {
   AlertCircle,
@@ -44,6 +45,7 @@ export default function InventoryDetailPage() {
   const [alertsLoading, setAlertsLoading] = useState(false);
 
   // Rest of the states
+  const { getToken } = useAuth();
   const { inventoryId } = useParams<{ inventoryId: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -110,7 +112,8 @@ export default function InventoryDetailPage() {
 
       try {
         setAlertsLoading(true);
-        const alerts = await getAlerts(inventoryId);
+        const token = await getToken();
+        const alerts = await getAlerts(inventoryId, undefined, token);
         setWeatherAlerts(alerts);
       } catch (err) {
         console.error('Error fetching weather alerts:', err);
@@ -120,7 +123,7 @@ export default function InventoryDetailPage() {
     };
 
     fetchAlerts();
-  }, [inventoryId, inventoryItems]);
+  }, [inventoryId, inventoryItems, getToken]);
 
   // Handle image upload success
   const handleImageUploadSuccess = (extractedItems: any[]) => {
@@ -531,10 +534,10 @@ export default function InventoryDetailPage() {
               // Actually, let's just show what we have "per unit" or "per 100g" clearly.
               // To keep it clean, we show the raw values linked to the basis.
 
-              const cal = nutrition.calories ? Math.round(nutrition.calories) : '-';
-              const protein = nutrition.protein ? Math.round(nutrition.protein) : '-';
-              const carbs = nutrition.carbohydrates ? Math.round(nutrition.carbohydrates) : '-';
-              const fat = nutrition.fat ? Math.round(nutrition.fat) : '-';
+              const cal = nutrition.calories != null ? Math.round(nutrition.calories) : '-';
+              const protein = nutrition.protein != null ? Math.round(nutrition.protein) : '-';
+              const carbs = nutrition.carbohydrates != null ? Math.round(nutrition.carbohydrates) : '-';
+              const fat = nutrition.fat != null ? Math.round(nutrition.fat) : '-';
 
               return (
                 <div key={item.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl hover:border-purple-100 transition-all duration-300 group flex flex-col justify-between">
@@ -559,27 +562,26 @@ export default function InventoryDetailPage() {
                       </div>
                     </div>
 
-                    {/* Nutrition Grid */}
                     <div className="grid grid-cols-4 gap-2 mb-5">
                       <div className="bg-orange-50 rounded-xl p-2 text-center">
                         <div className="flex items-center justify-center text-orange-400 mb-1"><Flame className="w-3 h-3" /></div>
-                        <p className="text-sm font-bold text-gray-900">{cal}</p>
-                        <p className="text-[10px] text-gray-500">kcal</p>
+                        <p className="text-xl font-bold text-gray-900">{cal}</p>
+                        <p className="text-sm text-gray-500">kcal</p>
                       </div>
                       <div className="bg-blue-50 rounded-xl p-2 text-center">
                         <div className="flex items-center justify-center text-blue-400 mb-1"><Zap className="w-3 h-3" /></div>
-                        <p className="text-sm font-bold text-gray-900">{protein}g</p>
-                        <p className="text-[10px] text-gray-500">prot</p>
+                        <p className="text-xl font-bold text-gray-900">{protein}{protein !== '-' ? 'g' : ''}</p>
+                        <p className="text-sm text-gray-500">prot</p>
                       </div>
                       <div className="bg-green-50 rounded-xl p-2 text-center">
                         <div className="flex items-center justify-center text-green-400 mb-1"><Apple className="w-3 h-3" /></div>
-                        <p className="text-sm font-bold text-gray-900">{carbs}g</p>
-                        <p className="text-[10px] text-gray-500">carb</p>
+                        <p className="text-xl font-bold text-gray-900">{carbs}{carbs !== '-' ? 'g' : ''}</p>
+                        <p className="text-sm text-gray-500">carb</p>
                       </div>
                       <div className="bg-yellow-50 rounded-xl p-2 text-center">
                         <div className="flex items-center justify-center text-yellow-400 mb-1"><Droplet className="w-3 h-3" /></div>
-                        <p className="text-sm font-bold text-gray-900">{fat}g</p>
-                        <p className="text-[10px] text-gray-500">fat</p>
+                        <p className="text-xl font-bold text-gray-900">{fat}{fat !== '-' ? 'g' : ''}</p>
+                        <p className="text-sm text-gray-500">fat</p>
                       </div>
                     </div>
 
@@ -647,20 +649,6 @@ export default function InventoryDetailPage() {
   );
 }
 
-// Stats Card Component (Internal)
-function StatsCard({ icon: Icon, label, value, colorClass }: any) {
-  return (
-    <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex items-center gap-4">
-      <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${colorClass.bg}`}>
-        <Icon className={`w-6 h-6 ${colorClass.text}`} />
-      </div>
-      <div>
-        <p className="text-sm text-gray-500">{label}</p>
-        <p className="text-xl font-bold text-gray-900">{value}</p>
-      </div>
-    </div>
-  )
-}
 
 // ConsumptionModal Component
 interface ConsumptionModalProps {
@@ -797,11 +785,58 @@ function ConsumptionModal({ item, onClose, onConsume }: ConsumptionModalProps) {
 }
 
 function AddItemModal({ onClose, onAdd, onScan }: { onClose: () => void, onAdd: any, onScan: () => void }) {
-  const [form, setForm] = useState({ name: '', quantity: 1, unit: 'pcs', category: 'General', expiryDate: '' });
+  const { searchFood } = useInventory();
+  const [form, setForm] = useState<{
+    name: string;
+    quantity: number;
+    unit: string;
+    category: string;
+    expiryDate: string;
+    nutritionPerUnit?: any;
+    nutritionBasis?: number;
+    nutritionUnit?: string;
+  }>({ name: '', quantity: 1, unit: 'pcs', category: 'General', expiryDate: '' });
+
+  // Search state
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [showResults, setShowResults] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(async () => {
+      if (searchQuery.length > 2) {
+        setIsSearching(true);
+        const results = await searchFood(searchQuery);
+        setSearchResults(results);
+        setIsSearching(false);
+        setShowResults(true);
+      } else {
+        setSearchResults([]);
+        setShowResults(false);
+      }
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  const handleSelectFood = (item: any) => {
+    setForm(prev => ({
+      ...prev,
+      name: item.description,
+      unit: item.unitName || 'g',
+      nutritionPerUnit: item.nutrients,
+      nutritionBasis: 100, // USDA is per 100g/ml
+      nutritionUnit: item.unitName || 'g'
+    }));
+    setSearchQuery('');
+    setSearchResults([]);
+    setShowResults(false);
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div className="bg-white rounded-2xl p-6 max-w-md w-full">
+      <div className="bg-white rounded-2xl p-6 max-w-md w-full relative">
         <h3 className="text-xl font-bold mb-4">Add Item</h3>
 
         {/* Quick Action for OCR */}
@@ -818,22 +853,56 @@ function AddItemModal({ onClose, onAdd, onScan }: { onClose: () => void, onAdd: 
           <div className="relative flex justify-center text-sm"><span className="px-2 bg-white text-gray-500">Or add manually</span></div>
         </div>
 
+        {/* USDA Search */}
+        <div className="mb-4 relative">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input
+              className="w-full border pl-10 pr-10 py-3 rounded-xl bg-gray-50 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
+              placeholder="Search USDA (e.g. 'Apple', 'Oats')"
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+            />
+            {isSearching && (
+              <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                <div className="w-4 h-4 border-2 border-purple-600 border-t-transparent rounded-full animate-spin" />
+              </div>
+            )}
+          </div>
+
+          {showResults && searchResults.length > 0 && (
+            <div className="absolute z-50 w-full mt-1 bg-white border border-gray-100 rounded-xl shadow-xl max-h-48 overflow-y-auto">
+              {searchResults.map((item, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => handleSelectFood(item)}
+                  className="w-full text-left px-4 py-3 text-sm hover:bg-purple-50 transition-colors border-b border-gray-50 last:border-0"
+                >
+                  <div className="font-bold text-gray-900">{item.description}</div>
+                  <div className="text-[10px] text-gray-500 uppercase tracking-wide">{item.dataType} • {item.unitName}</div>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
         <div className="space-y-3">
           <input
-            className="w-full border p-3 rounded-xl bg-gray-50"
-            placeholder="Item Name"
+            className="w-full border p-3 rounded-xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500"
+            placeholder="Item Name (e.g. Fuji Apple)"
             value={form.name}
             onChange={e => setForm({ ...form, name: e.target.value })}
           />
           <div className="flex gap-2">
             <input
               type="number"
-              className="w-1/2 border p-3 rounded-xl bg-gray-50"
+              className="w-1/2 border p-3 rounded-xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500"
               value={form.quantity}
               onChange={e => setForm({ ...form, quantity: parseFloat(e.target.value) })}
             />
             <input
-              className="w-1/2 border p-3 rounded-xl bg-gray-50"
+              className="w-1/2 border p-3 rounded-xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500"
               placeholder="Unit"
               value={form.unit}
               onChange={e => setForm({ ...form, unit: e.target.value })}
@@ -841,20 +910,28 @@ function AddItemModal({ onClose, onAdd, onScan }: { onClose: () => void, onAdd: 
           </div>
           <input
             type="date"
-            className="w-full border p-3 rounded-xl bg-gray-50"
+            className="w-full border p-3 rounded-xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500"
             value={form.expiryDate}
             onChange={e => setForm({ ...form, expiryDate: e.target.value })}
           />
           <button
             onClick={() => {
-              onAdd({ customName: form.name, quantity: form.quantity, unit: form.unit, expiryDate: form.expiryDate ? new Date(form.expiryDate) : undefined });
+              onAdd({
+                customName: form.name,
+                quantity: form.quantity,
+                unit: form.unit,
+                expiryDate: form.expiryDate ? new Date(form.expiryDate) : undefined,
+                nutritionPerUnit: form.nutritionPerUnit,
+                nutritionBasis: form.nutritionBasis,
+                nutritionUnit: form.nutritionUnit
+              });
               onClose();
             }}
-            className="w-full bg-gray-900 text-white py-3 rounded-xl font-bold hover:bg-gray-800"
+            className="w-full bg-gray-900 text-white py-4 rounded-xl font-bold hover:bg-gray-800 transition-all shadow-lg active:scale-[0.98]"
           >
             Add Item Manually
           </button>
-          <button onClick={onClose} className="w-full text-gray-500 py-2 hover:text-gray-700">Cancel</button>
+          <button onClick={onClose} className="w-full text-gray-500 py-2 hover:text-gray-700 font-medium">Cancel</button>
         </div>
       </div>
     </div>

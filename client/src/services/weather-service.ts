@@ -71,7 +71,8 @@ export async function getCurrentWeather(
  */
 export async function getAlerts(
     inventoryId?: string,
-    location?: string
+    location?: string,
+    token?: string | null
 ): Promise<FoodAlert[]> {
     let url = `${API_URL}/weather/alerts`;
     const params = new URLSearchParams();
@@ -83,7 +84,7 @@ export async function getAlerts(
         url += `?${params.toString()}`;
     }
 
-    const response = await authFetch(url);
+    const response = await authFetch(url, {}, token);
 
     if (!response.ok) {
         throw new Error('Failed to fetch alerts');
@@ -97,7 +98,8 @@ export async function getAlerts(
  * Get alert statistics
  */
 export async function getAlertStatistics(
-    location?: string
+    location?: string,
+    token?: string | null
 ): Promise<AlertStatistics> {
     let url = `${API_URL}/weather/alerts/statistics`;
 
@@ -105,7 +107,7 @@ export async function getAlertStatistics(
         url += `?location=${location}`;
     }
 
-    const response = await authFetch(url);
+    const response = await authFetch(url, {}, token);
 
     if (!response.ok) {
         throw new Error('Failed to fetch alert statistics');
@@ -120,7 +122,8 @@ export async function getAlertStatistics(
  */
 export async function checkItemUrgency(
     itemId: string,
-    location?: string
+    location?: string,
+    token?: string | null
 ): Promise<{ isUrgent: boolean; alert?: FoodAlert }> {
     let url = `${API_URL}/weather/alerts/item/${itemId}`;
 
@@ -128,7 +131,7 @@ export async function checkItemUrgency(
         url += `?location=${location}`;
     }
 
-    const response = await authFetch(url);
+    const response = await authFetch(url, {}, token);
 
     if (!response.ok) {
         throw new Error('Failed to check item urgency');

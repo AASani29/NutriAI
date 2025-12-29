@@ -9,6 +9,7 @@ export interface ExtractedItem {
   quantity?: number;
   unit?: string;
   confidence: number;
+  nutrition?: any;
 }
 
 export interface OCRResult {

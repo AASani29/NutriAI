@@ -264,7 +264,7 @@ export class InventoryController {
         '🖼️ [Controller] Uploading image for inventory:',
         inventoryId,
       );
-      
+
       // We use the base uploadImage which handles Cloudinary + DB record
       const savedFile = await imageService.uploadImage(imageFile, userId, {
         inventoryId,
@@ -450,7 +450,7 @@ export class InventoryController {
         fiber,
         sugar,
         sodium,
-      }: ConsumptionLogRequest & { 
+      }: ConsumptionLogRequest & {
         calories?: number;
         protein?: number;
         carbohydrates?: number;
@@ -635,6 +635,22 @@ export class InventoryController {
       res.status(200).json({ patterns });
     } catch (error) {
       console.error('Error getting consumption patterns:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  };
+  // Search USDA food
+  searchUSDAFood = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { query } = req.query;
+      if (!query || typeof query !== 'string') {
+        res.status(400).json({ error: 'Query parameter is required' });
+        return;
+      }
+
+      const results = await this.inventoryService.searchUSDAFood(query);
+      res.status(200).json({ results });
+    } catch (error) {
+      console.error('Error searching USDA food:', error);
       res.status(500).json({ error: 'Internal server error' });
     }
   };
