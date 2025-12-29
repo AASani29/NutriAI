@@ -11,6 +11,7 @@ import {
   Filter,
   Flame,
   Layers,
+  Minus,
   Package,
   Plus,
   Search,
@@ -779,19 +780,46 @@ function ConsumptionModal({ item, onClose, onConsume }: ConsumptionModalProps) {
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Quantity Consumed</label>
             <div className="flex gap-2">
-              <input
-                type="number"
-                name="quantity"
-                min="0.1"
-                step="0.1"
-                max={maxQuantity}
-                value={form.quantity}
-                onChange={handleChange}
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-              />
+              <div className="flex items-center border border-gray-300 rounded-xl overflow-hidden">
+                <button
+                  type="button"
+                  onClick={() => setForm(prev => ({ ...prev, quantity: Math.max(0, prev.quantity - 1) }))}
+                  disabled={form.quantity <= 0}
+                  className="px-3 py-2 bg-gray-50 hover:bg-gray-100 text-gray-600 font-bold disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  <Minus className="w-4 h-4" />
+                </button>
+                <input
+                  type="number"
+                  name="quantity"
+                  min="0.1"
+                  step="0.1"
+                  max={maxQuantity}
+                  value={form.quantity}
+                  onChange={handleChange}
+                  className="flex-1 px-4 py-2 text-center border-0 focus:ring-0 focus:outline-none"
+                />
+                <button
+                  type="button"
+                  onClick={() => setForm(prev => ({ ...prev, quantity: Math.min(maxQuantity, prev.quantity + 1) }))}
+                  disabled={form.quantity >= maxQuantity}
+                  className="px-3 py-2 bg-gray-50 hover:bg-gray-100 text-gray-600 font-bold disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  <Plus className="w-4 h-4" />
+                </button>
+              </div>
               <div className="px-4 py-2 bg-gray-100 rounded-xl text-gray-600 font-medium flex items-center">
                 {item.unit || 'units'}
               </div>
+            </div>
+            <div className="mt-2">
+              <button
+                type="button"
+                onClick={() => setForm(prev => ({ ...prev, quantity: maxQuantity }))}
+                className="text-sm text-purple-600 hover:text-purple-700 font-medium"
+              >
+                Consume All ({maxQuantity} {item.unit})
+              </button>
             </div>
           </div>
 
