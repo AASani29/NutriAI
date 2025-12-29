@@ -1,10 +1,10 @@
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
-import { 
-  TrendingUp, 
-  TrendingDown, 
-  Clock, 
+import {
+  TrendingUp,
+  TrendingDown,
+  Clock,
   AlertTriangle,
   Package,
   ChefHat,
@@ -17,8 +17,11 @@ import {
 } from 'lucide-react';
 import { useProfile } from '../context/ProfileContext';
 import { useInventory } from '../hooks/useInventory';
-import { getAllResources } from '../services/resources-service';
+import { getPersonalizedRecommendations } from '../services/resources-service';
 import { BASE_URL } from '../services/utils';
+import { useAuth } from '@clerk/clerk-react';
+import type { Article, Video } from '../types/resource-types';
+import { PlayCircle } from 'lucide-react';
 
 // Analytics interfaces
 interface ConsumptionPattern {
@@ -37,19 +40,13 @@ interface ConsumptionPattern {
   };
 }
 
-interface Resource {
-  id: string;
-  title: string;
-  description: string;
-  url: string;
-  type: string;
-  tags: string[];
-}
+
 
 export default function Dashboard() {
   const { profile, loading: profileLoading } = useProfile();
   const { useGetInventories, useGetConsumptionLogs } = useInventory();
-  
+  const { getToken, isSignedIn } = useAuth();
+
   // Date range for analytics (last 30 days) - Stable across renders
   const dateRange = useMemo(() => {
     const endDate = new Date();
@@ -63,23 +60,34 @@ export default function Dashboard() {
 
   // Fetch user data
   const { data: inventories = [], isLoading: inventoriesLoading } = useGetInventories();
-  
+
   // Memoize consumption query params to prevent refetches
   const consumptionParams = useMemo(() => ({
     startDate: dateRange.startDate,
     endDate: dateRange.endDate,
   }), [dateRange.startDate, dateRange.endDate]);
-  
+
   const { data: consumptionLogs = [], isLoading: consumptionLoading } = useGetConsumptionLogs(consumptionParams);
-  const { data: resources = [], isLoading: resourcesLoading } = useQuery({
-    queryKey: ['resources'],
-    queryFn: getAllResources,
+
+  // Fetch personalized AI recommendations
+  const { data: recommendations, isLoading: recommendationsLoading } = useQuery({
+    queryKey: ['personalizedRecommendations'],
+    queryFn: async () => {
+      const token = await getToken();
+      if (!token) throw new Error('Not authenticated');
+      return getPersonalizedRecommendations(token);
+    },
+    staleTime: 10 * 60 * 1000, // Cache for 10 minutes
+    gcTime: 30 * 60 * 1000, // Keep in cache for 30 minutes
+    enabled: isSignedIn && !profileLoading, // Only fetch when signed in and profile loaded
+    retry: 1, // Only retry once on failure
+    refetchOnWindowFocus: false, // Don't refetch when window regains focus
   });
 
   // Fetch analytics data with stable query key
   const { data: consumptionPatterns, isLoading: patternsLoading } = useQuery({
     queryKey: [
-      'consumption-patterns', 
+      'consumption-patterns',
       {
         startDate: dateRange.startDate.toISOString(),
         endDate: dateRange.endDate.toISOString(),
@@ -104,16 +112,16 @@ export default function Dashboard() {
 
   // Get all inventory items for comprehensive stats
   // Memoize inventory IDs to prevent unnecessary refetches
-  const inventoryIds = useMemo(() => 
+  const inventoryIds = useMemo(() =>
     inventories.map(inv => inv.id).sort(), // Sort for consistent ordering
     [inventories]
   );
-  
+
   const { data: allInventoryItems = [], isLoading: itemsLoading } = useQuery({
     queryKey: ['all-inventory-items', inventoryIds],
     queryFn: async () => {
       if (!inventories.length) return [];
-      
+
       const allItems = [];
       for (const inventory of inventories) {
         try {
@@ -139,10 +147,10 @@ export default function Dashboard() {
   const dashboardStats = useMemo(() => {
     const today = new Date();
     const todayStr = today.toDateString();
-    
+
     // Total items tracked
     const totalItems = allInventoryItems.length;
-    
+
     // Items expiring soon (within 3 days)
     const expiringItems = allInventoryItems.filter(item => {
       if (!item.expiryDate) return false;
@@ -152,13 +160,13 @@ export default function Dashboard() {
     }).length;
 
     // Today's consumption
-    const todayConsumption = consumptionLogs.filter(log => 
+    const todayConsumption = consumptionLogs.filter(log =>
       new Date(log.consumedAt).toDateString() === todayStr
     );
 
     // Waste prevented (simplified calculation)
     const wastePreventedKg = consumptionPatterns?.wasteReduction?.wastePrevented || 0;
-    
+
     // Most consumed category
     const categoryStats = consumptionPatterns?.byCategory || [];
     const topCategory = categoryStats.sort((a, b) => b.quantityConsumed - a.quantityConsumed)[0];
@@ -169,7 +177,7 @@ export default function Dashboard() {
       const daysDiff = Math.ceil((today.getTime() - logDate.getTime()) / (1000 * 60 * 60 * 24));
       return daysDiff <= 7;
     });
-    
+
     const previous7Days = consumptionLogs.filter(log => {
       const logDate = new Date(log.consumedAt);
       const daysDiff = Math.ceil((today.getTime() - logDate.getTime()) / (1000 * 60 * 60 * 24));
@@ -190,41 +198,28 @@ export default function Dashboard() {
     };
   }, [allInventoryItems, consumptionLogs, consumptionPatterns, inventories]);
 
-  // Get recommended resources based on user activity
-  const recommendedResources = useMemo(() => {
-    if (!resources.length) return [];
-    
-    const userCategories = new Set(
-      allInventoryItems.map(item => item.foodItem?.category).filter(Boolean)
-    );
-    
-    const expiringItemsCount = dashboardStats.expiringItems;
-    const hasLowActivity = dashboardStats.totalConsumptionLogs < 5;
-    
-    let recommendedTags = ['waste reduction'];
-    
-    if (expiringItemsCount > 0) {
-      recommendedTags.push('storage', 'pantry');
-    }
-    
-    if (hasLowActivity) {
-      recommendedTags.push('meal planning', 'budget');
-    }
-    
-    if (userCategories.has('fruit') || userCategories.has('vegetable')) {
-      recommendedTags.push('seasonal', 'nutrition');
-    }
-    
-    const relevant = resources.filter((resource: Resource) => 
-      resource.tags.some(tag => recommendedTags.includes(tag))
-    );
-    
-    return relevant.slice(0, 3);
-  }, [resources, allInventoryItems, dashboardStats]);
-
   // Check if core data is loading
   const isInitialLoading = profileLoading || inventoriesLoading;
-  const isDataLoading = consumptionLoading || itemsLoading || patternsLoading || resourcesLoading;
+  const isDataLoading = consumptionLoading || itemsLoading || patternsLoading || recommendationsLoading;
+
+  // Get top 3 mixed recommendations for dashboard display
+  const dashboardResources = useMemo(() => {
+    if (!recommendations) return [];
+
+    const articles = recommendations.articles || [];
+    const videos = recommendations.videos || [];
+
+    // Interleave articles and videos for variety
+    const combined: (Article | Video)[] = [];
+    const maxLength = Math.max(articles.length, videos.length);
+
+    for (let i = 0; i < maxLength; i++) {
+      if (i < articles.length) combined.push({ ...articles[i], type: 'article' } as any);
+      if (i < videos.length) combined.push({ ...videos[i], type: 'video' } as any);
+    }
+
+    return combined.slice(0, 3);
+  }, [recommendations]);
 
   if (isInitialLoading) {
     return (
@@ -275,12 +270,10 @@ export default function Dashboard() {
         {/* Expiring Soon */}
         <div className="bg-card rounded-xl border border-border p-6 hover:shadow-lg transition-smooth">
           <div className="flex items-center gap-4">
-            <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${
-              dashboardStats.expiringItems > 0 ? 'bg-orange-500/10' : 'bg-green-500/10'
-            }`}>
-              <Clock className={`w-6 h-6 ${
-                dashboardStats.expiringItems > 0 ? 'text-orange-600' : 'text-green-600'
-              }`} />
+            <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${dashboardStats.expiringItems > 0 ? 'bg-orange-500/10' : 'bg-green-500/10'
+              }`}>
+              <Clock className={`w-6 h-6 ${dashboardStats.expiringItems > 0 ? 'text-orange-600' : 'text-green-600'
+                }`} />
             </div>
             <div>
               <p className="text-sm text-foreground/70">Expiring Soon</p>
@@ -343,7 +336,6 @@ export default function Dashboard() {
                   <TrendingDown className="w-4 h-4 text-red-600" />
                 ) : null
               )}
-              <span className="text-sm text-foreground/70">vs last week</span>
             </div>
           </div>
 
@@ -409,7 +401,7 @@ export default function Dashboard() {
                 </div>
               </div>
             )}
-            
+
             {dashboardStats.todayConsumption === 0 && (
               <div className="flex items-center gap-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
                 <ChefHat className="w-5 h-5 text-blue-600 shrink-0" />
@@ -426,7 +418,7 @@ export default function Dashboard() {
                 </div>
               </div>
             )}
-            
+
             {dashboardStats.totalItems === 0 && (
               <div className="flex items-center gap-3 p-3 bg-primary/10 border border-primary/20 rounded-lg">
                 <Package className="w-5 h-5 text-primary shrink-0" />
@@ -447,14 +439,13 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Recommended Resources */}
-      {(recommendedResources.length > 0 || resourcesLoading) && (
+      {/* Helpful Resources */}
+      {dashboardResources.length > 0 && (
         <div className="bg-card rounded-xl border border-border p-6">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
               <Lightbulb className="w-5 h-5 text-yellow-600" />
-              Recommended for You
-              {resourcesLoading && <LoadingSpinner />}
+              Recommended For You
             </h2>
             <Link
               to="/resources"
@@ -466,53 +457,73 @@ export default function Dashboard() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {resourcesLoading ? (
-              // Loading placeholders
-              Array.from({ length: 3 }).map((_, index) => (
-                <div key={index} className="p-4 border border-border rounded-lg animate-pulse">
-                  <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 bg-gray-200 rounded-lg shrink-0" />
-                    <div className="flex-1">
-                      <div className="h-4 bg-gray-200 rounded mb-2" />
-                      <div className="h-3 bg-gray-200 rounded mb-1" />
-                      <div className="h-3 bg-gray-200 rounded w-2/3" />
+            {dashboardResources.map((item: any) => {
+              const isVideo = item.videoId !== undefined;
+              return (
+                <div
+                  key={item.id}
+                  className="group border border-border rounded-lg hover:shadow-md transition-smooth overflow-hidden flex flex-col h-full bg-card"
+                >
+                  {/* Image/Thumbnail Section */}
+                  <div className="relative h-32 w-full bg-muted overflow-hidden">
+                    {((isVideo ? item.thumbnailUrl : item.imageUrl)) ? (
+                      <img
+                        src={isVideo ? item.thumbnailUrl : item.imageUrl}
+                        alt={item.title}
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-secondary/10">
+                        {isVideo ? (
+                          <PlayCircle className="w-10 h-10 text-primary/40" />
+                        ) : (
+                          <BookOpen className="w-10 h-10 text-primary/40" />
+                        )}
+                      </div>
+                    )}
+
+                    {/* Type Badge */}
+                    <div className="absolute top-2 right-2 px-2 py-1 bg-black/60 backdrop-blur-sm text-white text-xs rounded-full flex items-center gap-1">
+                      {isVideo ? (
+                        <><PlayCircle className="w-3 h-3" /> Video</>
+                      ) : (
+                        <><BookOpen className="w-3 h-3" /> Article</>
+                      )}
                     </div>
                   </div>
-                </div>
-              ))
-            ) : (
-              recommendedResources.map((resource: Resource) => (
-                <div
-                  key={resource.id}
-                  className="p-4 border border-border rounded-lg hover:shadow-md transition-smooth"
-                >
-                <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center shrink-0">
-                    <BookOpen className="w-5 h-5 text-green-600" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-medium text-foreground mb-1">{resource.title}</h3>
-                    <p className="text-sm text-foreground/70 mb-2 line-clamp-2">
-                      {resource.description}
+
+                  <div className="p-4 flex flex-col flex-1">
+                    <h3 className="font-medium text-foreground mb-1 line-clamp-2 leading-tight group-hover:text-primary transition-colors">
+                      {item.title}
+                    </h3>
+                    <p className="text-sm text-foreground/70 mb-3 line-clamp-2 flex-1">
+                      {item.description}
                     </p>
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs px-2 py-1 bg-secondary/20 text-secondary-foreground rounded">
-                        {resource.type}
+
+                    {item.recommendationReason && (
+                      <p className="text-xs text-green-600 mb-3 italic flex items-start gap-1">
+                        <span className="shrink-0">💡</span>
+                        <span className="line-clamp-2">{item.recommendationReason}</span>
+                      </p>
+                    )}
+
+                    <div className="flex items-center justify-between mt-auto pt-3 border-t border-border/50">
+                      <span className="text-xs text-muted-foreground font-medium">
+                        {isVideo ? item.channelTitle : item.source}
                       </span>
                       <a
-                        href={resource.url}
+                        href={item.url || `https://www.youtube.com/watch?v=${item.videoId}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-xs text-primary hover:text-primary/80 transition-colors"
+                        className="text-xs font-semibold text-primary hover:text-primary/80 transition-colors flex items-center gap-1"
                       >
-                        Read more →
+                        {isVideo ? 'Watch' : 'Read'} <ArrowRight className="w-3 h-3" />
                       </a>
                     </div>
                   </div>
                 </div>
-              </div>
-              ))
-            )}
+              )
+            })}
           </div>
         </div>
       )}
