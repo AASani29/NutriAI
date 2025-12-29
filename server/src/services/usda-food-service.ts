@@ -55,13 +55,18 @@ export class USDAFoodService {
      */
     async getFoodDetails(fdcId: number): Promise<USDAFoodItem | null> {
         try {
-            const response = await axios.get(`${this.baseUrl}/food/${fdcId}`, {
+            const response = await axios.get(`${this.baseUrl}/foods`, {
                 params: {
                     api_key: this.apiKey,
+                    fdcIds: fdcId,
                 },
             });
 
-            return this.mapFoodItem(response.data);
+            if (!response.data || response.data.length === 0) {
+                return null;
+            }
+
+            return this.mapFoodItem(response.data[0]);
         } catch (error) {
             console.error('Error getting USDA food details:', error);
             return null;

@@ -8,6 +8,8 @@ export interface Inventory {
   isPrivate?: boolean;
   createdAt: string;
   updatedAt: string;
+  itemCount?: number;
+  expiringCount?: number;
 }
 
 export interface InventoryItem {
@@ -156,6 +158,11 @@ export function useInventory() {
         unit?: string;
         expiryDate?: Date;
         notes?: string;
+        category?: string;
+        nutritionPerUnit?: any;
+        nutritionUnit?: string;
+        nutritionBasis?: number;
+        basePrice?: number;
       }) => {
         const response = await fetchWithAuth(
           `/inventories/${inventoryId}/items`,

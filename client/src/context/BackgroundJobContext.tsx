@@ -17,7 +17,7 @@ interface BackgroundJobContextType {
   activeJobs: Job[];
   addJob: (jobId: string) => void;
   removeJob: (jobId: string) => void;
-  addInventoryTask: (items: any[], inventoryId: string, token: string) => void;
+  addInventoryTask: (items: any[], inventoryId: string) => void;
 }
 
 const BackgroundJobContext = createContext<BackgroundJobContextType | undefined>(undefined);
@@ -120,7 +120,7 @@ export const BackgroundJobProvider: React.FC<{ children: React.ReactNode }> = ({
     setCompletedJobToReview(null);
   };
 
-  const addInventoryTask = async (items: any[], inventoryId: string, token: string) => {
+  const addInventoryTask = async (items: any[], inventoryId: string) => {
     // Create a local "job" for UI tracking
     const taskId = `task-${Date.now()}`;
     setActiveJobs(prev => [...prev, { id: taskId, status: 'active', timestamp: Date.now() }]);
@@ -146,17 +146,22 @@ export const BackgroundJobProvider: React.FC<{ children: React.ReactNode }> = ({
             basePrice: item.basePrice,
           };
 
+          const currentToken = await getToken();
+
           const res = await fetch(`${API_URL}/inventories/${inventoryId}/items`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              Authorization: `Bearer ${token}`,
+              Authorization: `Bearer ${currentToken}`,
             },
             body: JSON.stringify(payload)
           });
 
-          if (res.ok) successCount++;
-          else failCount++;
+          if (res.ok) {
+            successCount++;
+          } else {
+            failCount++;
+          }
 
         } catch (e) {
           console.error('Task item add failed', e);

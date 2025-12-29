@@ -1,7 +1,6 @@
 
 import React, { useState } from 'react';
 import { Loader2, Check, X, Plus, Edit2, Save } from 'lucide-react';
-import { useAuth } from '@clerk/clerk-react';
 import { useBackgroundJob } from '../../context/BackgroundJobContext';
 
 interface ScannedItem {
@@ -29,7 +28,6 @@ export const ReviewScanModal: React.FC<ReviewScanModalProps> = ({
   onClose,
   onSuccess,
 }) => {
-  const { getToken } = useAuth();
   const [items, setItems] = useState<ScannedItem[]>(initialItems);
   const [loading, setLoading] = useState(false);
 
@@ -49,10 +47,7 @@ export const ReviewScanModal: React.FC<ReviewScanModalProps> = ({
 
   const handleSaveToInventory = async () => {
     // Fire and forget via context
-    const token = await getToken();
-    if (token) {
-      addInventoryTask(items, inventoryId, token);
-    }
+    addInventoryTask(items, inventoryId);
 
     // Close immediately
     setLoading(false);

@@ -22,6 +22,10 @@ export class InventoryService {
     if (!user) {
       throw new Error('User not found in database');
     }
+    const today = new Date();
+    const next7Days = new Date();
+    next7Days.setDate(today.getDate() + 7);
+
     const inventories = await prisma.inventory.findMany({
       where: {
         createdById: user.id,
@@ -34,13 +38,42 @@ export class InventoryService {
         isPrivate: true,
         createdAt: true,
         updatedAt: true,
+        _count: {
+          select: {
+            items: {
+              where: { isDeleted: false, removed: false }
+            }
+          }
+        },
+        items: {
+          where: {
+            isDeleted: false,
+            removed: false,
+            expiryDate: {
+              gte: today,
+              lte: next7Days,
+            }
+          },
+          select: { id: true }
+        }
       },
       orderBy: {
         createdAt: 'desc',
       },
     });
-    console.log('Inventories found:', inventories);
-    return inventories;
+
+    // Map to include expiring count explicitly
+    const mappedInventories = inventories.map(inv => ({
+      ...inv,
+      itemCount: inv._count.items,
+      expiringCount: inv.items.length,
+      // Remove the raw items array from the response to keep it lean
+      items: undefined,
+      _count: undefined
+    }));
+
+    console.log('Inventories found with counts:', mappedInventories.length);
+    return mappedInventories;
   }
 
   /**
@@ -459,6 +492,7 @@ export class InventoryService {
    * Get inventory items with optional filtering
    */
   async getInventoryItems(filters: InventoryItemFilters) {
+    console.log('🔍 [getInventoryItems] Fetching items for inventory:', filters.inventoryId);
     const whereClause: any = {
       inventoryId: filters.inventoryId,
       isDeleted: false,
@@ -484,7 +518,7 @@ export class InventoryService {
       };
     }
 
-    return await prisma.inventoryItem.findMany({
+    const items = await prisma.inventoryItem.findMany({
       where: whereClause,
       include: {
         foodItem: {
@@ -503,6 +537,8 @@ export class InventoryService {
         addedAt: 'desc',
       },
     });
+    console.log(`✅ [getInventoryItems] Found ${items.length} items for ${filters.inventoryId}`);
+    return items;
   }
 
   /**
@@ -1226,3 +1262,4 @@ export class InventoryService {
 }
 
 export const inventoryService = new InventoryService();
+

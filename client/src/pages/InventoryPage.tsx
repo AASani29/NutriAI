@@ -10,6 +10,8 @@ export interface Inventory {
   isPrivate?: boolean;
   createdAt: string;
   updatedAt: string;
+  itemCount?: number;
+  expiringCount?: number;
 }
 export default function InventoryPage() {
   const [loading, setLoading] = useState(true);
@@ -127,8 +129,10 @@ export default function InventoryPage() {
                 <Utensils className="w-5 h-5 text-primary" />
               </div>
               <div>
-                <p className="text-sm text-foreground/70">Items</p>
-                <p className="text-2xl font-bold text-foreground">0</p>
+                <p className="text-sm text-foreground/70">Total Items</p>
+                <p className="text-2xl font-bold text-foreground">
+                  {inventories?.reduce((acc, inv) => acc + (inv.itemCount || 0), 0) || 0}
+                </p>
               </div>
             </div>
           </div>
@@ -187,11 +191,11 @@ export default function InventoryPage() {
                   <div className="flex items-center gap-4 text-foreground/60 text-xs">
                     <div className="flex items-center gap-1">
                       <Package className="w-3 h-3" />
-                      <span>0 items</span>
+                      <span>{inventory.itemCount || 0} items</span>
                     </div>
                     <div className="flex items-center gap-1">
                       <Calendar className="w-3 h-3" />
-                      <span>0 expiring</span>
+                      <span>{inventory.expiringCount || 0} expiring</span>
                     </div>
                   </div>
                 </div>

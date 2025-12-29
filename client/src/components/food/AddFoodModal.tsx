@@ -11,7 +11,17 @@ const categories = [
 
 export default function AddFoodModal({ onClose, onAdded }: { onClose: () => void, onAdded: () => void }) {
   const { searchFood } = useInventory();
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<{
+    name: string;
+    unit: string;
+    category: string;
+    expirationDate: string;
+    sampleCostPerUnit: string;
+    description: string;
+    nutritionPerUnit?: any;
+    nutritionBasis?: number;
+    nutritionUnit?: string;
+  }>({
     name: '', unit: '', category: '', expirationDate: '', sampleCostPerUnit: '', description: ''
   });
   const [loading, setLoading] = useState(false);
@@ -39,7 +49,7 @@ export default function AddFoodModal({ onClose, onAdded }: { onClose: () => void
     }, 500);
 
     return () => clearTimeout(timer);
-  }, [searchQuery]);
+  }, [searchQuery, searchFood]);
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -49,7 +59,10 @@ export default function AddFoodModal({ onClose, onAdded }: { onClose: () => void
     setForm(prev => ({
       ...prev,
       name: item.description,
-      unit: item.unitName || 'g'
+      unit: item.unitName || 'g',
+      nutritionPerUnit: item.nutrients,
+      nutritionBasis: 100,
+      nutritionUnit: item.unitName || 'g'
     }));
     setSearchQuery('');
     setShowResults(false);
@@ -68,10 +81,20 @@ export default function AddFoodModal({ onClose, onAdded }: { onClose: () => void
     const today = new Date();
     const diffTime = expirationDate.getTime() - today.setHours(0, 0, 0, 0);
     const typicalExpirationDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    // Split sampleCostPerUnit to basePrice
     const payload = {
-      ...form,
-      typicalExpirationDays: typicalExpirationDays > 0 ? typicalExpirationDays : 1
+      name: form.name,
+      unit: form.unit,
+      category: form.category,
+      description: form.description,
+      basePrice: parseFloat(form.sampleCostPerUnit) || 0,
+      typicalExpirationDays: typicalExpirationDays > 0 ? typicalExpirationDays : 1,
+      nutritionPerUnit: form.nutritionPerUnit,
+      nutritionBasis: form.nutritionBasis,
+      nutritionUnit: form.nutritionUnit
     };
+
     const res = await fetch('/api/foods', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

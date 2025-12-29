@@ -17,14 +17,11 @@ declare global {
   }
 }
 
-// Create the middleware instance by calling the function
+// Create the middleware instance
 const clerkAuth = ClerkExpressRequireAuth();
 
-// Export it as requireAuth and assert the middleware type
-const _requireAuth = clerkAuth as unknown as RequestHandler;
 export const requireAuth: RequestHandler = (req, res, next) => {
-  
-  return _requireAuth(req, res, next);
+  return (clerkAuth as any)(req, res, next);
 };
 
 // Custom middleware to ensure user exists in database
@@ -34,13 +31,8 @@ export const ensureUserExists = async (
   next: NextFunction
 ) => {
   try {
-   
-    if (req.auth) {
-      console.log('🛡️ [ensureUserExists] UserId:', req.auth.userId);
-    }
 
     if (!req.auth?.userId) {
-      console.log('❌ [ensureUserExists] Blocking unauthorized request - req.auth missing');
       return res.status(401).json({ error: 'User check failed' });
     }
 
@@ -49,7 +41,7 @@ export const ensureUserExists = async (
 
     // 1. Check if user already exists in local database
     const existingUser = await userService.getUserByClerkId(clerkId);
-    
+
     if (existingUser) {
       return next();
     }

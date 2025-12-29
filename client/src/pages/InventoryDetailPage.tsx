@@ -1,3 +1,4 @@
+import { useAuth } from '@clerk/clerk-react';
 import { useQueryClient } from '@tanstack/react-query';
 import {
   AlertCircle,
@@ -44,6 +45,7 @@ export default function InventoryDetailPage() {
   const [alertsLoading, setAlertsLoading] = useState(false);
 
   // Rest of the states
+  const { getToken } = useAuth();
   const { inventoryId } = useParams<{ inventoryId: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -110,7 +112,8 @@ export default function InventoryDetailPage() {
 
       try {
         setAlertsLoading(true);
-        const alerts = await getAlerts(inventoryId);
+        const token = await getToken();
+        const alerts = await getAlerts(inventoryId, undefined, token);
         setWeatherAlerts(alerts);
       } catch (err) {
         console.error('Error fetching weather alerts:', err);
@@ -120,7 +123,7 @@ export default function InventoryDetailPage() {
     };
 
     fetchAlerts();
-  }, [inventoryId, inventoryItems]);
+  }, [inventoryId, inventoryItems, getToken]);
 
   // Handle image upload success
   const handleImageUploadSuccess = (extractedItems: any[]) => {
@@ -646,20 +649,6 @@ export default function InventoryDetailPage() {
   );
 }
 
-// Stats Card Component (Internal)
-function StatsCard({ icon: Icon, label, value, colorClass }: any) {
-  return (
-    <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex items-center gap-4">
-      <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${colorClass.bg}`}>
-        <Icon className={`w-6 h-6 ${colorClass.text}`} />
-      </div>
-      <div>
-        <p className="text-sm text-gray-500">{label}</p>
-        <p className="text-xl font-bold text-gray-900">{value}</p>
-      </div>
-    </div>
-  )
-}
 
 // ConsumptionModal Component
 interface ConsumptionModalProps {
@@ -797,7 +786,16 @@ function ConsumptionModal({ item, onClose, onConsume }: ConsumptionModalProps) {
 
 function AddItemModal({ onClose, onAdd, onScan }: { onClose: () => void, onAdd: any, onScan: () => void }) {
   const { searchFood } = useInventory();
-  const [form, setForm] = useState({ name: '', quantity: 1, unit: 'pcs', category: 'General', expiryDate: '' });
+  const [form, setForm] = useState<{
+    name: string;
+    quantity: number;
+    unit: string;
+    category: string;
+    expiryDate: string;
+    nutritionPerUnit?: any;
+    nutritionBasis?: number;
+    nutritionUnit?: string;
+  }>({ name: '', quantity: 1, unit: 'pcs', category: 'General', expiryDate: '' });
 
   // Search state
   const [searchQuery, setSearchQuery] = useState('');
@@ -826,7 +824,10 @@ function AddItemModal({ onClose, onAdd, onScan }: { onClose: () => void, onAdd: 
     setForm(prev => ({
       ...prev,
       name: item.description,
-      unit: item.unitName || 'g'
+      unit: item.unitName || 'g',
+      nutritionPerUnit: item.nutrients,
+      nutritionBasis: 100, // USDA is per 100g/ml
+      nutritionUnit: item.unitName || 'g'
     }));
     setSearchQuery('');
     setSearchResults([]);
@@ -915,7 +916,15 @@ function AddItemModal({ onClose, onAdd, onScan }: { onClose: () => void, onAdd: 
           />
           <button
             onClick={() => {
-              onAdd({ customName: form.name, quantity: form.quantity, unit: form.unit, expiryDate: form.expiryDate ? new Date(form.expiryDate) : undefined });
+              onAdd({
+                customName: form.name,
+                quantity: form.quantity,
+                unit: form.unit,
+                expiryDate: form.expiryDate ? new Date(form.expiryDate) : undefined,
+                nutritionPerUnit: form.nutritionPerUnit,
+                nutritionBasis: form.nutritionBasis,
+                nutritionUnit: form.nutritionUnit
+              });
               onClose();
             }}
             className="w-full bg-gray-900 text-white py-4 rounded-xl font-bold hover:bg-gray-800 transition-all shadow-lg active:scale-[0.98]"
