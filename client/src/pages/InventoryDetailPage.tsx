@@ -784,7 +784,11 @@ function ConsumptionModal({ item, onClose, onConsume }: ConsumptionModalProps) {
   );
 }
 
-function AddItemModal({ onClose, onAdd, onScan }: { onClose: () => void, onAdd: any, onScan: () => void }) {
+function AddItemModal({ onClose, onAdd, onScan }: {
+  onClose: () => void,
+  onAdd: (item: any) => void, // Relaxing type to any to avoid strict type complex errors for now, or define explicitly
+  onScan: () => void
+}) {
   const { searchFood } = useInventory();
   const [form, setForm] = useState<{
     name: string;
@@ -795,6 +799,7 @@ function AddItemModal({ onClose, onAdd, onScan }: { onClose: () => void, onAdd: 
     nutritionPerUnit?: any;
     nutritionBasis?: number;
     nutritionUnit?: string;
+    basePrice?: number;
   }>({ name: '', quantity: 1, unit: 'pcs', category: 'General', expiryDate: '' });
 
   // Search state
@@ -834,9 +839,63 @@ function AddItemModal({ onClose, onAdd, onScan }: { onClose: () => void, onAdd: 
     setShowResults(false);
   };
 
+  /* --- GEOLOCATION & PRICE ESTIMATION --- */
+  const { estimatePrice } = useInventory();
+  const [useLocation, setUseLocation] = useState(false);
+  const [coordinates, setCoordinates] = useState<{ lat: number, lng: number } | undefined>(undefined);
+  const [locating, setLocating] = useState(false);
+  const [priceLoading, setPriceLoading] = useState(false);
+
+  const handleUseLocation = () => {
+    setLocating(true);
+    if ('geolocation' in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setCoordinates({
+            lat: position.coords.latitude,
+            lng: position.coords.longitude
+          });
+          setUseLocation(true);
+          setLocating(false);
+        },
+        (error) => {
+          console.error("Geo error:", error);
+          alert("Could not get location. Please allow location access.");
+          setLocating(false);
+        }
+      );
+    } else {
+      alert("Geolocation is not supported by your browser.");
+      setLocating(false);
+    }
+  };
+
+  // Trigger price estimation when name, quantity, or coordinates change
+  useEffect(() => {
+    const fetchPrice = async () => {
+      if (form.name && form.quantity > 0 && useLocation && coordinates) {
+        setPriceLoading(true);
+        const result = await estimatePrice({
+          foodName: form.name,
+          quantity: form.quantity,
+          unit: form.unit,
+          coordinates
+        });
+        if (result && result.estimatedPrice) {
+          setForm(prev => ({ ...prev, basePrice: result.estimatedPrice }));
+        }
+        setPriceLoading(false);
+      }
+    };
+
+    const debounce = setTimeout(fetchPrice, 800);
+    return () => clearTimeout(debounce);
+  }, [form.name, form.quantity, form.unit, useLocation, coordinates]);
+
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div className="bg-white rounded-2xl p-6 max-w-md w-full relative">
+      <div className="bg-white rounded-2xl p-6 max-w-md w-full relative max-h-[90vh] overflow-y-auto">
         <h3 className="text-xl font-bold mb-4">Add Item</h3>
 
         {/* Quick Action for OCR */}
@@ -914,6 +973,53 @@ function AddItemModal({ onClose, onAdd, onScan }: { onClose: () => void, onAdd: 
             value={form.expiryDate}
             onChange={e => setForm({ ...form, expiryDate: e.target.value })}
           />
+
+          {/* Location & Price Section */}
+          <div className="p-3 bg-gray-50 rounded-xl border border-gray-100">
+            <div className="flex items-center justify-between mb-2">
+              <label className="text-sm font-semibold text-gray-700">Price Estimation</label>
+              <button
+                type="button"
+                onClick={handleUseLocation}
+                disabled={locating || useLocation}
+                className={`text-xs px-2 py-1 rounded-lg border flex items-center gap-1 transition-all ${useLocation
+                  ? 'bg-green-100 text-green-700 border-green-200'
+                  : 'bg-white text-gray-600 border-gray-200 hover:bg-purple-50 hover:text-purple-700'
+                  }`}
+              >
+                {locating ? (
+                  <div className="w-3 h-3 border-2 border-purple-600 border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <div className="w-3 h-3">📍</div>
+                )}
+                {useLocation ? 'Location Active' : 'Use My Location'}
+              </button>
+            </div>
+
+            <div className="relative">
+              <input
+                type="number"
+                disabled={priceLoading}
+                className={`w-full border p-3 pl-8 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all ${priceLoading ? 'opacity-50' : ''}`}
+                placeholder="0.00"
+                value={form.basePrice || ''}
+                onChange={e => setForm({ ...form, basePrice: parseFloat(e.target.value) })}
+              />
+              <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-bold">৳</div>
+              {priceLoading && (
+                <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                  <div className="w-4 h-4 border-2 border-purple-600 border-t-transparent rounded-full animate-spin" />
+                </div>
+              )}
+            </div>
+            {useLocation && form.basePrice && (
+              <p className="text-[10px] text-gray-500 mt-1 text-right">
+                *Estimated for your region
+              </p>
+            )}
+          </div>
+
+
           <button
             onClick={() => {
               onAdd({
@@ -923,7 +1029,8 @@ function AddItemModal({ onClose, onAdd, onScan }: { onClose: () => void, onAdd: 
                 expiryDate: form.expiryDate ? new Date(form.expiryDate) : undefined,
                 nutritionPerUnit: form.nutritionPerUnit,
                 nutritionBasis: form.nutritionBasis,
-                nutritionUnit: form.nutritionUnit
+                nutritionUnit: form.nutritionUnit,
+                basePrice: form.basePrice // Pass the price to the mutation
               });
               onClose();
             }}

@@ -471,6 +471,25 @@ export function useInventory() {
     }
   };
 
+  // Estimate price based on location
+  const estimatePrice = async (data: {
+    foodName: string;
+    quantity: number;
+    unit: string;
+    coordinates?: { lat: number; lng: number };
+  }) => {
+    try {
+      const response = await fetchWithAuth('/intelligence/estimate-price', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error estimating price:', error);
+      return null;
+    }
+  };
+
   return {
     useGetInventories,
     useGetInventoryItems,
@@ -484,5 +503,6 @@ export function useInventory() {
     useLogConsumption,
     useGetConsumptionLogs,
     searchFood,
+    estimatePrice,
   };
 }

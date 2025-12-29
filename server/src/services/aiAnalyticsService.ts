@@ -844,7 +844,7 @@ class AIAnalyticsService {
     }
   }
 
-  // Estimate price for a food item
+  // Estimate price for a food item with REGION AWARENESS
   async estimatePrice(
     foodName: string,
     quantity: number,
@@ -854,19 +854,31 @@ class AIAnalyticsService {
       nutritionUnit?: string;
       nutritionBasis?: number;
     },
+    coordinates?: { lat: number; lng: number }
   ): Promise<any> {
     try {
       let systemContent = `You are a grocery pricing expert. Estimate the market price for the given food item.
             Return ONLY a JSON object with this exact schema (all values are numbers):
             {
               "sampleCostPerUnit": number, // Cost for 1 unit of this item (e.g. 1 kg, 1 piece)
-              "estimatedPrice": number // Total price for the requested quantity (in BDT)
+              "estimatedPrice": number, // Total price for the requested quantity
+              "currency": string, // The local currency code (e.g. BDT, USD, EUR)
+              "regionDetected": string // The region/country you detected from coordinates
             }
             Do not include any explanation or markdown formatting.`;
 
+      if (coordinates) {
+        systemContent += `\n\nLOCATION CONTEXT:
+        The user is located at Latitude: ${coordinates.lat}, Longitude: ${coordinates.lng}.
+        INSTRUCTION: Identify the country/region from these coordinates. Estimate the price in the LOCAL CURRENCY of that region.`;
+      } else {
+        systemContent += `\n\nLOCATION CONTEXT:
+        No specific location provided. Default to Bangladesh (BDT).`;
+      }
+
       if (baseData?.basePrice && baseData?.nutritionBasis) {
         systemContent += `\n\nKNOWN BASE DATA:
-        - Base Price: ${baseData.basePrice} BDT per ${baseData.nutritionBasis} ${baseData.nutritionUnit}
+        - Base Price: ${baseData.basePrice} per ${baseData.nutritionBasis} ${baseData.nutritionUnit}
         
         INSTRUCTION: Use this KNOWN BASE DATA to calculate the estimated price. Perform the math precisely.`;
       }
