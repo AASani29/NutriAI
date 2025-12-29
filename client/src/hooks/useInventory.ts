@@ -327,6 +327,15 @@ export function useInventory() {
         unit?: string;
         consumedAt?: Date;
         notes?: string;
+        // Optional pre-calculated nutrients so the client can ensure
+        // daily log values exactly match what was shown in inventory
+        calories?: number;
+        protein?: number;
+        carbohydrates?: number;
+        fat?: number;
+        fiber?: number;
+        sugar?: number;
+        sodium?: number;
       }) => {
         const response = await fetchWithAuth('/inventories/consumption', {
           method: 'POST',

@@ -619,6 +619,13 @@ export class InventoryService {
     }
 
     // Handle Nutrition Logic
+    // PRIORITY: Use client-provided nutrition values first (they represent what user saw in inventory)
+    // Only recalculate if client didn't provide values
+    const hasClientNutrition = data.calories !== undefined || 
+                                data.protein !== undefined || 
+                                data.carbohydrates !== undefined || 
+                                data.fat !== undefined;
+    
     let logNutrients = {
       calories: data.calories,
       protein: data.protein,
@@ -694,8 +701,13 @@ export class InventoryService {
       }
     }
 
+    // Fetch FoodItem for cost calculation and nutrition fallback
+    let foodItem: any = null;
+    let foodItemAny: any = null;
+    let storedBasis = 1;
+
     if (effectiveFoodItemId) {
-      const foodItem = await prisma.foodItem.findFirst({
+      foodItem = await prisma.foodItem.findFirst({
         where: { id: effectiveFoodItemId, isDeleted: false },
       });
 
@@ -703,116 +715,108 @@ export class InventoryService {
         if (data.foodItemId) throw new Error('Food item not found');
         // If inferred from inventory but missing in DB, we skip cost calc logic
       } else {
-        // 1. If FoodItem has base nutrition, CALCULATE
-        const foodItemAny = foodItem as any;
+        foodItemAny = foodItem as any;
+        storedBasis = foodItemAny.nutritionBasis || 1;
+      }
+    }
 
-        // Normalize basis logic to handle potential mismatches or defaults safely
-        const storedBasis = foodItemAny.nutritionBasis || 1;
+    // Only recalculate nutrition if client didn't provide values
+    // This ensures daily log shows exactly what was in inventory, not recalculated values
+    if (!hasClientNutrition && foodItemAny && foodItemAny.nutritionPerUnit) {
+      const base = foodItemAny.nutritionPerUnit;
 
-        if (foodItemAny.nutritionPerUnit) {
-          const base = foodItemAny.nutritionPerUnit;
+      // Ratio Calculation:
+      // If stored basis is 100 (e.g. 100g), and we consume 200 (g), ratio should be 2.
+      // If stored basis is 1 (e.g. 1 apple), and we consume 2 (apples), ratio should be 2.
+      const ratio = data.quantity / storedBasis;
 
-          // Ratio Calculation:
-          // If stored basis is 100 (e.g. 100g), and we consume 200 (g), ratio should be 2.
-          // If stored basis is 1 (e.g. 1 apple), and we consume 2 (apples), ratio should be 2.
-          const ratio = data.quantity / storedBasis;
+      console.log(`📊 calculating nutrition for ${data.itemName}: Stored Basis ${storedBasis}, Consumed ${data.quantity}, Ratio ${ratio}`);
 
-          console.log(`📊 calculating nutrition for ${data.itemName}: Stored Basis ${storedBasis}, Consumed ${data.quantity}, Ratio ${ratio}`);
+      logNutrients = {
+        calories: (base.calories || 0) * ratio,
+        protein: (base.protein || 0) * ratio,
+        carbohydrates: (base.carbohydrates || 0) * ratio,
+        fat: (base.fat || 0) * ratio,
+        fiber: (base.fiber || 0) * ratio,
+        sugar: (base.sugar || 0) * ratio,
+        sodium: (base.sodium || 0) * ratio,
+      };
+    } else if (hasClientNutrition) {
+      console.log(`✅ Using client-provided nutrition values for ${data.itemName} (ensures consistency with inventory display)`);
+    }
 
-          logNutrients = {
-            calories: (base.calories || 0) * ratio,
-            protein: (base.protein || 0) * ratio,
-            carbohydrates: (base.carbohydrates || 0) * ratio,
-            fat: (base.fat || 0) * ratio,
-            fiber: (base.fiber || 0) * ratio,
-            sugar: (base.sugar || 0) * ratio,
-            sodium: (base.sodium || 0) * ratio,
-          };
-        } else if (data.calories !== undefined) {
-          // If we don't have stored nutrition but the REQUEST contains nutrition (passed from frontend/AI), use it directly
-          logNutrients = {
-            calories: data.calories,
-            protein: data.protein,
-            carbohydrates: data.carbohydrates,
-            fat: data.fat,
-            fiber: data.fiber,
-            sugar: data.sugar,
-            sodium: data.sodium,
-          };
-        }
+    // --- COST CALCULATION START ---
+    // Calculate cost if we have FoodItem with basePrice
+    if (foodItemAny && foodItemAny.basePrice) {
+      const ratio = data.quantity / storedBasis;
+      calculatedCost = foodItemAny.basePrice * ratio;
+    }
+    // If NO basePrice, try to predict it now (JIT Prediction) - OLD LOGIC RETAINED AS FALLBACK
+    else if (foodItem && data.itemName) {
+      try {
+        console.log(`🤖 JIT Price Estimating for: ${data.itemName}`);
+        const estimated = await aiAnalyticsService.estimateItemDetails(
+          data.itemName,
+        );
+        if (estimated && estimated.basePrice && estimated.nutritionBasis) {
+          const ratio = data.quantity / estimated.nutritionBasis;
+          calculatedCost = estimated.basePrice * ratio;
+          console.log(`✅ JIT Estimated Cost: ${calculatedCost}`);
 
-        // --- COST CALCULATION START ---
-        // If we have basePrice, calculate cost
-        if (foodItemAny.basePrice) {
-          const ratio = data.quantity / storedBasis;
-          calculatedCost = foodItemAny.basePrice * ratio;
-        }
-        // If NO basePrice, try to predict it now (JIT Prediction) - OLD LOGIC RETAINED AS FALLBACK
-        else if (data.itemName) {
-          try {
-            console.log(`🤖 JIT Price Estimating for: ${data.itemName}`);
-            const estimated = await aiAnalyticsService.estimateItemDetails(
-              data.itemName,
-            );
-            if (estimated && estimated.basePrice && estimated.nutritionBasis) {
-              const ratio = data.quantity / estimated.nutritionBasis;
-              calculatedCost = estimated.basePrice * ratio;
-              console.log(`✅ JIT Estimated Cost: ${calculatedCost}`);
-
-              // Update FoodItem so we don't pay for this again
-              await prisma.foodItem.update({
-                where: { id: foodItem.id },
-                data: {
-                  basePrice: estimated.basePrice,
-                  nutritionBasis: estimated.nutritionBasis, // Ensure basis matches price
-                  nutritionUnit: estimated.nutritionUnit,
-                  category: estimated.category || foodItem.category,
-                } as any,
-              });
-            }
-          } catch (e) {
-            console.warn('Failed to JIT estimate price:', e);
-          }
-        }
-        // --- COST CALCULATION END ---
-
-        // 2. If FoodItem has NO base nutrition but we have incoming AI data, CACHE IT
-        if (!foodItemAny.nutritionPerUnit && data.calories !== undefined) {
-          // Assume incoming data is for the consumed quantity.
-          // We'll standardize to 100 units as a convention if unit is 'g'/'ml', or 1 unit otherwise.
-          const isStandardizable = [
-            'g',
-            'ml',
-            'gram',
-            'grams',
-            'milliliter',
-            'milliliters',
-          ].includes((data.unit || '').toLowerCase());
-          const standardBasis = isStandardizable ? 100 : 1;
-
-          const ratio = standardBasis / (data.quantity || 1);
-
-          const baseNutrition = {
-            calories: (data.calories || 0) * ratio,
-            protein: (data.protein || 0) * ratio,
-            carbohydrates: (data.carbohydrates || 0) * ratio,
-            fat: (data.fat || 0) * ratio,
-            fiber: (data.fiber || 0) * ratio,
-            sugar: (data.sugar || 0) * ratio,
-            sodium: (data.sodium || 0) * ratio,
-          };
-
-          // Update FoodItem (Source of Truth)
+          // Update FoodItem so we don't pay for this again
           await prisma.foodItem.update({
             where: { id: foodItem.id },
             data: {
-              nutritionPerUnit: baseNutrition,
-              nutritionBasis: standardBasis,
-              nutritionUnit: data.unit,
+              basePrice: estimated.basePrice,
+              nutritionBasis: estimated.nutritionBasis, // Ensure basis matches price
+              nutritionUnit: estimated.nutritionUnit,
+              category: estimated.category || foodItem.category,
             } as any,
           });
         }
+      } catch (e) {
+        console.warn('Failed to JIT estimate price:', e);
       }
+    }
+    // --- COST CALCULATION END ---
+
+    // 2. If FoodItem has NO base nutrition but we have incoming client nutrition data, CACHE IT
+    // Only cache if client provided nutrition AND FoodItem doesn't have it yet
+    // This helps populate FoodItem for future use, but doesn't override client-provided values in the log
+    if (foodItem && !foodItemAny?.nutritionPerUnit && hasClientNutrition && data.calories !== undefined) {
+      // Assume incoming data is for the consumed quantity.
+      // We'll standardize to 100 units as a convention if unit is 'g'/'ml', or 1 unit otherwise.
+      const isStandardizable = [
+        'g',
+        'ml',
+        'gram',
+        'grams',
+        'milliliter',
+        'milliliters',
+      ].includes((data.unit || '').toLowerCase());
+      const standardBasis = isStandardizable ? 100 : 1;
+
+      const ratio = standardBasis / (data.quantity || 1);
+
+      const baseNutrition = {
+        calories: (data.calories || 0) * ratio,
+        protein: (data.protein || 0) * ratio,
+        carbohydrates: (data.carbohydrates || 0) * ratio,
+        fat: (data.fat || 0) * ratio,
+        fiber: (data.fiber || 0) * ratio,
+        sugar: (data.sugar || 0) * ratio,
+        sodium: (data.sodium || 0) * ratio,
+      };
+
+      // Update FoodItem (Source of Truth) for future use
+      await prisma.foodItem.update({
+        where: { id: foodItem.id },
+        data: {
+          nutritionPerUnit: baseNutrition,
+          nutritionBasis: standardBasis,
+          nutritionUnit: data.unit,
+        } as any,
+      });
     }
 
     // Create the consumption log

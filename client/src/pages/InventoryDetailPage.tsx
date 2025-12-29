@@ -242,6 +242,27 @@ export default function InventoryDetailPage() {
     const itemName =
       selectedItem.customName || selectedItem.foodItem?.name || 'Unknown Item';
 
+    // Use EXACT nutrition values from inventory - NO calculations, NO conversions
+    // Just pass through the exact values shown in the inventory card
+    const nutrition = selectedItem.foodItem?.nutritionPerUnit as
+      | {
+          calories?: number;
+          protein?: number;
+          carbohydrates?: number;
+          fat?: number;
+          fiber?: number;
+          sugar?: number;
+          sodium?: number;
+        }
+      | undefined;
+
+    const hasNutrition = nutrition && (
+      nutrition.calories !== undefined ||
+      nutrition.protein !== undefined ||
+      nutrition.carbohydrates !== undefined ||
+      nutrition.fat !== undefined
+    );
+
     try {
       await logConsumptionMutation.mutateAsync({
         inventoryId: inventoryId!,
@@ -251,7 +272,17 @@ export default function InventoryDetailPage() {
         quantity: consumptionData.quantity,
         unit: consumptionData.unit || selectedItem.unit,
         notes: consumptionData.notes,
-      });
+        // Pass EXACT values from inventory - no calculations!
+        ...(hasNutrition && {
+          calories: nutrition.calories,
+          protein: nutrition.protein,
+          carbohydrates: nutrition.carbohydrates,
+          fat: nutrition.fat,
+          fiber: nutrition.fiber,
+          sugar: nutrition.sugar,
+          sodium: nutrition.sodium,
+        }),
+      } as any);
       setShowConsumptionModal(false);
       setSelectedItem(null);
     } catch (error) {
