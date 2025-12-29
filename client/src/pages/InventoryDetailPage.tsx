@@ -11,6 +11,7 @@ import {
   Filter,
   Flame,
   Layers,
+  Minus,
   Package,
   Plus,
   Search,
@@ -242,6 +243,43 @@ export default function InventoryDetailPage() {
     const itemName =
       selectedItem.customName || selectedItem.foodItem?.name || 'Unknown Item';
 
+    // Calculate total nutrition for the consumed quantity
+    const nutrition = selectedItem.foodItem?.nutritionPerUnit as
+      | {
+          calories?: number;
+          protein?: number;
+          carbohydrates?: number;
+          fat?: number;
+          fiber?: number;
+          sugar?: number;
+          sodium?: number;
+        }
+      | undefined;
+
+    const unit = consumptionData.unit || selectedItem.unit;
+    const unitMatch = unit ? unit.match(/^(\d+)(.*)$/) : null;
+    const multiplier = unitMatch ? parseInt(unitMatch[1]) : 1;
+    const effectiveQuantity = consumptionData.quantity * multiplier;
+    const basis = selectedItem.foodItem?.nutritionBasis || 1;
+    const ratio = effectiveQuantity / basis;
+
+    const totalNutrition = nutrition ? {
+      calories: nutrition.calories ? nutrition.calories * ratio : undefined,
+      protein: nutrition.protein ? nutrition.protein * ratio : undefined,
+      carbohydrates: nutrition.carbohydrates ? nutrition.carbohydrates * ratio : undefined,
+      fat: nutrition.fat ? nutrition.fat * ratio : undefined,
+      fiber: nutrition.fiber ? nutrition.fiber * ratio : undefined,
+      sugar: nutrition.sugar ? nutrition.sugar * ratio : undefined,
+      sodium: nutrition.sodium ? nutrition.sodium * ratio : undefined,
+    } : undefined;
+
+    const hasNutrition = totalNutrition && (
+      totalNutrition.calories !== undefined ||
+      totalNutrition.protein !== undefined ||
+      totalNutrition.carbohydrates !== undefined ||
+      totalNutrition.fat !== undefined
+    );
+
     try {
       await logConsumptionMutation.mutateAsync({
         inventoryId: inventoryId!,
@@ -251,7 +289,9 @@ export default function InventoryDetailPage() {
         quantity: consumptionData.quantity,
         unit: consumptionData.unit || selectedItem.unit,
         notes: consumptionData.notes,
-      });
+        // Pass calculated total nutrition for the consumed quantity
+        ...(hasNutrition && totalNutrition),
+      } as any);
       setShowConsumptionModal(false);
       setSelectedItem(null);
     } catch (error) {
@@ -740,19 +780,46 @@ function ConsumptionModal({ item, onClose, onConsume }: ConsumptionModalProps) {
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Quantity Consumed</label>
             <div className="flex gap-2">
-              <input
-                type="number"
-                name="quantity"
-                min="0.1"
-                step="0.1"
-                max={maxQuantity}
-                value={form.quantity}
-                onChange={handleChange}
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-              />
+              <div className="flex items-center border border-gray-300 rounded-xl overflow-hidden">
+                <button
+                  type="button"
+                  onClick={() => setForm(prev => ({ ...prev, quantity: Math.max(0, prev.quantity - 1) }))}
+                  disabled={form.quantity <= 0}
+                  className="px-3 py-2 bg-gray-50 hover:bg-gray-100 text-gray-600 font-bold disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  <Minus className="w-4 h-4" />
+                </button>
+                <input
+                  type="number"
+                  name="quantity"
+                  min="0.1"
+                  step="0.1"
+                  max={maxQuantity}
+                  value={form.quantity}
+                  onChange={handleChange}
+                  className="flex-1 px-4 py-2 text-center border-0 focus:ring-0 focus:outline-none"
+                />
+                <button
+                  type="button"
+                  onClick={() => setForm(prev => ({ ...prev, quantity: Math.min(maxQuantity, prev.quantity + 1) }))}
+                  disabled={form.quantity >= maxQuantity}
+                  className="px-3 py-2 bg-gray-50 hover:bg-gray-100 text-gray-600 font-bold disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  <Plus className="w-4 h-4" />
+                </button>
+              </div>
               <div className="px-4 py-2 bg-gray-100 rounded-xl text-gray-600 font-medium flex items-center">
                 {item.unit || 'units'}
               </div>
+            </div>
+            <div className="mt-2">
+              <button
+                type="button"
+                onClick={() => setForm(prev => ({ ...prev, quantity: maxQuantity }))}
+                className="text-sm text-purple-600 hover:text-purple-700 font-medium"
+              >
+                Consume All ({maxQuantity} {item.unit})
+              </button>
             </div>
           </div>
 

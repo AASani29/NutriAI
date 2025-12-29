@@ -191,6 +191,18 @@ export default function DailyLogPage() {
     }
   };
 
+  const getDisplayQuantity = (quantity: number, unit?: string) => {
+    if (!unit) return `${quantity}`;
+    const match = unit.match(/^(\d+)(.*)$/);
+    if (match) {
+      const num = parseInt(match[1]);
+      const unitPart = match[2];
+      return `${quantity * num}${unitPart}`;
+    } else {
+      return `${quantity} ${unit}`;
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -520,7 +532,7 @@ export default function DailyLogPage() {
 
                                   <div className="flex items-center gap-4 text-sm text-foreground/70">
                                     <span className="font-medium">
-                                      {log.quantity} {log.unit}
+                                    {getDisplayQuantity(log.quantity, log.unit)}
                                     </span>
                                     <span className="flex items-center gap-1">
                                       <Clock className="w-3 h-3" />
