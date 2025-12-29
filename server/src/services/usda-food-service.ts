@@ -35,15 +35,29 @@ export class USDAFoodService {
                 params: {
                     api_key: this.apiKey,
                     query,
-                    pageSize: limit,
+                    pageSize: limit * 2, // Fetch more to allow for deduplication
                 },
             });
 
-            if (!response.data.foods || response.data.foods.length === 0) {
+            const results = response.data.foods || [];
+            if (results.length === 0) {
                 return [];
             }
 
-            return response.data.foods.map((food: any) => this.mapFoodItem(food));
+            // Deduplicate by name (case-insensitive)
+            const uniqueFoods: USDAFoodItem[] = [];
+            const seenNames = new Set<string>();
+
+            for (const food of results) {
+                const name = food.description.toLowerCase().trim();
+                if (!seenNames.has(name)) {
+                    seenNames.add(name);
+                    uniqueFoods.push(this.mapFoodItem(food));
+                }
+                if (uniqueFoods.length >= limit) break;
+            }
+
+            return uniqueFoods;
         } catch (error) {
             console.error('Error searching USDA food:', error);
             return [];
