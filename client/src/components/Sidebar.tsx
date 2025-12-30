@@ -6,7 +6,6 @@ import {
   ChevronLeft,
   ChevronRight,
   LayoutDashboard,
-  Leaf,
   LogOut,
   Package,
   Shield,

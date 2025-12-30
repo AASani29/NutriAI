@@ -1,7 +1,7 @@
 import { useAuth } from '@clerk/clerk-react';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import CTASection from '../components/home/CTASection';
+
 import FeaturesSection from '../components/home/FeaturesSection';
 import Footer from '../components/home/Footer';
 import HeroSection from '../components/home/HeroSection';
