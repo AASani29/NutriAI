@@ -4,7 +4,7 @@ export const fileUploadMiddleware = fileUpload({
   limits: { fileSize: 10 * 1024 * 1024 }, // 10MB max
   useTempFiles: false,
   abortOnLimit: true,
-  limitHandler: (req, res) => {
+  limitHandler: (req: any, res: any) => {
     res.status(413).json({ error: 'File too large. Maximum size is 10MB.' });
   },
 });

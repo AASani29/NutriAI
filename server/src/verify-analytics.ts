@@ -17,8 +17,11 @@ async function verifyAnalytics() {
             data: {
                 email: testUserEmail,
                 clerkId: testClerkId,
-                firstName: 'Test',
-                lastName: 'Analytics',
+                profile: {
+                    create: {
+                        fullName: 'Test Analytics'
+                    }
+                }
             },
         });
 
@@ -30,12 +33,15 @@ async function verifyAnalytics() {
             data: {
                 name: 'Test Apple',
                 category: 'Fruits',
-                calories: 95,
-                protein: 0.5,
-                carbohydrates: 25,
-                fat: 0.3,
+                nutritionPerUnit: {
+                    calories: 95,
+                    protein: 0.5,
+                    carbohydrates: 25,
+                    fat: 0.3,
+                },
                 basePrice: 50, // 50 BDT per unit
                 nutritionBasis: 1,
+                nutritionUnit: 'pcs',
             },
         });
         console.log('✅ FoodItem created:', foodItem.id);
@@ -50,6 +56,7 @@ async function verifyAnalytics() {
             data: {
                 userId: user.id,
                 foodItemId: foodItem.id,
+                itemName: 'Test Apple',
                 quantity: 2, // 2 Apples
                 consumedAt: new Date(),
                 calories: 190, // 95 * 2

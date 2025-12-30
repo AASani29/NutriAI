@@ -1,0 +1,64 @@
+services:
+  # Backend Express Server
+  - type: web
+    name: nutriai-backend
+    env: node
+    plan: free # Can be changed to 'starter' for more power
+    rootDir: server
+    buildCommand: npm install && npx prisma generate && npm run build
+    startCommand: npx prisma migrate deploy && npm run start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: DATABASE_URL
+        fromDatabase:
+          name: nutriai-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: nutriai-redis
+          property: connectionString
+      - key: CLERK_SECRET_KEY
+        sync: false
+      - key: CLERK_PUBLISHABLE_KEY
+        sync: false
+      - key: ALLOWED_ORIGINS
+        sync: false # Should be your Netlify URL
+      - key: GROQ_API_KEY
+        sync: false
+      - key: NEWS_API_KEY
+        sync: false
+      - key: YOUTUBE_API_KEY
+        sync: false
+      - key: USDA_FOOD_API_KEY
+        sync: false
+
+  # Frontend Static Site (Vite/React)
+  - type: web
+    name: nutriai-frontend
+    runtime: static
+    rootDir: client
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_CLERK_PUBLISHABLE_KEY
+        sync: false
+      - key: VITE_API_URL
+        sync: false
+
+  # Redis for BullMQ Queue
+  - type: redis
+    name: nutriai-redis
+    plan: free # Note: Render Free Redis is only available for 1 month
+    ipAllowList: []
+
+databases:
+  - name: nutriai-db
+    plan: free

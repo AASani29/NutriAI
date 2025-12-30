@@ -1,6 +1,6 @@
 
 import { useAuth } from '@clerk/clerk-react';
-import { ArrowRight, Leaf, ChefHat, ScanLine, Brain, Activity } from 'lucide-react';
+import { ArrowRight, ChefHat, ScanLine } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export default function HeroSection() {
