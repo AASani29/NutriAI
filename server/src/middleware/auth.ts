@@ -4,18 +4,7 @@ import { userService } from '../modules/users/users-service';
 import fs from 'fs';
 
 
-// Extend Express Request to include auth
-declare global {
-  namespace Express {
-    interface Request {
-      auth?: {
-        userId: string;
-        sessionId: string;
-      };
-      isFirstSync?: boolean;
-    }
-  }
-}
+
 
 // Create the middleware instance
 const clerkAuth = ClerkExpressRequireAuth();
