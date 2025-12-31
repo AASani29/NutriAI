@@ -2,6 +2,10 @@ import { useAuth } from '@clerk/clerk-react';
 import { useQueryClient } from '@tanstack/react-query';
 import {
   AlertCircle,
+  ArrowRight,
+  Plus,
+  Search,
+  Package,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -40,7 +44,7 @@ export default function InventoryDetailPage() {
   const [showConsumptionModal, setShowConsumptionModal] = useState(false);
   const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
   const [search, setSearch] = useState('');
-  const [showFilters, setShowFilters] = useState(false);
+  // const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState({
     category: '',
     expiryStatus: '',
@@ -324,131 +328,130 @@ export default function InventoryDetailPage() {
   }, 0) || 0;
 
   return (
-    <main className="flex-1 flex flex-col h-[calc(100vh-2rem)] overflow-hidden rounded-3xl relative">
-      {/* Premium Header */}
-      <header className="flex flex-col md:flex-row justify-between items-center mb-6 px-4 pt-2 gap-4">
-        <div className="flex items-center gap-4">
-          <button
-            onClick={() => navigate('/inventory')}
-            className="w-10 h-10 flex items-center justify-center rounded-full bg-white  shadow-soft hover:text-primary transition-all"
-          >
-            <span className="material-icons-outlined">arrow_back</span>
-          </button>
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight text-foreground font-display flex items-center gap-2">
-              {inventory.name}
-              {inventory.isPrivate && <span className="material-icons-outlined text-muted-foreground text-sm">lock</span>}
-            </h1>
-            <p className="text-muted-foreground text-sm">‎৳{totalValue.toFixed(2)} total value • {totalItems} items</p>
-          </div>
-        </div>
+    <main className="flex-1 overflow-y-auto bg-white min-h-screen">
+      <div className="container mx-auto px-4 py-8 md:px-6 lg:px-8 max-w-7xl">
+        {/* Premium Header */}
+        <header className="flex flex-col gap-6 mb-10 px-4">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => navigate('/inventory')}
+                className="w-12 h-12 flex items-center justify-center rounded-xl bg-slate-50 text-slate-400 hover:text-primary transition-all border border-slate-100"
+              >
+                <ArrowRight className="w-5 h-5 rotate-180" />
+              </button>
+              <div>
+                <h1 className="text-3xl md:text-4xl font-black tracking-tight text-slate-900 flex items-center gap-3">
+                  {inventory.name}
+                  {inventory.isPrivate && <span className="material-icons-outlined text-muted-foreground text-sm">lock</span>}
+                </h1>
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">
+                  ৳{totalValue.toFixed(2)} VALUATION • {totalItems} UNITS DETECTED
+                </p>
+              </div>
+            </div>
 
-        <div className="flex items-center gap-3">
-          <div className="relative hidden lg:block group">
-            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors">
-              <span className="material-icons-outlined">search</span>
-            </span>
+            <div className="flex items-center gap-3 w-full md:w-auto">
+              <button
+                onClick={() => setShowImageUploadModal(true)}
+                className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-slate-100 text-slate-800 px-6 py-4 rounded-xl hover:bg-slate-200 transition-all font-black text-[10px] uppercase tracking-widest"
+              >
+                <span className="material-icons-round text-lg">photo_camera</span>
+                <span>Scan Receipt</span>
+              </button>
+
+              <button
+                onClick={() => setShowAddModal(true)}
+                className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-black text-white px-6 py-4 rounded-xl hover:opacity-90 transition-all shadow-lg shadow-black/10 font-black text-[10px] uppercase tracking-widest"
+              >
+                <Plus className="w-5 h-5" />
+                <span>Add Item</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Search Bar Mobile/Desktop */}
+          <div className="relative group w-full md:max-w-md">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors w-4 h-4" />
             <input
               type="text"
-              placeholder="Search food, nutrients..."
+              placeholder="Filter by name, category, or nutrients..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-12 pr-4 py-3 w-64 rounded-full bg-white border-none shadow-soft focus:ring-2 focus:ring-primary/50 text-sm transition-all placeholder-muted-foreground text-foreground"
+              className="pl-12 pr-4 py-4 w-full rounded-xl bg-slate-50 border-none focus:ring-4 focus:ring-primary/10 text-sm transition-all font-medium text-slate-800 outline-none"
             />
           </div>
-          
-          <button
-            onClick={() => setShowImageUploadModal(true)}
-            className="flex items-center gap-2 bg-primary text-gray-900 px-6 py-3 rounded-full hover:shadow-lg transition-all font-bold"
-          >
-            <span className="material-icons-round text-lg">photo_camera</span>
-            <span>Scan Receipt</span>
-          </button>
+        </header>
 
-          <button
-            onClick={() => setShowAddModal(true)}
-            className="flex items-center gap-2 bg-black text-white px-6 py-3 rounded-full hover:bg-gray-900 transition-all shadow-lg font-medium"
-          >
-            <span className="material-icons-round text-lg">add</span>
-            <span>Add Item</span>
-          </button>
-        </div>
-      </header>
-
-      {/* Main Scrollable Content */}
-      <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-6">
+        {/* Weather & Alerts Section */}
+        <div className="mb-12 space-y-8">
         {/* Weather Alerts / Widgets */}
         {!alertsLoading && weatherAlerts.length > 0 && (
           <div className="animate-slide-in">
             <WeatherAlertBanner alerts={weatherAlerts} />
           </div>
         )}
-        <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
-          <WeatherWidget className="min-w-[300px] shadow-soft rounded-3xl" />
+          <div className="w-full">
+            <WeatherWidget className="shadow-sm rounded-[2rem] border border-slate-100" />
+          </div>
         </div>
 
-        {/* Filter Bar */}
-        <div className="flex flex-wrap items-center gap-3">
+        {/* Header Controls */}
+        <div className="flex flex-wrap items-center gap-4 px-4">
           <button 
             onClick={() => clearFilters()}
-            className={`px-5 py-2 rounded-full font-medium text-sm transition-all ${!hasActiveFilters ? 'bg-black text-white' : 'bg-white text-muted-foreground hover:bg-gray-50 shadow-sm border border-transparent hover:border-gray-200'}`}
+            className={`px-6 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all ${!hasActiveFilters ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'bg-white text-slate-400 border border-slate-100'}`}
           >
-            All Items
+            All Stock
           </button>
           
           <div className="flex gap-2">
             <select
               value={filters.category}
               onChange={(e) => setFilters(prev => ({ ...prev, category: e.target.value }))}
-              className="px-4 py-2 rounded-full bg-white  border-none shadow-soft text-sm focus:ring-2 focus:ring-primary/50 outline-none"
+              className="px-4 py-2.5 rounded-xl bg-white border border-slate-100 text-[10px] font-black uppercase tracking-widest outline-none focus:ring-4 focus:ring-primary/10 transition-all"
             >
-              <option value="">Categories</option>
+              <option value="">Filter Category</option>
               {availableCategories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
             </select>
 
             <select
               value={filters.expiryStatus}
               onChange={(e) => setFilters(prev => ({ ...prev, expiryStatus: e.target.value }))}
-              className="px-4 py-2 rounded-full bg-white  border-none shadow-soft text-sm focus:ring-2 focus:ring-primary/50 outline-none"
+              className="px-4 py-2.5 rounded-xl bg-white border border-slate-100 text-[10px] font-black uppercase tracking-widest outline-none focus:ring-4 focus:ring-primary/10 transition-all"
             >
-              <option value="">Freshness</option>
-              <option value="fresh">Fresh</option>
+              <option value="">Filter Freshness</option>
+              <option value="fresh">Fresh Status</option>
               <option value="expiring-soon">Expiring Soon</option>
-              <option value="expired">Expired</option>
+              <option value="expired">Expired Hubs</option>
             </select>
           </div>
-
-          <button 
-            onClick={() => setShowFilters(!showFilters)}
-            className="ml-auto w-10 h-10 flex items-center justify-center rounded-full bg-white text-muted-foreground shadow-sm hover:bg-gray-50 transition-colors"
-          >
-            <span className="material-icons-outlined text-xl">tune</span>
-          </button>
         </div>
 
         {/* Item Grid */}
+        <div className="px-4">
         {itemsLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {Array(8).fill(0).map((_, i) => (
-              <div key={i} className="h-64 bg-white  rounded-3xl animate-pulse shadow-soft"></div>
+              <div key={i} className="h-72 bg-slate-50 rounded-[2rem] animate-pulse border border-slate-100"></div>
             ))}
           </div>
         ) : filteredItems.length === 0 ? (
-          <div className="text-center py-20 bg-white  rounded-3xl border-2 border-dashed border-gray-100 dark:border-gray-800">
-            <div className="w-20 h-20 bg-gray-50 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-6">
-              <span className="material-icons-outlined text-4xl text-gray-300">shopping_basket</span>
+          <div className="text-center py-20 bg-slate-50 rounded-[2.5rem] border border-slate-100 max-w-2xl mx-auto">
+            <div className="w-20 h-20 bg-white rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-sm">
+              <Package className="w-10 h-10 text-slate-200" />
             </div>
-            <h3 className="text-xl font-bold text-foreground mb-2">Inventory is Empty</h3>
-            <p className="text-muted-foreground max-w-sm mx-auto mb-8">Start by adding items manually or scanning a grocery receipt.</p>
+            <h3 className="text-2xl font-black text-slate-800 mb-2 tracking-tight">System Empty</h3>
+            <p className="text-slate-400 font-medium max-w-sm mx-auto mb-8 h-10 opacity-70 italic uppercase text-[10px] tracking-widest">Awaiting local registry synchronization</p>
             <button
               onClick={() => setShowAddModal(true)}
-              className="px-8 py-3 bg-primary text-gray-900 font-bold rounded-full hover:shadow-lg transition-all"
+              className="px-10 py-4 bg-primary text-white font-black text-[10px] uppercase tracking-widest rounded-xl hover:shadow-lg transition-all active:scale-95 shadow-primary/20 shadow-md"
             >
-              Add First Item
+              Add First Record
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 pb-20">
             {filteredItems.map(item => {
               const itemName = item.customName || item.foodItem?.name || 'Unknown Item';
               const category = item.foodItem?.category || 'General';
@@ -456,56 +459,67 @@ export default function InventoryDetailPage() {
               const today = new Date();
               const daysLeft = expDate ? Math.ceil((expDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)) : null;
 
-              let statusColor = 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300';
-              let statusLabel = 'Fresh';
+              let statusColor = 'bg-emerald-50 text-emerald-600 border-emerald-100';
+              let statusLabel = 'STABLE';
               if (daysLeft !== null) {
                 if (daysLeft < 0) {
-                  statusColor = 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300';
-                  statusLabel = 'Expired';
+                  statusColor = 'bg-red-50 text-red-600 border-red-100';
+                  statusLabel = 'EXPIRED';
                 } else if (daysLeft <= 3) {
-                  statusColor = 'bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300';
-                  statusLabel = 'Low Freshness';
+                  statusColor = 'bg-primary/10 text-primary border-primary/20';
+                  statusLabel = 'CRITICAL';
                 }
               }
 
               return (
-                <div key={item.id} className="bg-white  rounded-3xl p-5 shadow-soft hover:shadow-lg transition-all group relative border border-transparent hover:border-primary/20">
-                  <div className={`absolute top-4 right-4 text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wider ${statusColor}`}>
+                <div key={item.id} className="bg-white rounded-[2rem] p-6 border border-slate-100 hover:border-primary/30 hover:shadow-xl hover:shadow-primary/5 transition-all group relative flex flex-col h-full">
+                  <div className={`absolute top-6 right-6 text-[10px] font-black px-3 py-1 rounded-lg uppercase tracking-widest border ${statusColor} z-10`}>
                     {statusLabel}
                   </div>
                   
-                  <div className="flex items-center justify-center h-32 mb-4 bg-gray-50 dark:bg-gray-800 rounded-2xl group-hover:scale-[1.02] transition-transform duration-300 text-6xl">
-                    {category.toLowerCase().includes('fruit') ? '🍎' :
-                      category.toLowerCase().includes('veg') ? '🥦' :
-                        category.toLowerCase().includes('meat') ? '🥩' :
-                          category.toLowerCase().includes('dairy') ? '🥛' :
-                            category.toLowerCase().includes('grain') ? '🌾' : '📦'}
+                  <div className="flex items-center justify-center h-40 mb-6 bg-slate-50 rounded-[1.5rem] group-hover:bg-primary/5 transition-all duration-500 text-7xl select-none">
+                    <span className="group-hover:scale-110 group-hover:rotate-6 transition-all duration-700 block">
+                      {category.toLowerCase().includes('fruit') ? '🍎' :
+                        category.toLowerCase().includes('veg') ? '🥦' :
+                          category.toLowerCase().includes('meat') ? '🥩' :
+                            category.toLowerCase().includes('dairy') ? '🥛' :
+                              category.toLowerCase().includes('grain') ? '🌾' : '📦'}
+                    </span>
                   </div>
 
-                  <h4 className="font-bold text-lg text-foreground mb-1 line-clamp-1">{itemName}</h4>
-                  <p className="text-xs text-muted-foreground mb-4">
-                    {category} • {expDate ? `Expires in ${daysLeft} days` : 'No expiry'}
-                  </p>
-
-                  <div className="flex items-center justify-between mt-auto">
+                  <div className="space-y-4 flex-1 flex flex-col">
                     <div>
-                      <span className="text-2xl font-bold text-foreground">{item.quantity}</span>
-                      <span className="text-xs text-muted-foreground ml-1">{item.unit || 'pcs'}</span>
+                      <h4 className="font-black text-xl text-slate-800 mb-1 group-hover:text-primary transition-colors leading-tight line-clamp-1">{itemName}</h4>
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest opacity-60">
+                        {category} HUB • {expDate ? `${daysLeft}d REMAINING` : 'PERPETUAL'}
+                      </p>
                     </div>
-                    
-                    <button
-                      onClick={() => handleConsumption(item)}
-                      disabled={item.quantity <= 0}
-                      className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-gray-900 hover:bg-primary-dark transition-colors shadow-md shadow-primary/30 disabled:opacity-50"
-                    >
-                      <span className="material-icons-round text-lg">restaurant</span>
-                    </button>
+
+                    <div className="mt-auto pt-6 border-t border-slate-50 flex items-center justify-between">
+                      <div className="flex flex-col">
+                        <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest mb-1">Stock Load</span>
+                        <div>
+                          <span className="text-2xl font-black text-slate-800">{item.quantity}</span>
+                          <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{item.unit || 'pcs'}</span>
+                        </div>
+                      </div>
+                      
+                      <button
+                        onClick={() => handleConsumption(item)}
+                        disabled={item.quantity <= 0}
+                        className="w-12 h-12 rounded-xl bg-slate-900 text-white hover:bg-black transition-all shadow-lg active:scale-90 disabled:opacity-20 flex items-center justify-center"
+                        title="Log Consumption"
+                      >
+                        <ArrowRight className="w-5 h-5" />
+                      </button>
+                    </div>
                   </div>
                 </div>
               );
             })}
           </div>
         )}
+        </div>
       </div>
 
       {/* --- MODALS & OVERLAYS --- */}

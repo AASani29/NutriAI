@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Twitter, Instagram, Facebook, Utensils, Mail, MapPin, Phone } from 'lucide-react';
+import { Twitter, Instagram, Facebook, Mail, MapPin, Phone } from 'lucide-react';
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
@@ -11,11 +11,10 @@ export default function Footer() {
 
           {/* Brand Column */}
           <div className="flex flex-col gap-6">
-            <Link to="/" className="flex items-center gap-2 group">
-              <div className="w-10 h-10 rounded-xl bg-black flex items-center justify-center shadow-lg shadow-black/10 group-hover:bg-primary transition-colors">
-                <Utensils className="w-6 h-6 text-white" />
+            <Link to="/" className="flex items-center group">
+              <div className="h-12 w-auto flex items-center justify-center transition-transform group-hover:scale-105">
+                <img src="/logo.png" alt="NutriAI Logo" className="h-full w-auto object-contain" />
               </div>
-              <span className="font-black text-2xl tracking-tighter text-foreground group-hover:text-primary transition-colors">NutriAI</span>
             </Link>
             <p className="text-muted-foreground leading-relaxed text-sm font-medium">
               The intelligent operating system for your kitchen. Manage inventory, optimize nutrition, and minimize waste—all in one place.

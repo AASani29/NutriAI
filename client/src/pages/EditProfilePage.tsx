@@ -114,26 +114,35 @@ export default function EditProfilePage() {
   ];
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl">
-      <div className="max-w-2xl mx-auto space-y-6">
-      {/* Back Button */}
-      <Link
-        to="/profile"
-        className="inline-flex items-center gap-2 text-muted-foreground hover:text-black transition-all font-bold group"
-      >
-        <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
-        Back to Profile
-      </Link>
+    <main className="flex-1 overflow-y-auto">
+      <div className="container mx-auto px-4 py-8 max-w-7xl">
+        <div className="max-w-3xl mx-auto space-y-10">
+          {/* Header */}
+          <div className="flex items-center justify-between">
+            <Link
+              to="/profile"
+              className="inline-flex items-center gap-3 px-6 py-3 bg-white text-black border border-gray-100 rounded-full hover:bg-gray-50 transition-all font-black uppercase tracking-widest text-[10px] shadow-sm group"
+            >
+              <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
+              Back to Profile
+            </Link>
+          </div>
 
-      {/* Form */}
-      <div className="bg-white rounded-2xl border border-gray-100 p-8 shadow-soft">
-        <h1 className="text-3xl font-black text-foreground mb-8 tracking-tight">Edit Profile</h1>
+          {/* Form */}
+          <div className="bg-white rounded-[2.5rem] border border-gray-100 p-10 md:p-12 shadow-soft relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full -mr-32 -mt-32 blur-3xl"></div>
+            
+            <div className="relative z-10">
+              <header className="mb-12">
+                <h1 className="text-4xl font-black text-black tracking-tight mb-2">Edit Metadata</h1>
+                <p className="text-muted-foreground font-medium uppercase tracking-[0.2em] text-[10px]">Registry & Personal Metrics</p>
+              </header>
 
-        <form onSubmit={handleSubmit} className="space-y-8">
+              <form onSubmit={handleSubmit} className="space-y-10">
           {/* Full Name */}
           <div>
-            <label htmlFor="fullName" className="block text-xs font-bold text-muted-foreground mb-3 uppercase tracking-wider">
-              Full Name <span className="text-primary-dark">*</span>
+            <label htmlFor="fullName" className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-3 block">
+              Full Name <span className="text-primary">*</span>
             </label>
             <div className="relative group">
                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-black transition-colors">
@@ -145,7 +154,7 @@ export default function EditProfilePage() {
                  name="fullName"
                  value={formData.fullName}
                  onChange={handleChange}
-                 className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50 text-foreground font-medium placeholder:text-muted-foreground transition-all"
+                 className="w-full pl-12 pr-4 py-5 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-4 focus:ring-primary/20 text-foreground font-black placeholder:text-muted-foreground/50 transition-all"
                  placeholder="Enter your full name"
                  required
                />
@@ -154,7 +163,7 @@ export default function EditProfilePage() {
 
           {/* Dietary Preference */}
           <div>
-            <label htmlFor="dietaryPreference" className="block text-xs font-bold text-muted-foreground mb-3 uppercase tracking-wider">
+            <label htmlFor="dietaryPreference" className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-3 block">
               Dietary Preference
             </label>
             <div className="relative group">
@@ -166,7 +175,7 @@ export default function EditProfilePage() {
                  name="dietaryPreference"
                  value={formData.dietaryPreference}
                  onChange={handleChange}
-                 className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50 text-foreground font-medium transition-all appearance-none"
+                 className="w-full pl-12 pr-4 py-5 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-4 focus:ring-primary/20 text-foreground font-black transition-all appearance-none"
                >
                  {dietaryOptions.map((option) => (
                    <option key={option.value} value={option.value}>
@@ -179,7 +188,7 @@ export default function EditProfilePage() {
 
           {/* Location */}
           <div>
-            <label htmlFor="location" className="block text-xs font-bold text-muted-foreground mb-3 uppercase tracking-wider">
+            <label htmlFor="location" className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-3 block">
               Location
             </label>
             <div className="relative group">
@@ -192,7 +201,7 @@ export default function EditProfilePage() {
                  name="location"
                  value={formData.location}
                  onChange={handleChange}
-                 className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50 text-foreground font-medium placeholder:text-muted-foreground transition-all"
+                 className="w-full pl-12 pr-4 py-5 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-4 focus:ring-primary/20 text-foreground font-black placeholder:text-muted-foreground/50 transition-all"
                  placeholder="e.g., Dhaka, Bangladesh"
                />
             </div>
@@ -200,7 +209,7 @@ export default function EditProfilePage() {
 
           {/* Budget Range */}
           <div>
-            <label htmlFor="budgetRange" className="block text-xs font-bold text-muted-foreground mb-3 uppercase tracking-wider">
+            <label htmlFor="budgetRange" className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-3 block">
               Monthly Budget (৳)
             </label>
             <div className="relative group">
@@ -215,7 +224,7 @@ export default function EditProfilePage() {
                  onChange={handleChange}
                  min="0"
                  step="0.01"
-                 className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50 text-foreground font-medium placeholder:text-muted-foreground transition-all"
+                 className="w-full pl-12 pr-4 py-5 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-4 focus:ring-primary/20 text-foreground font-black placeholder:text-muted-foreground/50 transition-all"
                  placeholder="e.g., 5000"
                />
             </div>
@@ -223,7 +232,7 @@ export default function EditProfilePage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label htmlFor="height" className="block text-xs font-bold text-muted-foreground mb-3 uppercase tracking-wider">
+              <label htmlFor="height" className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-3 block">
                 Height (cm)
               </label>
               <div className="relative group">
@@ -238,14 +247,14 @@ export default function EditProfilePage() {
                    onChange={handleChange}
                    min="0"
                    step="0.1"
-                   className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50 text-foreground font-medium placeholder:text-muted-foreground transition-all"
+                   className="w-full pl-12 pr-4 py-5 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-4 focus:ring-primary/20 text-foreground font-black placeholder:text-muted-foreground/50 transition-all"
                    placeholder="e.g., 170"
                  />
               </div>
             </div>
 
             <div>
-              <label htmlFor="weight" className="block text-xs font-bold text-muted-foreground mb-3 uppercase tracking-wider">
+              <label htmlFor="weight" className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-3 block">
                 Weight (kg)
               </label>
               <div className="relative group">
@@ -260,7 +269,7 @@ export default function EditProfilePage() {
                    onChange={handleChange}
                    min="0"
                    step="0.1"
-                   className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50 text-foreground font-medium placeholder:text-muted-foreground transition-all"
+                   className="w-full pl-12 pr-4 py-5 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-4 focus:ring-primary/20 text-foreground font-black placeholder:text-muted-foreground/50 transition-all"
                    placeholder="e.g., 70"
                  />
               </div>
@@ -269,7 +278,7 @@ export default function EditProfilePage() {
 
           {/* Weight Preference */}
           <div>
-            <label htmlFor="weightPreference" className="block text-xs font-bold text-muted-foreground mb-3 uppercase tracking-wider">
+            <label htmlFor="weightPreference" className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-3 block">
               Weight Goal
             </label>
             <div className="relative group">
@@ -281,7 +290,7 @@ export default function EditProfilePage() {
                  name="weightPreference"
                  value={formData.weightPreference}
                  onChange={handleChange}
-                 className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50 text-foreground font-medium transition-all appearance-none"
+                 className="w-full pl-12 pr-4 py-5 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-4 focus:ring-primary/20 text-foreground font-black transition-all appearance-none"
                >
                  <option value="">Select a goal</option>
                  <option value="lose">Lose Weight</option>
@@ -293,7 +302,7 @@ export default function EditProfilePage() {
 
           {/* Allergies */}
           <div>
-            <label htmlFor="allergies" className="block text-xs font-bold text-muted-foreground mb-3 uppercase tracking-wider">
+            <label htmlFor="allergies" className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-3 block">
               Allergies
             </label>
             <div className="relative group">
@@ -306,7 +315,7 @@ export default function EditProfilePage() {
                  name="allergies"
                  value={formData.allergies}
                  onChange={handleChange}
-                 className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50 text-foreground font-medium placeholder:text-muted-foreground transition-all"
+                 className="w-full pl-12 pr-4 py-5 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-4 focus:ring-primary/20 text-foreground font-black placeholder:text-muted-foreground/50 transition-all"
                  placeholder="e.g., Peanuts, Seafood, Dairy"
                />
             </div>
@@ -315,7 +324,7 @@ export default function EditProfilePage() {
 
           {/* Health Conditions */}
           <div>
-            <label htmlFor="healthConditions" className="block text-xs font-bold text-muted-foreground mb-3 uppercase tracking-wider">
+            <label htmlFor="healthConditions" className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-3 block">
               Health Condition
             </label>
             <div className="relative group">
@@ -327,7 +336,7 @@ export default function EditProfilePage() {
                  name="healthConditions"
                  value={formData.healthConditions}
                  onChange={handleChange}
-                 className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50 text-foreground font-medium transition-all appearance-none"
+                 className="w-full pl-12 pr-4 py-5 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-4 focus:ring-primary/20 text-foreground font-black transition-all appearance-none"
                >
                  {healthOptions.map((option) => (
                    <option key={option.value} value={option.value}>
@@ -353,37 +362,39 @@ export default function EditProfilePage() {
             </div>
           )}
 
-          {/* Submit Button */}
-          <div className="flex gap-4 pt-4">
-            <button
-              type="button"
-              onClick={() => navigate('/profile')}
-              className="flex-1 px-6 py-4 bg-gray-100 text-black rounded-xl hover:bg-gray-200 transition-all font-bold shadow-sm"
-              disabled={loading}
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={loading}
-              className="flex-1 inline-flex items-center justify-center gap-2 px-6 py-4 bg-black text-white rounded-xl hover:bg-gray-900 transition-all font-bold disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
-            >
-              {loading ? (
-                <>
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  Saving...
-                </>
-              ) : (
-                <>
-                  <Save className="w-5 h-5" />
-                  Save Changes
-                </>
-              )}
-            </button>
-          </div>
-        </form>
+            {/* Submit Button */}
+            <div className="flex flex-col sm:flex-row gap-4 pt-4 relative z-10">
+              <button
+                type="button"
+                onClick={() => navigate('/profile')}
+                className="flex-1 px-8 py-5 bg-gray-50 text-black border border-gray-200 rounded-2xl hover:bg-gray-100 transition-all font-black uppercase tracking-widest text-xs active:scale-95"
+                disabled={loading}
+              >
+                Cancel Changes
+              </button>
+              <button
+                type="submit"
+                disabled={loading}
+                className="flex-1 inline-flex items-center justify-center gap-2 px-8 py-5 bg-primary text-white rounded-2xl hover:bg-primary-dark transition-all font-black uppercase tracking-widest text-xs disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_20px_40px_-15px_rgba(172,156,6,0.3)] active:scale-95"
+              >
+                {loading ? (
+                  <>
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    Synchronizing...
+                  </>
+                ) : (
+                  <>
+                    <Save className="w-5 h-5" />
+                    Commit Updates
+                  </>
+                )}
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
       </div>
     </div>
+    </main>
   );
 }

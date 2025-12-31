@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useInventory } from '../hooks/useInventory';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, Plus, Search, Package, AlertTriangle, ArrowRight, CheckCircle2, MoreHorizontal, Settings2, Database, Warehouse } from 'lucide-react';
 
 export default function InventoryPage() {
   const [showAddModal, setShowAddModal] = useState(false);
@@ -33,18 +33,26 @@ export default function InventoryPage() {
   const totalItems = inventories?.reduce((acc, inv) => acc + (inv.itemCount || 0), 0) || 0;
   const expiringSoon = inventories?.reduce((acc, inv) => acc + (inv.expiringCount || 0), 0) || 0;
 
+  const getInventoryIcon = (name: string) => {
+    const n = name.toLowerCase();
+    if (n.includes('fridge') || n.includes('refrigerator')) return <Warehouse className="w-8 h-8" />;
+    if (n.includes('pantry') || n.includes('cabinet')) return <Database className="w-8 h-8" />;
+    if (n.includes('office')) return <Package className="w-8 h-8" />;
+    return <Package className="w-8 h-8" />;
+  };
+
   if (isError) {
     return (
       <div className="flex items-center justify-center min-h-[60vh] p-4 text-center">
-        <div className="bg-white p-8 rounded-3xl shadow-soft border border-red-100 max-w-md">
-          <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-foreground mb-2">Error Loading Inventories</h2>
-          <p className="text-muted-foreground mb-6">We couldn't fetch your pantry data. Please try again.</p>
+        <div className="bg-white p-12 rounded-[2.5rem] shadow-soft border border-red-50 max-w-md">
+          <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-6" />
+          <h2 className="text-2xl font-black text-black mb-2 tracking-tight">Sync Error</h2>
+          <p className="text-muted-foreground font-medium mb-8">Unable to fetch sync records from the server.</p>
           <button
             onClick={() => refetch()}
-            className="w-full py-3 bg-primary text-gray-900 rounded-full font-bold hover:shadow-lg transition-all"
+            className="w-full py-4 bg-primary text-white rounded-xl font-black text-xs uppercase tracking-widest hover:bg-primary-dark transition-all shadow-lg shadow-primary/20"
           >
-            Retry
+            Retry Connection
           </button>
         </div>
       </div>
@@ -52,281 +60,302 @@ export default function InventoryPage() {
   }
 
   return (
-    <main className="flex-1 overflow-y-auto">
-      <div className="container mx-auto px-4 py-8 max-w-7xl space-y-8">
-      {/* Header */}
-      <header className="flex justify-between items-center mb-6 px-4 pt-2">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground font-display">Pantry Inventory</h1>
-          <p className="text-muted-foreground mt-1">Manage your nutrition stock efficiently.</p>
-        </div>
-        <div className="flex items-center gap-4">
-          <div className="relative hidden md:block group">
-            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors">
-              <span className="material-icons-outlined">search</span>
-            </span>
-            <input
-              type="text"
-              placeholder="Search inventories..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pl-12 pr-4 py-3 w-80 rounded-full bg-white border-none shadow-soft focus:ring-2 focus:ring-primary/50 text-sm transition-all placeholder-muted-foreground text-foreground"
-            />
+    <main className="flex-1 overflow-y-auto bg-white">
+      <div className="container mx-auto px-6 py-8 max-w-7xl space-y-8">
+        {/* Header */}
+        <header className="flex justify-between items-center mb-6 px-4">
+          <div>
+            <h1 className="text-3xl font-black tracking-tight text-slate-900">Pantry Inventory</h1>
+            <p className="text-slate-400 font-medium mt-1">Manage your nutrition stock efficiently.</p>
           </div>
-          <button
-            onClick={() => setShowAddModal(true)}
-            className="flex items-center gap-2 bg-gray-900 dark:bg-white text-white dark:text-gray-900 px-6 py-3 rounded-full hover:bg-gray-800 dark:hover:bg-gray-200 transition-all shadow-lg shadow-black/20 font-medium"
-          >
-            <span className="material-icons-round text-lg">add</span>
-            <span>New Pantry</span>
-          </button>
-        </div>
-      </header>
+          <div className="flex items-center gap-4">
+            <div className="relative hidden md:block group">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors w-4 h-4" />
+              <input
+                type="text"
+                placeholder="Search inventories..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-11 pr-4 py-3 w-80 rounded-xl bg-slate-50 border-none focus:ring-4 focus:ring-primary/10 text-sm transition-all font-medium text-slate-800 outline-none"
+              />
+            </div>
+            <button
+              onClick={() => setShowAddModal(true)}
+              className="flex items-center gap-2 bg-black text-white px-6 py-3 rounded-xl hover:opacity-90 transition-all shadow-lg shadow-black/20 font-black text-[10px] uppercase tracking-widest active:scale-95"
+            >
+              <Plus className="w-4 h-4" />
+              <span>New Pantry</span>
+            </button>
+          </div>
+        </header>
 
-      {/* Main Content Area */}
-      <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Main Hero Card */}
-          <div className="col-span-1 md:col-span-2 bg-gradient-to-br from-[#D2E823] to-[#b5c91e] rounded-3xl p-8 relative overflow-hidden text-gray-900 shadow-soft group">
-            <div className="absolute -right-10 -top-10 w-40 h-40 bg-white/10 rounded-full blur-2xl"></div>
-            <div className="absolute left-20 bottom-0 w-32 h-32 bg-primary/30 rounded-full blur-3xl"></div>
-            <div className="relative z-10 flex justify-between items-start h-full flex-col md:flex-row">
-              <div className="flex flex-col justify-between h-full">
-                <div>
-                  <h3 className="text-black text-sm font-medium mb-1 uppercase tracking-wider">Nutrition Summary</h3>
-                  <h2 className="text-3xl md:text-4xl font-bold mb-4 leading-tight font-display text-black">Optimizing your<br />household health!</h2>
-                  <p className="text-black/80 max-w-sm text-sm md:text-base">You have {totalItems} items across {inventories?.length || 0} inventories. Keep track of expiry dates to reduce waste.</p>
+        {/* Hero & Status Section */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 px-4">
+          {/* Main Hero Card - Slate instead of Primary Gold */}
+          <div className="col-span-1 md:col-span-2 bg-slate-900 rounded-[2.5rem] p-10 relative overflow-hidden text-white shadow-xl group">
+            <div className="absolute -right-20 -top-20 w-64 h-64 bg-primary/10 rounded-full blur-[80px]"></div>
+            <div className="relative z-10 flex flex-col justify-between h-full">
+              <div>
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 mb-6">
+                  <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></div>
+                  <span className="text-primary text-[10px] font-black uppercase tracking-[0.2em]">Nutrition Intelligence</span>
                 </div>
-                <div className="mt-8">
-                  <button className="bg-black text-white px-6 py-3 rounded-full font-semibold hover:bg-gray-900 transition-colors flex items-center gap-2 shadow-lg shadow-black/20">
-                    Get AI Recommendations
-                    <span className="material-icons-round text-sm">arrow_forward</span>
-                  </button>
-                </div>
+                <h2 className="text-4xl md:text-6xl font-black mb-6 leading-[1.1] tracking-tighter uppercase">
+                  Synthesize Your<br />
+                  <span className="text-primary">Household Health</span>
+                </h2>
+                <p className="text-slate-400 max-w-md text-sm font-medium leading-relaxed">
+                  Monitor <span className="text-white font-black">{totalItems} active units</span> distributed across <span className="text-white font-black">{inventories?.length || 0} secure hubs</span>. 
+                  Leverage AI to optimize your consumption and eliminate waste.
+                </p>
               </div>
-              <div className="hidden md:block relative w-48 h-48 bg-black/10 rounded-2xl backdrop-blur-sm border border-black/20 p-4 flex flex-col items-center justify-center transform group-hover:scale-105 transition-transform duration-500">
-                <span className="material-icons-outlined text-6xl mb-2 text-black/80">eco</span>
-                <span className="text-2xl font-bold text-black">{expiringSoon === 0 ? '100%' : '85%'}</span>
-                <span className="text-xs text-black/60">Health Score</span>
+              <div className="mt-12 flex flex-wrap gap-4">
+                <button className="bg-white text-slate-900 px-10 py-4 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-50 transition-all flex items-center gap-3 active:scale-95 shadow-xl shadow-white/5">
+                  Analyze Stock Integrity
+                  <ArrowRight className="w-5 h-5" />
+                </button>
               </div>
             </div>
           </div>
 
           {/* Status Card */}
-          <div className="bg-card  rounded-3xl p-6 shadow-soft flex flex-col justify-between">
+          <div className="bg-slate-50 rounded-[2.5rem] p-8 border border-slate-100 flex flex-col justify-between">
             <div>
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="font-bold text-lg dark:text-white">Inventory Health</h3>
-                <button className="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
-                  <span className="material-icons-outlined text-gray-500 dark:text-gray-300 text-sm">more_horiz</span>
-                </button>
+              <div className="flex justify-between items-center mb-10">
+                <h3 className="font-black text-sm text-slate-400 uppercase tracking-widest">Inventory Health</h3>
+                <MoreHorizontal className="w-5 h-5 text-slate-300" />
               </div>
-              <div className="space-y-4">
+              <div className="space-y-8">
                 <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-green-600">
-                    <span className="material-icons-round">check_circle</span>
+                  <div className="w-12 h-12 rounded-xl bg-white flex items-center justify-center text-primary shadow-sm border border-slate-100">
+                    <CheckCircle2 className="w-6 h-6" />
                   </div>
                   <div>
-                    <p className="text-2xl font-bold text-foreground">{totalItems}</p>
-                    <p className="text-xs text-muted-foreground">Total Items tracked</p>
+                    <p className="text-3xl font-black text-slate-900 leading-none">{totalItems}</p>
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Total Items</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center text-orange-600">
-                    <span className="material-icons-round">warning</span>
+                  <div className="w-12 h-12 rounded-xl bg-white flex items-center justify-center text-red-500 shadow-sm border border-slate-100">
+                    <AlertTriangle className="w-6 h-6" />
                   </div>
                   <div>
-                    <p className="text-2xl font-bold text-foreground">{expiringSoon}</p>
-                    <p className="text-xs text-muted-foreground">Expiring Soon</p>
+                    <p className="text-3xl font-black text-red-500 leading-none">{expiringSoon}</p>
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Expiring Soon</p>
                   </div>
                 </div>
               </div>
             </div>
-            <div className="mt-6 bg-gray-50 dark:bg-gray-800 rounded-2xl p-4">
-              <div className="flex justify-between items-end mb-2">
-                <span className="text-sm font-medium dark:text-gray-300">Stock Freshness</span>
-                <span className="text-xs text-gray-500">{expiringSoon > 0 ? '80%' : '100%'} optimal</span>
+            <div className="mt-10 pt-6 border-t border-slate-100">
+              <div className="flex justify-between items-end mb-3">
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Stock Freshness</span>
+                <span className="text-xs font-black text-primary uppercase">{expiringSoon > 0 ? '80%' : '100%'} Optimal</span>
               </div>
-              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                <div className="bg-primary h-2 rounded-full" style={{ width: expiringSoon > 0 ? '80%' : '100%' }}></div>
+              <div className="w-full bg-slate-200 rounded-full h-1.5">
+                <div className="bg-primary h-1.5 rounded-full transition-all duration-1000" style={{ width: expiringSoon > 0 ? '80%' : '100%' }}></div>
               </div>
             </div>
           </div>
         </div>
 
         {/* Filter Bar */}
-        <div className="flex flex-wrap items-center gap-3 py-2">
-          <button className="px-5 py-2 rounded-full bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-medium text-sm transition-transform hover:scale-105">All Pantries</button>
-          <button className="px-5 py-2 rounded-full bg-white  text-gray-600 dark:text-gray-300 border border-transparent hover:border-gray-200 dark:hover:border-gray-700 font-medium text-sm shadow-sm transition-all hover:shadow-md">Active</button>
-          <button className="px-5 py-2 rounded-full bg-white  text-gray-600 dark:text-gray-300 border border-transparent hover:border-gray-200 dark:hover:border-gray-700 font-medium text-sm shadow-sm transition-all hover:shadow-md">Archived</button>
-          <button className="ml-auto w-10 h-10 flex items-center justify-center rounded-full bg-white  text-gray-600 dark:text-gray-300 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-            <span className="material-icons-outlined text-xl">filter_list</span>
+        <div className="flex items-center gap-3 py-2 px-4">
+          <button className="px-6 py-2 rounded-xl bg-primary text-white font-black text-[10px] uppercase tracking-widest shadow-lg shadow-primary/20">All Pantries</button>
+          <button className="px-6 py-2 rounded-xl bg-white text-slate-400 hover:text-primary font-black text-[10px] uppercase tracking-widest transition-all">Active</button>
+          <button className="px-6 py-2 rounded-xl bg-white text-slate-400 hover:text-primary font-black text-[10px] uppercase tracking-widest transition-all">Archived</button>
+          <button className="ml-auto w-10 h-10 flex items-center justify-center rounded-xl bg-slate-50 text-slate-400 hover:text-primary transition-all">
+            <Settings2 className="w-5 h-5" />
           </button>
         </div>
 
         {/* Inventory Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 px-4">
           {isLoading ? (
-            Array(4).fill(0).map((_, i) => (
-              <div key={i} className="h-64 bg-white  rounded-3xl animate-pulse shadow-soft"></div>
+            Array(3).fill(0).map((_, i) => (
+              <div key={i} className="h-80 bg-slate-50 rounded-[2.5rem] animate-pulse"></div>
             ))
           ) : filteredInventories.map((inventory) => (
             <div
               key={inventory.id}
               onClick={() => navigate(`/inventory/${inventory.id}`)}
-              className="bg-card  rounded-3xl p-5 shadow-soft hover:shadow-lg transition-all group relative cursor-pointer"
+              className="group bg-white rounded-[2.5rem] p-8 border border-slate-100 hover:border-primary/40 hover:shadow-[0_20px_50px_rgba(172,156,6,0.08)] transition-all duration-500 cursor-pointer flex flex-col relative overflow-hidden"
             >
-              <div className="absolute top-4 right-4 bg-primary/20 text-primary-dark text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wider border border-primary/30">
-                {inventory.itemCount || 0} items
-              </div>
-              <div className="flex items-center justify-center h-32 mb-4 bg-gray-50 dark:bg-gray-800 rounded-2xl group-hover:scale-[1.02] transition-transform duration-300">
-                <span className="text-6xl">📦</span>
-              </div>
-              <h4 className="font-bold text-lg text-foreground mb-1">{inventory.name}</h4>
-              <p className="text-xs text-muted-foreground mb-4 line-clamp-1">{inventory.description || 'No description provided.'}</p>
-              <div className="flex items-center justify-between mt-auto">
-                <div className="flex flex-col">
-                  <span className="text-sm font-bold text-foreground">Status</span>
-                  <span className="text-xs text-green-600 font-medium">Active</span>
+              {/* Background Accents */}
+              <div className="absolute top-0 right-0 w-32 h-32 bg-slate-50 rounded-bl-[3rem] -z-10 group-hover:bg-primary/5 transition-colors"></div>
+              
+              <div className="flex justify-between items-start mb-8">
+                <div className="w-16 h-16 rounded-2xl bg-slate-50 flex items-center justify-center text-primary group-hover:scale-110 transition-transform duration-500 shadow-sm border border-slate-100/50">
+                  {getInventoryIcon(inventory.name)}
                 </div>
-                <div className="flex items-center gap-2">
-                  <button className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-black hover:bg-primary-dark transition-colors shadow-md shadow-primary/30">
-                    <span className="material-icons-round text-lg">arrow_forward</span>
-                  </button>
+                <div className="text-right">
+                  <div className="text-[10px] font-black text-slate-300 uppercase tracking-widest mb-1">Hub Status</div>
+                  <div className="flex items-center gap-2 justify-end">
+                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div>
+                    <span className="text-[10px] font-black text-slate-900 uppercase tracking-widest">Active Sync</span>
+                  </div>
                 </div>
               </div>
+
+              <div className="mb-8">
+                <h4 className="font-black text-2xl text-slate-900 tracking-tight group-hover:text-primary transition-colors mb-1">{inventory.name}</h4>
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest opacity-60 line-clamp-1">{inventory.description || 'Global Storage Unit'}</p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 mb-8">
+                <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100/50 group-hover:bg-white transition-colors">
+                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Load Factor</span>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-xl font-black text-slate-900">{inventory.itemCount || 0}</span>
+                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Units</span>
+                  </div>
+                </div>
+                <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100/50 group-hover:bg-white transition-colors">
+                  <span className="text-[10px] font-black text-red-400 uppercase tracking-widest block mb-1">Alerts</span>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-xl font-black text-red-500">{inventory.expiringCount || 0}</span>
+                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Critical</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-auto">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Hub Integrity</span>
+                  <span className="text-[10px] font-black text-primary uppercase tracking-widest">{(inventory.expiringCount || 0) > 0 ? '85%' : '100%'}</span>
+                </div>
+                <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
+                  <div 
+                    className="bg-primary h-full rounded-full transition-all duration-1000 group-hover:shadow-[0_0_10px_rgba(172,156,6,0.3)]" 
+                    style={{ width: (inventory.expiringCount || 0) > 0 ? '85%' : '100%' }}
+                  ></div>
+                </div>
+              </div>
+
+              {/* Hover Access Bar */}
+              <div className="absolute bottom-0 left-0 w-full h-1.5 bg-primary transform translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
             </div>
           ))}
         </div>
 
         {/* Bottom Section: Table & Tasks */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 bg-card  rounded-3xl p-6 shadow-soft">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="font-bold text-xl text-foreground">Detailed Pantry List</h3>
-              <button className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">View All</button>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 px-4 pb-10">
+          <div className="lg:col-span-2 bg-white rounded-[2.5rem] p-8 border border-slate-100 shadow-sm overflow-hidden">
+            <div className="flex justify-between items-center mb-8">
+              <h3 className="font-black text-xl text-slate-800 tracking-tight">Detailed Registry</h3>
+              <button className="text-[10px] font-black text-primary uppercase tracking-widest hover:text-primary-dark transition-all">Export Data</button>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="text-muted-foreground text-xs uppercase tracking-wider border-b border-gray-100">
-                    <th className="pb-3 pl-2 font-medium">Pantry Name</th>
-                    <th className="pb-3 font-medium">Items</th>
-                    <th className="pb-3 font-medium">Expiring</th>
-                    <th className="pb-3 font-medium">Status</th>
-                    <th className="pb-3 pr-2 font-medium text-right">Action</th>
+                  <tr className="text-slate-400 text-[10px] uppercase font-black tracking-widest border-b border-slate-50">
+                    <th className="pb-4 pl-2">Hub Name</th>
+                    <th className="pb-4">Load</th>
+                    <th className="pb-4">Alerts</th>
+                    <th className="pb-4">Condition</th>
+                    <th className="pb-4 pr-2 text-right">Action</th>
                   </tr>
                 </thead>
                 <tbody className="text-sm">
                   {filteredInventories.map(inv => (
-                    <tr key={inv.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors cursor-pointer" onClick={() => navigate(`/inventory/${inv.id}`)}>
-                      <td className="py-4 pl-2 font-medium text-foreground flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-orange-100 text-orange-500 flex items-center justify-center text-lg">🏠</div>
-                        {inv.name}
+                    <tr key={inv.id} className="border-b border-slate-50 hover:bg-slate-50/50 transition-all cursor-pointer group" onClick={() => navigate(`/inventory/${inv.id}`)}>
+                      <td className="py-5 pl-2">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 group-hover:text-primary transition-colors">🏠</div>
+                            <span className="font-black text-slate-700 tracking-tight">{inv.name}</span>
+                        </div>
                       </td>
-                      <td className="py-4 text-muted-foreground">{inv.itemCount || 0} items</td>
-                      <td className="py-4 font-semibold text-orange-600">{inv.expiringCount || 0}</td>
-                      <td className="py-4">
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                          Active
+                      <td className="py-5 text-slate-500 font-black text-[10px] uppercase tracking-widest">{inv.itemCount || 0} Units</td>
+                      <td className="py-5 font-black text-red-500 text-[10px] uppercase tracking-widest">{inv.expiringCount || 0} Critical</td>
+                      <td className="py-5">
+                        <span className="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-emerald-50 text-emerald-600 border border-emerald-100">
+                          Verified
                         </span>
                       </td>
-                      <td className="py-4 pr-2 text-right">
-                        <button className="text-muted-foreground hover:text-primary transition-colors"><span className="material-icons-outlined text-lg">edit</span></button>
+                      <td className="py-5 pr-2 text-right">
+                        <button className="text-slate-300 hover:text-primary transition-all"><ArrowRight className="w-4 h-4" /></button>
                       </td>
                     </tr>
                   ))}
-                  {filteredInventories.length === 0 && (
-                    <tr>
-                      <td colSpan={5} className="py-8 text-center text-muted-foreground font-medium">No pantries found. Create your first one!</td>
-                    </tr>
-                  )}
                 </tbody>
               </table>
             </div>
           </div>
 
-          {/* Quick Actions / Shopping List Mock */}
-          <div className="bg-card  rounded-3xl p-6 shadow-soft flex flex-col">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="font-bold text-xl text-foreground">Quick Tasks</h3>
-              <span className="bg-primary text-black text-xs font-bold px-2 py-1 rounded-full">New</span>
+          {/* Quick Tasks */}
+          <div className="bg-white rounded-[2.5rem] p-8 border border-slate-100 shadow-sm flex flex-col">
+            <div className="flex justify-between items-center mb-8">
+              <h3 className="font-black text-xl text-slate-800 tracking-tight">System Tasks</h3>
+              <span className="bg-primary text-white text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest shadow-lg shadow-primary/20">Active</span>
             </div>
             <div className="flex-1 space-y-4">
-              <label className="flex items-center gap-3 p-3 rounded-2xl bg-gray-50 cursor-pointer hover:bg-gray-100 transition-colors group">
-                <input type="checkbox" className="w-5 h-5 rounded border-gray-300 text-primary focus:ring-primary" />
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-foreground group-hover:text-primary transition-colors">Check Freshness</p>
-                  <p className="text-xs text-muted-foreground">Scan for expiring items</p>
-                </div>
-              </label>
-              <label className="flex items-center gap-3 p-3 rounded-2xl bg-gray-50 cursor-pointer hover:bg-gray-100 transition-colors group">
-                <input type="checkbox" className="w-5 h-5 rounded border-gray-300 text-primary focus:ring-primary" />
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-foreground group-hover:text-primary transition-colors">Sync Groceries</p>
-                  <p className="text-xs text-muted-foreground">Update from recent receipt</p>
-                </div>
-              </label>
-              <label className="flex items-center gap-3 p-3 rounded-2xl bg-gray-50 cursor-pointer hover:bg-gray-100 transition-colors group">
-                <input type="checkbox" className="w-5 h-5 rounded border-gray-300 text-primary focus:ring-primary" />
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-foreground group-hover:text-primary transition-colors">Meal Prepping</p>
-                  <p className="text-xs text-muted-foreground">Log used ingredients</p>
-                </div>
-              </label>
+              {[
+                { title: "Check Freshness", sub: "Scan alert records" },
+                { title: "Sync Groceries", sub: "Neural link refresh" },
+                { title: "Meal Prepping", sub: "Logging vitals" }
+              ].map((task, i) => (
+                <label key={i} className="flex items-center gap-4 p-4 rounded-2xl bg-slate-50 cursor-pointer hover:bg-white border border-transparent hover:border-slate-100 hover:shadow-sm transition-all group">
+                  <input type="checkbox" className="w-5 h-5 rounded-lg border-slate-200 text-primary focus:ring-primary/20 transition-all" />
+                  <div className="flex-1">
+                    <p className="text-sm font-black text-slate-800 group-hover:text-primary transition-colors uppercase tracking-tight">{task.title}</p>
+                    <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mt-1">{task.sub}</p>
+                  </div>
+                </label>
+              ))}
             </div>
-            <button className="w-full mt-6 border border-gray-300 text-muted-foreground py-3 rounded-full hover:bg-gray-50 transition-colors text-sm font-medium">
-              View AI Insights
+            <button className="w-full mt-8 border-2 border-slate-50 text-slate-400 py-4 rounded-xl hover:bg-slate-50 hover:text-primary transition-all text-[10px] font-black uppercase tracking-widest">
+              Access System Insights
             </button>
           </div>
         </div>
       </div>
 
-      {/* Create Inventory Modal Overlay */}
+      {/* Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-in fade-in duration-300">
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-md flex items-center justify-center z-[100] p-6 animate-in fade-in duration-300">
           <form
-            className="bg-white  rounded-3xl border border-border shadow-2xl p-8 w-full max-w-md"
+            className="bg-white rounded-[2.5rem] shadow-2xl p-10 w-full max-w-lg border border-slate-100"
             onSubmit={handleCreateInventory}
           >
-            <h2 className="text-2xl font-bold text-foreground mb-2 font-display">New Pantry</h2>
-            <p className="text-muted-foreground text-sm mb-6">Organize your home kitchen, office snacks, or gym supplements separately.</p>
+            <div className="mb-8">
+                <h2 className="text-2xl font-black text-slate-800 tracking-tight">New Pantry Hub</h2>
+                <p className="text-slate-400 text-sm font-medium mt-1">Initialize a new inventory tracking system.</p>
+            </div>
 
-            <div className="flex flex-col gap-4">
+            <div className="space-y-6">
               <div>
-                <label className="block text-xs font-bold text-muted-foreground uppercase mb-1 ml-1">Pantry Name</label>
+                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Hub Name</label>
                 <input
                   name="name"
                   required
                   autoFocus
-                  placeholder="e.g. Master Kitchen"
-                  className="w-full px-4 py-3 border border-gray-100 rounded-2xl bg-gray-50 text-foreground focus:ring-2 focus:ring-primary/50 outline-none transition-all placeholder-muted-foreground"
+                  placeholder="e.g. Master Fridge"
+                  className="w-full px-5 py-4 border border-slate-100 rounded-xl bg-slate-50 text-slate-800 font-black focus:ring-4 focus:ring-primary/10 transition-all outline-none"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-muted-foreground uppercase mb-1 ml-1">Description</label>
+                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Description</label>
                 <textarea
                   name="description"
-                  placeholder="What's in this inventory? (Optional)"
+                  placeholder="What's in this hub?"
                   rows={3}
-                  className="w-full px-4 py-3 border border-gray-100 rounded-2xl bg-gray-50 text-foreground focus:ring-2 focus:ring-primary/50 outline-none transition-all placeholder-muted-foreground"
+                  className="w-full px-5 py-4 border border-slate-100 rounded-xl bg-slate-50 text-slate-800 font-black focus:ring-4 focus:ring-primary/10 transition-all outline-none resize-none"
                 />
               </div>
             </div>
 
-            <div className="flex gap-3 mt-8">
+            <div className="flex gap-4 mt-10">
               <button
                 type="submit"
                 disabled={createInventoryMutation.isPending}
-                className="px-6 py-3 bg-primary text-black rounded-full font-bold hover:shadow-lg transition-all flex-1 disabled:opacity-50"
+                className="flex-1 py-4 bg-black text-white rounded-xl font-black text-xs uppercase tracking-widest hover:opacity-90 transition-all shadow-lg"
               >
-                {createInventoryMutation.isPending ? 'Creating...' : 'Create Pantry'}
+                {createInventoryMutation.isPending ? 'Processing...' : 'Create Hub'}
               </button>
               <button
                 type="button"
                 onClick={() => setShowAddModal(false)}
-                className="px-6 py-3 bg-gray-100 border border-transparent text-foreground rounded-full hover:bg-gray-200 transition-all font-bold flex-1"
+                className="flex-1 py-4 bg-slate-100 text-slate-500 rounded-xl hover:bg-slate-200 transition-all font-black text-xs uppercase tracking-widest"
               >
                 Cancel
               </button>
@@ -334,7 +363,6 @@ export default function InventoryPage() {
           </form>
         </div>
       )}
-      </div>
     </main>
   );
 }

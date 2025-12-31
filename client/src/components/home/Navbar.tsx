@@ -1,5 +1,5 @@
 import { useAuth, useClerk } from '@clerk/clerk-react';
-import { LogOut, Menu, Settings, User, X, Utensils } from 'lucide-react';
+import { LogOut, Menu, Settings, User, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 
@@ -37,16 +37,11 @@ export default function Navbar() {
   ];
 
   return (
-    <nav className="fixed top-0 w-full bg-background/90 backdrop-blur-md border-b border-border z-50 transition-all duration-300">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <nav className="fixed top-6 left-1/2 -translate-x-1/2 w-[95%] max-w-7xl bg-white border border-border/50 shadow-[0_20px_50px_rgba(0,0,0,0.1)] rounded-3xl z-50 transition-all duration-300">
+      <div className="px-6 sm:px-8">
         <div className="flex justify-between items-center h-20">
-          <Link to="/" className="flex items-center gap-2 group">
-            <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center shadow-lg shadow-primary/10">
-              <Utensils className="w-5 h-5 text-primary-foreground" />
-            </div>
-            <span className="font-black text-xl tracking-tighter text-foreground">
-              NutriAI
-            </span>
+          <Link to="/" className="flex items-center group">
+            <img src="/logo.png" alt="NutriAI Logo" className="h-16 w-auto object-contain" />
           </Link>
 
           <div className="hidden md:flex items-center gap-10">
