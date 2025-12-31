@@ -1,5 +1,5 @@
 import { ScanBarcode, ChefHat, Recycle, Bell, Share2, BarChart } from 'lucide-react'
-
+import { motion } from 'framer-motion'
 export default function FeaturesSection() {
   return (
     <section id="features" className="relative py-1 bg-gray-50">
@@ -17,8 +17,8 @@ export default function FeaturesSection() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* Column 1: Inventory (Manage) */}
-          <div className="space-y-6">
-            <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-300 relative overflow-hidden group h-full">
+          <motion.div transition={{duration:0.5, ease:'easeIn',delay:0.2}} whileInView={{opacity:1, y:0}} initial={{y:20, opacity:0}}  viewport={{once:true}} className="space-y-6">
+            <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-xl hover:shadow-lg hover:translate-y-[-10px] transition-all duration-300 relative overflow-hidden group h-full">
               <div className="absolute top-0 right-0 w-32 h-32 bg-gray-100 rounded-full -mr-8 -mt-8 opacity-50" />
               <div className="relative z-10 text-center">
                 <div className="w-14 h-14 mx-auto bg-gray-100 rounded-2xl flex items-center justify-center mb-6">
@@ -39,10 +39,10 @@ export default function FeaturesSection() {
                 </div>
               </div>
             </div>
-          </div>
+          </motion.div>
 
           {/* Column 2: Nutrition (Nourish) - Highlighted */}
-          <div className="space-y-6">
+          <motion.div transition={{duration:0.5, ease:'easeIn',delay:0.2}} whileInView={{opacity:1, y:0}} initial={{y:-20, opacity:0}}  viewport={{once:true}} className="space-y-6">
             <div className="bg-primary p-8 rounded-3xl shadow-xl shadow-primary/20 transform md:-translate-y-4 hover:translate-y-[-20px] transition-all duration-300 relative overflow-hidden h-full">
               <div className="absolute top-0 left-0 w-full h-full bg-[url('/grid-pattern.svg')] opacity-10" />
               <div className="absolute bottom-0 right-0 w-48 h-48 bg-white/10 rounded-full -mr-8 -mb-8" />
@@ -66,11 +66,11 @@ export default function FeaturesSection() {
                 </div>
               </div>
             </div>
-          </div>
+          </motion.div>
 
           {/* Column 3: Sustainability (Sustain) */}
-          <div className="space-y-6">
-            <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-300 relative overflow-hidden group h-full">
+          <motion.div transition={{duration:0.5, ease:'easeIn', delay:0.2}} whileInView={{opacity:1, y:0}} initial={{y:20, opacity:0}}  viewport={{once:true}} className="space-y-6">
+            <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm  hover:translate-y-[-10px] hover:shadow-lg transition-all duration-300 relative overflow-hidden group h-full">
               <div className="absolute top-0 left-0 w-32 h-32 bg-green-50 rounded-full -ml-8 -mt-8 opacity-50" />
               <div className="relative z-10 text-center">
                 <div className="w-14 h-14 mx-auto bg-green-50 rounded-2xl flex items-center justify-center mb-6">
@@ -91,7 +91,7 @@ export default function FeaturesSection() {
                 </div>
               </div>
             </div>
-          </div>
+          </motion.div>
 
         </div>
       </div>

@@ -2,7 +2,7 @@
 import { useAuth } from '@clerk/clerk-react';
 import { ArrowRight, ChefHat, ScanLine } from 'lucide-react';
 import { Link } from 'react-router-dom';
-
+import {motion} from 'framer-motion'
 export default function HeroSection() {
    const { isSignedIn } = useAuth();
 
@@ -22,17 +22,21 @@ export default function HeroSection() {
                <div className="flex flex-col gap-8 relative z-10">
 
 
-                  <h1 className="text-5xl md:text-6xl lg:text-6xl font-bold tracking-tight text-gray-900 leading-[1.1]">
-                     Manage Food.<br />
-                     <span>
-                        Master Nutrition.
-                     </span> <br />
-                     Minimize Waste.
+                  <h1 >
+                     <motion.span transition={{duration:0.7, ease:'easeIn'}} whileInView={{opacity:1, x:0}} initial={{x:-80, opacity:0}}  viewport={{once:true}} className="block ml-4 text-5xl md:text-6xl lg:text-6xl font-bold tracking-tight text-gray-900 leading-[1.1]">
+                     Manage Food
+                     </motion.span><br />
+                     <motion.span transition={{duration:0.7, ease:'easeIn', delay:0.5}} whileInView={{opacity:1, x:10}} initial={{x:-80, opacity:0}}  viewport={{once:true}} className="block ml-8 text-5xl md:text-6xl lg:text-6xl font-bold tracking-tight text-gray-900 leading-[1.1]">
+                        Master Nutrition
+                     </motion.span> <br />
+                     <motion.span transition={{duration:0.9, ease:'easeIn', delay:0.7}} whileInView={{opacity:1, x:20}} initial={{x:-80, opacity:0}}  viewport={{once:true}} className="block ml-12 text-5xl md:text-6xl lg:text-6xl font-bold tracking-tight text-gray-900 leading-[1.1]">
+                     Minimize Waste
+                     </motion.span>
                   </h1>
 
-                  <p className="text-xl text-gray-600 leading-relaxed max-w-lg">
+                  <motion.p transition={{duration:1, ease:'easeIn', delay:1}} whileInView={{opacity:1, y:0}} initial={{y:80, opacity:0}}  viewport={{once:true}} className="text-xl text-gray-600 leading-relaxed max-w-lg">
                      NutriAI connects your pantry inventory with personalized nutrition goals and sustainability tracking. Buying, cooking, and saving—simplified.
-                  </p>
+                  </motion.p>
 
                   <div className="flex flex-col sm:flex-row gap-4 pt-4">
                      <Link
@@ -52,7 +56,7 @@ export default function HeroSection() {
                </div>
 
                {/* Right Visuals (Unified Dashboard) */}
-               <div className="relative w-full h-[600px] hidden lg:block perspective-1000">
+               <motion.div transition={{duration:1, ease:'easeIn'}} whileInView={{opacity:1, x:0}} initial={{x:80, opacity:0}}  viewport={{once:true}} className="relative w-full h-[600px] hidden lg:block perspective-1000">
                   {/* Main Interface Card */}
                   <div className="absolute top-10 right-0 w-[500px] h-[380px] bg-white rounded-3xl shadow-2xl border border-gray-100 overflow-hidden transform rotate-y-[-5deg] hover:rotate-y-0 transition-transform duration-700 p-6 z-10">
                      {/* Header */}
@@ -115,7 +119,7 @@ export default function HeroSection() {
                      </div>
                   </div>
 
-               </div>
+               </motion.div>
             </div>
          </div>
       </section>

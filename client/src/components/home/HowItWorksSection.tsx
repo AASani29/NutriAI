@@ -1,29 +1,33 @@
 import { ScanBarcode, Utensils, Share2, BarChart } from 'lucide-react';
-
+import {motion} from 'framer-motion'
 const steps = [
   {
     icon: ScanBarcode,
     title: '1. Scan & Digitize',
     description: 'Instantly add groceries to your digital pantry using our barcode scanner or receipt upload.',
-    color: 'bg-gray-100 text-gray-900'
+    color: 'bg-gray-100 text-gray-900',
+    hoverIconcolor:'group-hover:bg-purple-100 group-hover:text-red-500'
   },
   {
     icon: Utensils,
     title: '2. Cook Smart',
     description: 'Get AI recipe suggestions based on what you have and what expires soon.',
-    color: 'bg-primary/10 text-primary'
+    color: 'bg-primary/10 text-primary',
+    hoverIconcolor:'group-hover:bg-purple-100 group-hover:text-red-500'
   },
   {
     icon: Share2,
     title: '3. Share Surplus',
     description: 'Don\'t throw it away! Share excess ingredients with your local community.',
-    color: 'bg-orange-50 text-orange-600'
+    color: 'bg-orange-50 text-orange-600', 
+    hoverIconcolor:'group-hover:bg-purple-100 group-hover:text-red-500'
   },
   {
     icon: BarChart,
     title: '4. Track Impact',
     description: 'Visualize your waste reduction and nutrition improvements over time.',
-    color: 'bg-blue-50 text-blue-600'
+    color: 'bg-blue-50 text-blue-600',
+    hoverIconcolor:'group-hover:bg-purple-100 group-hover:text-red-500'
   },
 ]
 
@@ -43,21 +47,48 @@ export default function HowItWorksSection() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {steps.map((step, index) => {
             const Icon = step.icon;
+
             return (
-              <div key={index} className="flex flex-col gap-4 p-6 rounded-2xl bg-white border border-gray-100 hover:shadow-xl transition-all duration-300 group">
-                <div className={`w-14 h-14 rounded-2xl ${step.color} flex items-center justify-center transform group-hover:scale-110 transition-transform`}>
-                  <Icon className="w-7 h-7" />
+              <motion.div
+                key={index}
+                initial="rest"
+                whileHover="hover"
+                animate="rest"
+                className="group flex flex-col gap-4 p-6 rounded-2xl bg-white border border-gray-100
+                 hover:shadow-xl transition-all duration-300"
+              >
+                {/* Icon Container */}
+                <div
+                  className={`w-14 h-14 rounded-2xl
+          ${step.color}
+          ${step.hoverIconcolor}
+          flex items-center justify-center
+          transition-all duration-300
+          group-hover:scale-110`}
+                >
+                  {/* Icon Motion */}
+                  <motion.div
+                    variants={{
+                      rest: { x: 0, opacity: 1 },
+                      hover: { x: 4, opacity: 1 },
+                    }}
+                    transition={{ duration: 0.4, ease: "easeInOut" }}
+                  >
+                    <Icon className="w-7 h-7" />
+                  </motion.div>
                 </div>
+
+                {/* Text */}
                 <div>
-                  <h3 className="font-bold text-gray-900 mb-2 flex items-center gap-2 text-lg">
+                  <h3 className="font-bold text-gray-900 mb-2 text-lg">
                     {step.title}
                   </h3>
                   <p className="text-gray-500 leading-relaxed text-sm">
                     {step.description}
                   </p>
                 </div>
-              </div>
-            )
+              </motion.div>
+            );
           })}
         </div>
       </div>
