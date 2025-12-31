@@ -22,35 +22,36 @@ export default function Home() {
   }, [isSignedIn, navigate]);
 
 useEffect(() => {
-
-
-  let currentSections = new Map<string, number>();
-
-  const observerOptions = {
-  root: null,
-  threshold: 0,
-  rootMargin: '-80px 0px 0px 0px' // Trigger when section top passes the navbar
-};
-
-const handleIntersect = (entries: IntersectionObserverEntry[]) => {
-  entries.forEach((entry) => {
-    const sectionId = entry.target.id;
+  const handleScroll = () => {
+    const sections = ['hero', 'features', 'how-it-works', 'impact'];
+    const navbarHeight = 80;
     
-    if (entry.isIntersecting) {
-      setNavTheme(sectionId === 'features' ? 'dark' : 'light');
+    // Find which section is currently at the top
+    for (const id of sections) {
+      const element = document.getElementById(id);
+      if (!element) {
+        console.log(`Section ${id} not found`);
+        continue;
+      }
+      
+      const rect = element.getBoundingClientRect();
+      
+      console.log(`${id}: top=${rect.top}, bottom=${rect.bottom}`);
+      
+      // Check if this section is at or past the navbar
+      if (rect.top <= navbarHeight && rect.bottom > navbarHeight) {
+        const newTheme = id === 'features' ? 'dark' : 'light';
+        console.log(`Setting theme to ${newTheme} for section ${id}`);
+        setNavTheme(newTheme);
+        break;
+      }
     }
-  });
-};
+  };
 
-  const observer = new IntersectionObserver(handleIntersect, observerOptions);
-
-  const sections = ['hero', 'features', 'how-it-works', 'impact'];
-  sections.forEach((id) => {
-    const element = document.getElementById(id);
-    if (element) observer.observe(element);
-  });
-
-  return () => observer.disconnect();
+  handleScroll(); // Initial check
+  window.addEventListener('scroll', handleScroll, { passive: true });
+  
+  return () => window.removeEventListener('scroll', handleScroll);
 }, []);
 
   return (

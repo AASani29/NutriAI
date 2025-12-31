@@ -2,13 +2,13 @@ import { ScanBarcode, ChefHat, Recycle, Bell, Share2, BarChart } from 'lucide-re
 import { motion } from 'framer-motion'
 export default function FeaturesSection() {
   return (
-    <section id="features" className="relative py-1 bg-[#e6ebf7]">
+    <section id="features" className="relative py-1">
       <div className="max-w-7xl mb-16 mx-auto px-4 sm:px-6 lg:px-8">
 
         <div className="text-center max-w-3xl mx-auto mb-16 mt-16">
           <h2 className="text-4xl md:text-5xl text-gray-900 mb-6 leading-tight">
             Three powerful modules, <br />
-            <span className="text-[#ffd045]">One seamless platform.</span>
+            <span className="text-primary">One seamless platform.</span>
           </h2>
           <p className="text-xl text-gray-500 leading-relaxed  font-bold">
             NutriAI bridges the gap between what you buy, what you eat, and how you impact the planet.

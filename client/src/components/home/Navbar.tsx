@@ -41,23 +41,19 @@ export default function Navbar({ theme = 'light' }: NavbarProps) {
   ];
 
   return (
-    <nav className={`fixed w-full z-50 transition-all duration-500 ${theme === 'dark' ? 'bg-white/80 shadow-sm' : 'bg-background/10'
-      } backdrop-blur-md transition-smooth`}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          <Link to="/" className="flex items-center gap-0.5 group">
-            <div className={`rounded-[50%] pt-5 ${theme === 'dark' ? '' : ''}`}>
-              <img src='/gajor.png' width={200} height={200} className='' />
-            </div>
-
-          </Link>
+<nav className="fixed top-6 left-1/2 -translate-x-1/2 w-[95%] max-w-7xl z-50 transition-all duration-300 bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl border border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.12)] rounded-3xl">
+  <div className="px-6 sm:px-8">
+    <div className="flex justify-between items-center h-20">
+      <Link to="/" className="flex items-center group">
+        <img src="/logo.png" alt="NutriAI Logo" className="h-16 w-auto object-contain" />
+      </Link>
 
           <div className="hidden md:flex items-start gap-4">
             {navLinks.map(link => (
               <a
                 key={link.href}
                 href={link.href}
-                className={`p-5 rounded-2xl transition-smooth text-lg font-bold ${theme === 'dark' ? 'text-black hover:text-primary' : 'text-white hover:text-primary'
+                className={`p-5 rounded-2xl transition-smooth text-lg font-bold ${theme === 'dark' ? 'text-black' : 'text-black'
                   }`}
               >
                 {link.label}
