@@ -1,12 +1,15 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Search, Filter, MapPin, Package, AlertCircle } from 'lucide-react';
 import { useListings } from './sharing-service';
 import { ListingStatus, type ListingFilters } from './types';
 import ListingCard from './ListingCard';
+import Pagination from './Pagination';
 
 interface AvailableListingsProps {
   externalSearch?: string;
 }
+
+const ITEMS_PER_PAGE = 9;
 
 export default function AvailableListings({ externalSearch }: AvailableListingsProps) {
   const [filters, setFilters] = useState<ListingFilters>({
@@ -15,18 +18,24 @@ export default function AvailableListings({ externalSearch }: AvailableListingsP
   });
   const [showFilters, setShowFilters] = useState(false);
   const [internalSearch, setInternalSearch] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
 
   const effectiveSearch = externalSearch || internalSearch;
 
-  const { 
-    data: listings = [], 
-    isLoading, 
-    isError, 
-    refetch 
+  const {
+    data: listings = [],
+    isLoading,
+    isError,
+    refetch
   } = useListings({
     ...filters,
     search: effectiveSearch || undefined,
   });
+
+  // Reset to first page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filters, effectiveSearch]);
 
   const handleFilterChange = (key: keyof ListingFilters, value: string) => {
     setFilters(prev => ({
@@ -44,6 +53,19 @@ export default function AvailableListings({ externalSearch }: AvailableListingsP
   };
 
   const hasActiveFilters = filters.category || filters.location || effectiveSearch;
+
+  // Pagination Logic
+  const totalPages = Math.ceil(listings.length / ITEMS_PER_PAGE);
+  const paginatedListings = listings.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    // Optional: scroll to top of list
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   if (isLoading) {
     return (
@@ -92,11 +114,10 @@ export default function AvailableListings({ externalSearch }: AvailableListingsP
         </div>
         <button
           onClick={() => setShowFilters(!showFilters)}
-          className={`flex items-center gap-2 px-6 py-2.5 rounded-2xl border transition-all font-bold shadow-sm ${
-            showFilters 
-              ? 'bg-black text-white border-black' 
+          className={`flex items-center gap-2 px-6 py-2.5 rounded-2xl border transition-all font-bold shadow-sm ${showFilters
+              ? 'bg-black text-white border-black'
               : 'bg-white border-gray-100 text-muted-foreground hover:text-black hover:bg-gray-50'
-          }`}
+            }`}
         >
           <Filter className="w-4 h-4" />
           Filters
@@ -199,9 +220,9 @@ export default function AvailableListings({ externalSearch }: AvailableListingsP
               <input
                 type="checkbox"
                 checked={filters.excludeOwnListings || false}
-                onChange={(e) => setFilters(prev => ({ 
-                  ...prev, 
-                  excludeOwnListings: e.target.checked 
+                onChange={(e) => setFilters(prev => ({
+                  ...prev,
+                  excludeOwnListings: e.target.checked
                 }))}
                 className="sr-only peer"
               />
@@ -219,7 +240,7 @@ export default function AvailableListings({ externalSearch }: AvailableListingsP
             {hasActiveFilters ? 'No matching items found' : 'No items available'}
           </h3>
           <p className="text-foreground/60 mb-4">
-            {hasActiveFilters 
+            {hasActiveFilters
               ? 'Try adjusting your filters or search terms.'
               : 'Be the first to share food with your community!'
             }
@@ -234,17 +255,25 @@ export default function AvailableListings({ externalSearch }: AvailableListingsP
           )}
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-          {listings.map(listing => (
-            <ListingCard
-              key={listing.id}
-              listing={listing}
-              showActions={true}
-              isOwner={false}
-              onUpdate={() => refetch()}
-            />
-          ))}
-        </div>
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+            {paginatedListings.map(listing => (
+              <ListingCard
+                key={listing.id}
+                listing={listing}
+                showActions={true}
+                isOwner={false}
+                onUpdate={() => refetch()}
+              />
+            ))}
+          </div>
+
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+          />
+        </>
       )}
 
       {/* Quick Stats */}
@@ -252,16 +281,16 @@ export default function AvailableListings({ externalSearch }: AvailableListingsP
         <div className="bg-card rounded-xl border border-border p-4">
           <div className="flex items-center justify-between text-sm">
             <span className="text-foreground/70">
-              Showing {listings.length} available items
+              Showing {paginatedListings.length} of {listings.length} available items
             </span>
             <div className="flex items-center gap-4">
               <span className="text-foreground/60">
-                Categories: {new Set(listings.map(l => 
+                Categories: {new Set(listings.map(l =>
                   l.inventoryItem.foodItem?.category || 'Custom'
                 )).size}
               </span>
               <span className="text-foreground/60">
-                Locations: {new Set(listings.map(l => 
+                Locations: {new Set(listings.map(l =>
                   l.pickupLocation
                 ).filter(Boolean)).size}
               </span>

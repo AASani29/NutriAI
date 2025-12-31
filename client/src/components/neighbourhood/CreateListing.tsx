@@ -76,6 +76,9 @@ export default function CreateListing({ onSuccess }: CreateListingProps) {
         ...prev,
         title: `${itemName} - Free to Good Home`,
         quantity: selectedItem.quantity,
+        availableUntil: selectedItem.expiryDate
+          ? new Date(selectedItem.expiryDate).toISOString().slice(0, 16)
+          : '',
       }));
     }
   }, [selectedItem]);

@@ -52,7 +52,6 @@ export default function NeighbourhoodPage() {
     .slice(0, 3);
 
   const featuredListing = listings[0];
-  const recentListings = listings.slice(1, 4);
 
   const completedListings = userListings.filter(l => l.status === ListingStatus.COMPLETED);
   const yourImpactCount = completedListings.length;
