@@ -3,7 +3,11 @@ import { LogOut, Menu, Settings, User, X, Utensils } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 
-export default function Navbar() {
+interface NavbarProps {
+  theme?: 'light' | 'dark';
+}
+
+export default function Navbar({ theme = 'light' }: NavbarProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const { isSignedIn } = useAuth();
@@ -37,14 +41,15 @@ export default function Navbar() {
   ];
 
   return (
-    <nav className=" fixed  w-full bg-background/10 backdrop-blur-md  z-50 transition-smooth">
+    <nav className={`fixed w-full z-50 transition-all duration-500 ${theme === 'dark' ? 'bg-white/80 shadow-sm' : 'bg-background/10'
+      } backdrop-blur-md transition-smooth`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <Link to="/" className="flex items-center gap-0.5 group">
-            <div className='rounded-[50%] pt-5'>
-              <img src='/gajor2.png' width={200} height={200} className='' />
+            <div className={`rounded-[50%] pt-5 ${theme === 'dark' ? '' : ''}`}>
+              <img src='/gajor.png' width={200} height={200} className='' />
             </div>
-           
+
           </Link>
 
           <div className="hidden md:flex items-start gap-4">
@@ -52,7 +57,8 @@ export default function Navbar() {
               <a
                 key={link.href}
                 href={link.href}
-                className="text-white hover:text-primary  p-5 rounded-2xl transition-smooth text-lg  font-bold"
+                className={`p-5 rounded-2xl transition-smooth text-lg font-bold ${theme === 'dark' ? 'text-black hover:text-primary' : 'text-white hover:text-primary'
+                  }`}
               >
                 {link.label}
               </a>
@@ -64,10 +70,11 @@ export default function Navbar() {
               <div className="relative" ref={userMenuRef}>
                 <button
                   onClick={toggleUserMenu}
-                  className="flex items-center gap-2 px-4 py-2 rounded-xl hover:bg-accent transition-all border border-transparent hover:border-border"
+                  className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all border border-transparent ${theme === 'dark' ? 'hover:bg-gray-100 hover:border-gray-200' : 'hover:bg-accent hover:border-border'
+                    }`}
                 >
-                  <User className="w-4 h-4 text-foreground" />
-                  <span className="text-sm font-bold text-foreground">Account</span>
+                  <User className={`w-4 h-4 ${theme === 'dark' ? 'text-black' : 'text-foreground'}`} />
+                  <span className={`text-sm font-bold ${theme === 'dark' ? 'text-black' : 'text-foreground'}`}>Account</span>
                 </button>
 
                 {isUserMenuOpen && (
@@ -105,7 +112,8 @@ export default function Navbar() {
               <>
                 <Link
                   to="/sign-in"
-                  className="text-white/80 hover:text-primary transition-smooth text-sm font-medium pr-5"
+                  className={`transition-smooth text-sm font-medium pr-5 ${theme === 'dark' ? 'text-black/80 hover:text-primary' : 'text-white/80 hover:text-primary'
+                    }`}
                 >
                   Log In
                 </Link>
@@ -121,7 +129,7 @@ export default function Navbar() {
 
           <button
             onClick={toggleMenu}
-            className="md:hidden text-foreground hover:text-primary transition-smooth"
+            className={`md:hidden transition-smooth ${theme === 'dark' ? 'text-black hover:text-primary' : 'text-foreground hover:text-primary'}`}
           >
             {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>

@@ -2,12 +2,12 @@
 import { useAuth } from '@clerk/clerk-react';
 import { ArrowRight, ChefHat, ScanLine } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import {motion} from 'framer-motion'
+import { motion } from 'framer-motion'
 export default function HeroSection() {
    const { isSignedIn } = useAuth();
 
    return (
-      <section className=" relative w-full pt-16 pb-10 md:pt-31 bg-[url('/diet.jpg')] bg-cover bg-center bg-opacity-10 md:pb-10 overflow-hidden bg-background">
+      <section id="hero" className=" relative w-full pt-16 pb-10 md:pt-31 bg-[url('/diet.jpg')] bg-cover bg-center bg-opacity-10 md:pb-10 overflow-hidden bg-background">
          {/* Balanced Background: Tech + Nature */}
          <div className="absolute inset-0 bg-black/40"></div>
          {/* <div className="absolute inset-0 -z-10 overflow-hidden">
@@ -24,18 +24,18 @@ export default function HeroSection() {
 
 
                   <h1 >
-                     <motion.span transition={{duration:0.7, ease:'easeIn'}} whileInView={{opacity:1, x:0}} initial={{x:-80, opacity:0}}  viewport={{once:true}} className="block ml-4 text-5xl md:text-6xl lg:text-6xl  tracking-tight text-white leading-[1.1]">
-                     Manage Food
+                     <motion.span transition={{ duration: 0.7, ease: 'easeIn' }} whileInView={{ opacity: 1, x: 0 }} initial={{ x: -80, opacity: 0 }} viewport={{ once: true }} className="block ml-4 text-5xl md:text-6xl lg:text-6xl  tracking-tight text-white leading-[1.1]">
+                        Manage Food
                      </motion.span><br />
-                     <motion.span transition={{duration:0.7, ease:'easeIn', delay:0.5}} whileInView={{opacity:1, x:10}} initial={{x:-80, opacity:0}}  viewport={{once:true}} className="block ml-8 text-5xl md:text-6xl  lg:text-6xl  tracking-tight text-primary-dark leading-[1.1]">
+                     <motion.span transition={{ duration: 0.7, ease: 'easeIn', delay: 0.5 }} whileInView={{ opacity: 1, x: 10 }} initial={{ x: -80, opacity: 0 }} viewport={{ once: true }} className="block ml-8 text-5xl md:text-6xl  lg:text-6xl  tracking-tight text-primary-dark leading-[1.1]">
                         Master Nutrition
                      </motion.span> <br />
-                     <motion.span transition={{duration:0.9, ease:'easeIn', delay:0.7}} whileInView={{opacity:1, x:20}} initial={{x:-80, opacity:0}}  viewport={{once:true}} className="block ml-12 text-5xl  md:text-6xl lg:text-6xl tracking-tight text-white leading-[1.1]">
-                     Minimize Waste
+                     <motion.span transition={{ duration: 0.9, ease: 'easeIn', delay: 0.7 }} whileInView={{ opacity: 1, x: 20 }} initial={{ x: -80, opacity: 0 }} viewport={{ once: true }} className="block ml-12 text-5xl  md:text-6xl lg:text-6xl tracking-tight text-white leading-[1.1]">
+                        Minimize Waste
                      </motion.span>
                   </h1>
 
-                  <motion.p transition={{duration:0.7, ease:'easeIn', delay:0.7}} whileInView={{opacity:1, y:0}} initial={{y:80, opacity:0}}  viewport={{once:true}} className="text-xl  font-bold text-white leading-relaxed max-w-lg pt-10">
+                  <motion.p transition={{ duration: 0.7, ease: 'easeIn', delay: 0.7 }} whileInView={{ opacity: 1, y: 0 }} initial={{ y: 80, opacity: 0 }} viewport={{ once: true }} className="text-xl  font-bold text-white leading-relaxed max-w-lg pt-10">
                      NutriAI connects your pantry inventory with personalized nutrition goals and sustainability tracking. Buying, cooking, and saving—simplified.
                   </motion.p>
 
@@ -57,7 +57,7 @@ export default function HeroSection() {
                </div>
 
                {/* Right Visuals (Unified Dashboard) */}
-               <motion.div transition={{duration:1, ease:'easeIn'}} whileInView={{opacity:1, x:0}} initial={{x:80, opacity:0}}  viewport={{once:true}} className="relative w-full h-[600px] hidden lg:block perspective-1000">
+               <motion.div transition={{ duration: 1, ease: 'easeIn' }} whileInView={{ opacity: 1, x: 0 }} initial={{ x: 80, opacity: 0 }} viewport={{ once: true }} className="relative w-full h-[600px] hidden lg:block perspective-1000">
                   {/* Main Interface Card */}
                   <div className="absolute top-10 right-0 w-[500px] h-[380px] bg-white rounded-3xl shadow-2xl border border-gray-100 overflow-hidden transform rotate-y-[-5deg] hover:rotate-y-0 transition-transform duration-700 p-6 z-10">
                      {/* Header */}
@@ -102,7 +102,7 @@ export default function HeroSection() {
                   {/* Floating Cards */}
                   <div className="absolute top-1/2 -left-4 bg-white p-4 rounded-2xl shadow-xl border border-gray-100 flex items-center gap-3 animate-float delay-100 z-20">
                      <div className="w-10 h-10 bg-primary/20 rounded-lg flex items-center justify-center border border-primary/30">
-                        <img className="w-5 h-5" src='/gajor2.png'/>
+                        <img className="w-5 h-5" src='/gajor2.png' />
                      </div>
                      <div>
                         <div className="text-xs font-bold text-foreground uppercase tracking-tight">Waste Prevented</div>
