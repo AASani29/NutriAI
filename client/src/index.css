@@ -45,7 +45,7 @@
 
   body {
     background-color: var(--color-background);
-    font-family: 'operetta', sans-serif;
+    /* font-family: 'operetta', sans-serif; */
     color: var(--color-foreground);
   }
 }
