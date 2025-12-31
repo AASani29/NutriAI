@@ -27,7 +27,7 @@ export default function HeroSection() {
                      <motion.span transition={{duration:0.7, ease:'easeIn'}} whileInView={{opacity:1, x:0}} initial={{x:-80, opacity:0}}  viewport={{once:true}} className="block ml-4 text-5xl md:text-6xl lg:text-6xl font-operetta tracking-tight text-white leading-[1.1]">
                      Manage Food
                      </motion.span><br />
-                     <motion.span transition={{duration:0.7, ease:'easeIn', delay:0.5}} whileInView={{opacity:1, x:10}} initial={{x:-80, opacity:0}}  viewport={{once:true}} className="block ml-8 text-5xl md:text-6xl font-operetta lg:text-6xl  tracking-tight text-white leading-[1.1]">
+                     <motion.span transition={{duration:0.7, ease:'easeIn', delay:0.5}} whileInView={{opacity:1, x:10}} initial={{x:-80, opacity:0}}  viewport={{once:true}} className="block ml-8 text-5xl md:text-6xl font-operetta lg:text-6xl  tracking-tight text-primary-dark leading-[1.1]">
                         Master Nutrition
                      </motion.span> <br />
                      <motion.span transition={{duration:0.9, ease:'easeIn', delay:0.7}} whileInView={{opacity:1, x:20}} initial={{x:-80, opacity:0}}  viewport={{once:true}} className="block ml-12 text-5xl font-operetta md:text-6xl lg:text-6xl tracking-tight text-white leading-[1.1]">
