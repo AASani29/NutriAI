@@ -14,22 +14,66 @@ import {
   LayoutGrid,
   History
 } from 'lucide-react';
-import { useListings, useSharingStats } from '../components/neighbourhood/sharing-service';
-import { ListingStatus } from '../components/neighbourhood/types';
+import { useListings, useUserListings, useClaimListing } from '../components/neighbourhood/sharing-service';
+import { ListingStatus, type FoodListing, type ClaimListingRequest } from '../components/neighbourhood/types';
+import ClaimModal from '../components/neighbourhood/modal/ClaimModal';
+import { useAuth } from "@clerk/clerk-react";
 
 export default function NeighbourhoodPage() {
   const [activeTab, setActiveTab] = useState<'browse' | 'share' | 'mylistings' | 'mybookings'>('browse');
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedListing, setSelectedListing] = useState<FoodListing | null>(null);
+  const { userId } = useAuth();
 
-  const { data: listings = [] } = useListings({
+  const claimMutation = useClaimListing();
+
+  // Fetch all available listings (excluding own) for the Discovery feed
+  const { data: allListings = [], refetch: refetchListings } = useListings({
     status: ListingStatus.AVAILABLE,
     excludeOwnListings: true,
   });
 
-  const { data: stats } = useSharingStats();
+  // Filter out any listings that the current user has already claimed/booked
+  // This ensures the "Discovery" tab only shows items you can actually book.
+  const listings = allListings.filter(listing =>
+    !userId || !listing.sharingLogs?.some(log => log.claimerId === userId)
+  );
+
+  // Fetch user's own listings to calculate "Your Impact" (Completed items)
+  const { data: userListings = [] } = useUserListings();
+
+  // Fetch listings CLAIMED by the user for the "Your Bookings" feed
+  const { data: myAllocatedListings = [] } = useListings({
+    claimedBy: userId || undefined
+  }, { enabled: !!userId });
+
+  const activeBookings = myAllocatedListings
+    .filter(l => l.status === ListingStatus.CLAIMED)
+    .slice(0, 3);
 
   const featuredListing = listings[0];
   const recentListings = listings.slice(1, 4);
+
+  const completedListings = userListings.filter(l => l.status === ListingStatus.COMPLETED);
+  const yourImpactCount = completedListings.length;
+
+  // Calculate weekly activity for the graph
+  const weeklyStats = [0, 0, 0, 0, 0].map((_, i) => {
+    // 0 = 4 weeks ago (Wk 1)
+    // 4 = This week (Now)
+    const weekIndex = 4 - i;
+    const now = new Date();
+    const msPerWeek = 1000 * 60 * 60 * 24 * 7;
+
+    return completedListings.filter(l => {
+      const date = new Date(l.updatedAt);
+      const diffTime = now.getTime() - date.getTime();
+      const diffWeeks = Math.floor(diffTime / msPerWeek);
+      return diffWeeks === weekIndex;
+    }).length;
+  });
+
+  const maxStat = Math.max(...weeklyStats, 4); // Min max of 4 to keep bars reasonable if low counts
 
   // Calculate categories
   const categoryCounts = listings.reduce((acc: Record<string, number>, curr) => {
@@ -42,6 +86,43 @@ export default function NeighbourhoodPage() {
     .map(([name, count]) => ({ name, count }))
     .sort((a, b) => b.count - a.count)
     .slice(0, 3);
+
+  const handleClaim = async (data: ClaimListingRequest) => {
+    if (!selectedListing) return;
+    try {
+      await claimMutation.mutateAsync({ id: selectedListing.id, data });
+      setSelectedListing(null);
+      refetchListings(); // Refresh the feed
+    } catch (error) {
+      console.error('Error claiming listing:', error);
+    }
+  };
+
+  const getCategoryImage = (category: string = 'Other') => {
+    switch (category.toLowerCase()) {
+      case 'fruit':
+      case 'fruits':
+        return "https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&q=80&w=200"; // Fresh mixed fruit
+      case 'vegetable':
+      case 'vegetables':
+        return "https://images.unsplash.com/photo-1597362925123-77861d3fbac7?auto=format&fit=crop&q=80&w=200"; // Fresh vegetables
+      case 'dairy':
+        return "https://images.unsplash.com/photo-1628088062854-d1870b4553da?auto=format&fit=crop&q=80&w=200"; // Dairy
+      case 'bakery':
+      case 'bread':
+        return "https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&q=80&w=200"; // Bakery
+      case 'meat':
+        return "https://images.unsplash.com/photo-1607623814075-e51df1bdc82f?auto=format&fit=crop&q=80&w=200"; // Meat
+      case 'beverages':
+      case 'drinks':
+        return "https://images.unsplash.com/photo-1544145945-f90425340c7e?auto=format&fit=crop&q=80&w=200"; // Drinks
+      case 'meals':
+      case 'prepared':
+        return "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&q=80&w=200"; // Prepared meal
+      default:
+        return "https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=200"; // General food grocery
+    }
+  };
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl">
@@ -65,8 +146,8 @@ export default function NeighbourhoodPage() {
           <button
             onClick={() => setActiveTab('share')}
             className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-bold transition-all shadow-xl ${activeTab === 'share'
-                ? 'bg-primary text-black scale-105'
-                : 'bg-black text-white hover:bg-gray-900 active:scale-95'
+              ? 'bg-primary text-black scale-105'
+              : 'bg-black text-white hover:bg-gray-900 active:scale-95'
               }`}
           >
             <Plus className="w-5 h-5" />
@@ -80,8 +161,8 @@ export default function NeighbourhoodPage() {
         <button
           onClick={() => setActiveTab('browse')}
           className={`px-6 py-2.5 rounded-full font-bold whitespace-nowrap flex items-center justify-center gap-2 transition-all border ${activeTab === 'browse'
-              ? 'bg-black text-white border-black shadow-lg shadow-black/10'
-              : 'bg-white border-gray-100 text-muted-foreground hover:text-black hover:bg-gray-50'
+            ? 'bg-black text-white border-black shadow-lg shadow-black/10'
+            : 'bg-white border-gray-100 text-muted-foreground hover:text-black hover:bg-gray-50'
             }`}
         >
           <LayoutGrid className="w-4 h-4" />
@@ -90,8 +171,8 @@ export default function NeighbourhoodPage() {
         <button
           onClick={() => setActiveTab('mybookings')}
           className={`px-6 py-2.5 rounded-full font-bold whitespace-nowrap flex items-center justify-center gap-2 transition-all border ${activeTab === 'mybookings'
-              ? 'bg-black text-white border-black shadow-lg shadow-black/10'
-              : 'bg-white border-gray-100 text-muted-foreground hover:text-black hover:bg-gray-50'
+            ? 'bg-black text-white border-black shadow-lg shadow-black/10'
+            : 'bg-white border-gray-100 text-muted-foreground hover:text-black hover:bg-gray-50'
             }`}
         >
           <ShoppingBag className="w-4 h-4" />
@@ -100,8 +181,8 @@ export default function NeighbourhoodPage() {
         <button
           onClick={() => setActiveTab('mylistings')}
           className={`px-6 py-2.5 rounded-full font-bold whitespace-nowrap flex items-center justify-center gap-2 transition-all border ${activeTab === 'mylistings'
-              ? 'bg-black text-white border-black shadow-lg shadow-black/10'
-              : 'bg-white border-gray-100 text-muted-foreground hover:text-black hover:bg-gray-50'
+            ? 'bg-black text-white border-black shadow-lg shadow-black/10'
+            : 'bg-white border-gray-100 text-muted-foreground hover:text-black hover:bg-gray-50'
             }`}
         >
           <History className="w-4 h-4" />
@@ -125,7 +206,7 @@ export default function NeighbourhoodPage() {
                 <div className="relative z-20 h-full flex flex-col justify-end p-8 md:p-12 text-white">
                   <div className="bg-white/10 backdrop-blur-md px-4 py-1.5 rounded-full w-fit mb-6 border border-white/20 text-xs font-black uppercase tracking-widest flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                    {featuredListing ? 'Just Posted • 10 mins ago' : 'No listings yet'}
+                    {featuredListing ? 'Just Posted • 10 mins ago' : 'No items yet'}
                   </div>
                   {featuredListing ? (
                     <>
@@ -141,7 +222,10 @@ export default function NeighbourhoodPage() {
                           <div className="w-10 h-10 rounded-full border-2 border-white bg-primary flex items-center justify-center font-bold text-xs text-black">+2</div>
                         </div>
                         <span className="text-sm font-bold opacity-80 uppercase tracking-wider">Interested neighbors</span>
-                        <button className="md:ml-auto w-full md:w-auto bg-primary text-black hover:bg-white px-8 py-4 rounded-2xl font-black transition-all flex items-center justify-center gap-2 shadow-xl shadow-primary/20 hover:scale-105">
+                        <button
+                          onClick={() => setSelectedListing(featuredListing)}
+                          className="md:ml-auto w-full md:w-auto bg-primary text-black hover:bg-white px-8 py-4 rounded-2xl font-black transition-all flex items-center justify-center gap-2 shadow-xl shadow-primary/20 hover:scale-105"
+                        >
                           Reserve Now
                           <ArrowRight className="w-5 h-5" />
                         </button>
@@ -228,22 +312,22 @@ export default function NeighbourhoodPage() {
               <div className="col-span-12 md:col-span-6 lg:col-span-4 bg-white rounded-[2.5rem] p-8 shadow-soft border border-gray-100">
                 <div className="flex justify-between items-center mb-10">
                   <h3 className="text-xl font-black text-black tracking-tight">Your Impact</h3>
-                  <div className="bg-black text-white px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest">Global Stats</div>
+                  <div className="bg-black text-white px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest">Personal Stats</div>
                 </div>
                 <div className="flex flex-col gap-8">
                   <div className="flex items-end gap-3">
-                    <span className="text-6xl font-black text-black tracking-tighter">{stats?.totalQuantityShared || '0.0'}</span>
-                    <span className="text-lg font-black text-muted-foreground mb-2">units shared</span>
+                    <span className="text-6xl font-black text-black tracking-tighter">{yourImpactCount}</span>
+                    <span className="text-lg font-black text-muted-foreground mb-2">items shared</span>
                   </div>
 
                   <div className="relative h-28 w-full flex items-end justify-between gap-3 px-1">
-                    {[40, 60, 30, 80, 50].map((h, i) => (
+                    {weeklyStats.map((count, i) => (
                       <div key={i}
                         className={`w-full ${i === 4 ? 'bg-primary' : 'bg-gray-100'} rounded-t-2xl transition-all duration-500 hover:bg-black group relative cursor-help`}
-                        style={{ height: `${h}%` }}
+                        style={{ height: `${maxStat > 0 ? (count / maxStat) * 100 : 0}%`, minHeight: '4px' }}
                       >
-                        <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-black text-white text-[10px] font-black px-2 py-1 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity">
-                          {Math.round(h / 10)}kg
+                        <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-black text-white text-[10px] font-black px-2 py-1 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50">
+                          {count} listings
                         </div>
                       </div>
                     ))}
@@ -259,33 +343,38 @@ export default function NeighbourhoodPage() {
                 </div>
               </div>
 
-              {/* Available Now Feed */}
+              {/* Active Bookings Feed */}
               <div className="col-span-12 lg:col-span-4 bg-white rounded-[2.5rem] p-8 shadow-soft border border-gray-100 flex flex-col">
                 <div className="flex justify-between items-center mb-8">
-                  <h3 className="text-xl font-black text-black tracking-tight">Available Now</h3>
+                  <h3 className="text-xl font-black text-black tracking-tight">Your Bookings</h3>
                   <button
-                    onClick={() => setActiveTab('browse')} // In a real app this might open a modal or expand list
+                    onClick={() => setActiveTab('mybookings')}
                     className="text-xs font-black text-primary uppercase tracking-widest hover:text-black transition-colors"
                   >
                     View All
                   </button>
                 </div>
                 <div className="flex-1 space-y-5">
-                  {recentListings.length > 0 ? recentListings.map((listing) => (
-                    <div key={listing.id} className="flex items-center gap-5 group cursor-pointer p-2 hover:bg-gray-50 rounded-[1.5rem] transition-all">
-                      <div className="w-16 h-16 rounded-2xl overflow-hidden shadow-soft flex-shrink-0">
+                  {activeBookings.length > 0 ? activeBookings.map((listing) => (
+                    <div
+                      key={listing.id}
+                      onClick={() => setActiveTab('mybookings')}
+                      className="flex items-center gap-5 group cursor-pointer p-2 hover:bg-gray-50 rounded-[1.5rem] transition-all"
+                    >
+                      <div className="w-16 h-16 rounded-2xl overflow-hidden shadow-soft flex-shrink-0 relative">
                         <img
                           alt={listing.title}
-                          className="w-full h-full object-cover transition-transform group-hover:scale-110"
-                          src={"https://images.unsplash.com/photo-1546767060-ee1592d38e65?auto=format&fit=crop&q=80&w=150"}
+                          className="w-full h-full object-cover grayscale-[20%]"
+                          src={getCategoryImage(listing.inventoryItem.foodItem?.category)}
                         />
+                        <div className="absolute inset-0 bg-primary/10 mix-blend-multiply" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <h4 className="font-bold text-black truncate group-hover:text-primary transition-colors">{listing.title}</h4>
-                        <p className="text-xs text-muted-foreground font-bold mb-1 truncate">{listing.quantity} {listing.unit || 'units'} remaining</p>
-                        <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-primary">
-                          <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                          Available
+                        <p className="text-xs text-muted-foreground font-bold mb-1 truncate">Ready for pickup</p>
+                        <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-orange-500">
+                          <span className="w-2 h-2 rounded-full bg-orange-500 animate-pulse" />
+                          To Collect
                         </div>
                       </div>
                       <button className="w-10 h-10 rounded-xl border border-gray-100 flex items-center justify-center hover:bg-black hover:text-white text-muted-foreground transition-all flex-shrink-0">
@@ -294,8 +383,14 @@ export default function NeighbourhoodPage() {
                     </div>
                   )) : (
                     <div className="flex flex-col items-center justify-center h-full text-center py-8">
-                      <Package className="w-12 h-12 text-gray-100 mb-4" />
-                      <p className="text-sm font-bold text-muted-foreground">No recent listings</p>
+                      <ShoppingBag className="w-12 h-12 text-gray-100 mb-4" />
+                      <p className="text-sm font-bold text-muted-foreground">No active bookings</p>
+                      <button
+                        onClick={() => document.getElementById('search-input')?.focus()}
+                        className="mt-2 text-xs text-primary font-black uppercase tracking-widest"
+                      >
+                        Browse Food
+                      </button>
                     </div>
                   )}
                 </div>
@@ -309,6 +404,16 @@ export default function NeighbourhoodPage() {
               </div>
               <AvailableListings externalSearch={searchQuery} />
             </div>
+
+            {/* Modal */}
+            {selectedListing && (
+              <ClaimModal
+                listing={selectedListing}
+                onClose={() => setSelectedListing(null)}
+                onClaim={handleClaim}
+                isLoading={claimMutation.isPending}
+              />
+            )}
           </>
         )}
 
