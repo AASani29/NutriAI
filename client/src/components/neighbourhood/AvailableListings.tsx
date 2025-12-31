@@ -4,13 +4,19 @@ import { useListings } from './sharing-service';
 import { ListingStatus, type ListingFilters } from './types';
 import ListingCard from './ListingCard';
 
-export default function AvailableListings() {
+interface AvailableListingsProps {
+  externalSearch?: string;
+}
+
+export default function AvailableListings({ externalSearch }: AvailableListingsProps) {
   const [filters, setFilters] = useState<ListingFilters>({
     status: ListingStatus.AVAILABLE,
     excludeOwnListings: true,
   });
   const [showFilters, setShowFilters] = useState(false);
-  const [search, setSearch] = useState('');
+  const [internalSearch, setInternalSearch] = useState('');
+
+  const effectiveSearch = externalSearch || internalSearch;
 
   const { 
     data: listings = [], 
@@ -19,7 +25,7 @@ export default function AvailableListings() {
     refetch 
   } = useListings({
     ...filters,
-    search: search || undefined,
+    search: effectiveSearch || undefined,
   });
 
   const handleFilterChange = (key: keyof ListingFilters, value: string) => {
@@ -34,10 +40,10 @@ export default function AvailableListings() {
       status: ListingStatus.AVAILABLE,
       excludeOwnListings: true,
     });
-    setSearch('');
+    setInternalSearch('');
   };
 
-  const hasActiveFilters = filters.category || filters.location || search;
+  const hasActiveFilters = filters.category || filters.location || effectiveSearch;
 
   if (isLoading) {
     return (
@@ -86,10 +92,10 @@ export default function AvailableListings() {
         </div>
         <button
           onClick={() => setShowFilters(!showFilters)}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-smooth ${
+          className={`flex items-center gap-2 px-6 py-2.5 rounded-2xl border transition-all font-bold shadow-sm ${
             showFilters 
-              ? 'bg-primary text-primary-foreground border-primary' 
-              : 'bg-card border-border text-foreground hover:bg-secondary/10'
+              ? 'bg-black text-white border-black' 
+              : 'bg-white border-gray-100 text-muted-foreground hover:text-black hover:bg-gray-50'
           }`}
         >
           <Filter className="w-4 h-4" />
@@ -97,43 +103,45 @@ export default function AvailableListings() {
         </button>
       </div>
 
-      {/* Search */}
-      <div className="relative">
-        <Search className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-foreground/60" />
-        <input
-          type="text"
-          placeholder="Search for food items, categories, or locations..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="w-full pl-10 pr-4 py-3 border border-border rounded-lg bg-background text-foreground placeholder:text-foreground/50"
-        />
-      </div>
+      {/* Search - only show if no external search */}
+      {!externalSearch && (
+        <div className="relative">
+          <Search className="w-5 h-5 absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
+          <input
+            type="text"
+            placeholder="Search for food items, categories, or locations..."
+            value={internalSearch}
+            onChange={(e) => setInternalSearch(e.target.value)}
+            className="w-full pl-12 pr-4 py-3 border border-gray-100 rounded-2xl bg-white text-foreground placeholder:text-muted-foreground shadow-soft focus:ring-2 focus:ring-black outline-none transition-all font-medium"
+          />
+        </div>
+      )}
 
       {/* Filters Panel */}
       {showFilters && (
-        <div className="bg-card border border-border rounded-xl p-6 space-y-4">
+        <div className="bg-white border border-gray-100 rounded-3xl p-6 shadow-soft space-y-6">
           <div className="flex items-center justify-between">
-            <h3 className="font-medium text-foreground">Filter Options</h3>
+            <h3 className="font-black text-black">Filter Options</h3>
             {hasActiveFilters && (
               <button
                 onClick={clearFilters}
-                className="text-sm text-primary hover:text-primary/80 transition-colors"
+                className="text-sm font-black text-primary hover:text-black transition-colors uppercase tracking-widest"
               >
                 Clear all
               </button>
             )}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Category Filter */}
             <div>
-              <label className="block text-sm font-medium text-foreground mb-2">
+              <label className="block text-xs font-black text-muted-foreground uppercase tracking-widest mb-3">
                 Category
               </label>
               <select
                 value={filters.category || ''}
                 onChange={(e) => handleFilterChange('category', e.target.value)}
-                className="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground"
+                className="w-full px-4 py-2.5 border border-gray-100 rounded-xl bg-gray-50 text-foreground font-bold focus:ring-2 focus:ring-black outline-none"
               >
                 <option value="">All Categories</option>
                 <option value="fruit">Fruits</option>
@@ -143,7 +151,7 @@ export default function AvailableListings() {
                 <option value="grain">Grains</option>
                 <option value="spice">Spices</option>
                 <option value="condiment">Condiments</option>
-                <option value="snack">Snacks</option>
+                <option value="snack" >Snacks</option>
                 <option value="beverage">Beverages</option>
                 <option value="custom">Custom Items</option>
               </select>
@@ -151,30 +159,30 @@ export default function AvailableListings() {
 
             {/* Location Filter */}
             <div>
-              <label className="block text-sm font-medium text-foreground mb-2">
+              <label className="block text-xs font-black text-muted-foreground uppercase tracking-widest mb-3">
                 Location
               </label>
               <div className="relative">
-                <MapPin className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-foreground/60" />
+                <MapPin className="w-4 h-4 absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
                 <input
                   type="text"
-                  placeholder="Enter area or landmark"
+                  placeholder="Area or landmark"
                   value={filters.location || ''}
                   onChange={(e) => handleFilterChange('location', e.target.value)}
-                  className="w-full pl-10 pr-3 py-2 border border-border rounded-lg bg-background text-foreground"
+                  className="w-full pl-12 pr-4 py-2.5 border border-gray-100 rounded-xl bg-gray-50 text-foreground font-bold focus:ring-2 focus:ring-black outline-none"
                 />
               </div>
             </div>
 
             {/* Status Filter */}
             <div>
-              <label className="block text-sm font-medium text-foreground mb-2">
+              <label className="block text-xs font-black text-muted-foreground uppercase tracking-widest mb-3">
                 Status
               </label>
               <select
                 value={filters.status || ''}
                 onChange={(e) => handleFilterChange('status', e.target.value)}
-                className="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground"
+                className="w-full px-4 py-2.5 border border-gray-100 rounded-xl bg-gray-50 text-foreground font-bold focus:ring-2 focus:ring-black outline-none"
               >
                 <option value={ListingStatus.AVAILABLE}>Available</option>
                 <option value={ListingStatus.CLAIMED}>Claimed</option>
@@ -185,8 +193,8 @@ export default function AvailableListings() {
           </div>
 
           {/* Toggle Own Listings */}
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-foreground">Hide my own listings</span>
+          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100">
+            <span className="text-sm font-bold text-black">Hide my own listings</span>
             <label className="relative inline-flex items-center cursor-pointer">
               <input
                 type="checkbox"
@@ -197,7 +205,7 @@ export default function AvailableListings() {
                 }))}
                 className="sr-only peer"
               />
-              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+              <div className="w-12 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-black"></div>
             </label>
           </div>
         </div>

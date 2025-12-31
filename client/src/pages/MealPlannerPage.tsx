@@ -4,17 +4,25 @@ import {
   Utensils,
   Sparkles,
   DollarSign,
-  AlertCircle,
   Brain,
   ArrowRight,
   TrendingDown,
   ShoppingBag,
+  ShoppingBasket,
   ChefHat,
-  Info,
-  CheckCircle2,
   X,
   ListChecks,
   MessageSquare,
+  Search,
+  Dumbbell,
+  ChevronRight,
+  Plus,
+  Info,
+  Sunrise,
+  Sun,
+  Moon,
+  CheckCircle2,
+  AlertCircle
 } from 'lucide-react';
 import { useProfile } from '../context/ProfileContext';
 import { useApi } from '../hooks/useApi';
@@ -207,12 +215,12 @@ export default function MealPlannerPage() {
           <Brain className="w-10 h-10 text-primary" />
         </div>
         <h1 className="text-3xl font-bold text-foreground">Complete Your Health Profile</h1>
-        <p className="text-foreground/70">
+        <p className="text-muted-foreground">
           To generate a "Price-Smart Meal Plan" tailored to your metabolism and health goals, we need your height, weight, and preferences.
         </p>
         <Link
           to="/profile/edit"
-          className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-xl hover:bg-primary/90 transition-all font-bold shadow-lg shadow-primary/20"
+          className="inline-flex items-center gap-2 px-6 py-3 bg-black text-white rounded-xl hover:bg-gray-900 transition-all font-bold shadow-lg"
         >
           Setup My Profile
           <ArrowRight className="w-4 h-4" />
@@ -222,73 +230,111 @@ export default function MealPlannerPage() {
   }
 
   return (
-    <div className="space-y-6 pb-20">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground mb-1">Price-Smart Meal Planner</h1>
-            <div className="flex items-center gap-4">
-              <p className="text-foreground/70 flex items-center gap-2 text-sm">
-                <TrendingDown className="w-4 h-4 text-green-500" />
-                Adapts to market prices and uses your inventory
-              </p>
-            </div>
-          </div>
+    <main className="flex-1 overflow-y-auto">
+      <div className="container mx-auto px-4 py-8 max-w-7xl">
+      <header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground tracking-tight">Weekly Meal Plan</h1>
+          <p className="text-muted-foreground text-sm mt-1">Plan your nutrition for a healthier week, {profile?.profile?.fullName || 'User'}!</p>
         </div>
-        <div className="flex items-center gap-3">
-          <div className="bg-secondary/20 p-1 rounded-xl border border-border flex">
-            <button
-              onClick={() => setViewMode('current')}
-              className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all ${
-                viewMode === 'current' ? 'bg-background text-foreground shadow-sm' : 'text-foreground/50 hover:text-foreground'
-              }`}
-            >
-              Current Plan
-            </button>
-            <button
-              onClick={() => {
-                setViewMode('saved');
-                fetchSavedPlans();
-              }}
-              className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all ${
-                viewMode === 'saved' ? 'bg-background text-foreground shadow-sm' : 'text-foreground/50 hover:text-foreground'
-              }`}
-            >
-              Saved Plans
-            </button>
+        <div className="flex items-center gap-4 w-full md:w-auto">
+          <div className="relative flex-1 md:w-80">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
+            <input 
+              className="w-full pl-12 pr-4 py-3 rounded-full border-none bg-white text-foreground shadow-soft focus:ring-2 focus:ring-primary/50 placeholder-gray-400 transition-all text-sm font-medium" 
+              placeholder="Search for recipes or ingredients" 
+              type="text"
+            />
           </div>
-          <button
+          <button 
             onClick={() => setShowConfig(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-all shadow-sm font-medium"
+            className="bg-black text-white px-6 py-3 rounded-full font-bold flex items-center gap-2 shadow-lg hover:shadow-xl transition-all whitespace-nowrap active:scale-95"
           >
-            <Sparkles className="w-4 h-4" />
-            Generate New Plan
+            <Sparkles className="text-primary w-4 h-4" />
+            <span>Generate Plan</span>
           </button>
         </div>
-      </div>
+      </header>
 
-      {/* Main Content Area */}
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        <div className="lg:col-span-3 space-y-6">
+      <div className="grid grid-cols-12 gap-8">
+        {/* Left Column */}
+        <div className="col-span-12 lg:col-span-8 flex flex-col gap-8">
+          {/* Hero Banner */}
+          <div className="bg-gradient-to-r from-teal-500 to-emerald-500 rounded-[2.5rem] p-10 text-white relative overflow-hidden shadow-soft flex flex-col justify-between min-h-[300px]">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-10 rounded-full -mr-16 -mt-16 blur-3xl"></div>
+            <div className="absolute bottom-0 left-20 w-40 h-40 bg-yellow-300 opacity-20 rounded-full blur-3xl"></div>
+            
+            <div className="relative z-10 flex justify-between items-start">
+              <div>
+                <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-md px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest mb-6">
+                  <Calendar className="w-3.5 h-3.5" />
+                  <span>{new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - Oct 20</span>
+                </div>
+                <h2 className="text-4xl font-black max-w-md leading-[1.1] mb-2 tracking-tight">Focus on protein-rich meals this week!</h2>
+                <p className="text-white/80 font-medium max-w-sm">Optimized based on your goals and local market prices.</p>
+              </div>
+              
+              <div className="hidden sm:block">
+                <div className="bg-white/20 backdrop-blur-md p-6 rounded-[2rem] border border-white/10 shadow-xl">
+                  <div className="text-[10px] font-black uppercase tracking-[0.2em] opacity-80 mb-2 text-center">Weekly Goal</div>
+                  <div className="text-3xl font-black text-center">85%</div>
+                  <div className="w-24 h-2 bg-black/20 rounded-full mt-3 overflow-hidden p-0.5">
+                    <div className="bg-white w-[85%] h-full rounded-full"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="relative z-10 flex items-end justify-between mt-auto pt-8">
+              <div className="flex items-center gap-3">
+                <div className="flex -space-x-3">
+                  <div className="w-10 h-10 rounded-full border-2 border-emerald-500 bg-white/20 backdrop-blur-md flex items-center justify-center text-[10px] font-black">AI</div>
+                  <div className="w-10 h-10 rounded-full border-2 border-emerald-500 bg-emerald-800 text-white flex items-center justify-center text-[10px] font-black">+3</div>
+                </div>
+                <span className="text-xs font-black uppercase tracking-widest ml-1">Joined the challenge</span>
+              </div>
+              <button 
+                onClick={() => setViewMode(viewMode === 'current' ? 'saved' : 'current')}
+                className="bg-black text-white px-8 py-4 rounded-full font-black flex items-center gap-3 hover:scale-105 transition-transform shadow-2xl active:scale-95 text-xs uppercase tracking-widest"
+              >
+                <span>{viewMode === 'current' ? 'View Saved Plans' : 'View Current Plan'}</span>
+                <div className="bg-white rounded-full p-1.5">
+                  <ArrowRight className="w-3.5 h-3.5 text-black" />
+                </div>
+              </button>
+            </div>
+          </div>
+
+          {/* Meal Section Content (Loading/Saved/Current) */}
           {loading ? (
-            <div className="bg-card rounded-2xl border border-border p-12 flex flex-col items-center justify-center space-y-4">
-              <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+            <div className="bg-white rounded-[2.5rem] border border-gray-100 p-20 flex flex-col items-center justify-center space-y-6 shadow-soft">
+              <div className="relative">
+                <div className="w-20 h-20 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+                <Sparkles className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 text-primary animate-pulse" />
+              </div>
               <div className="text-center">
-                <p className="font-bold text-xl mb-1">AI is analyzing market data...</p>
-                <p className="text-foreground/60">Optimizing for budget and nutrition</p>
+                <p className="font-black text-2xl mb-2 text-black tracking-tight">AI is crafting your plan...</p>
+                <p className="text-muted-foreground font-medium max-w-xs">Optimizing for metabolic health and current market prices.</p>
               </div>
             </div>
           ) : viewMode === 'saved' ? (
             <div className="space-y-6">
               {savedPlans.length > 0 ? (
-                <div className="grid grid-cols-1 gap-4">
+                <div className="grid grid-cols-1 gap-6">
                   {savedPlans.map((plan) => (
-                    <div key={plan.id} className="bg-card border border-border rounded-2xl p-6 hover:border-primary/50 transition-all group">
-                      <div className="flex justify-between items-start mb-4">
+                    <div key={plan.id} className="bg-white border border-gray-100 rounded-[2rem] p-8 hover:shadow-xl transition-all group relative overflow-hidden">
+                      <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 blur-2xl"></div>
+                      <div className="flex justify-between items-center relative z-10">
                         <div>
-                          <h3 className="text-lg font-bold">Meal Plan from {new Date(plan.createdAt).toLocaleDateString()}</h3>
-                          <p className="text-sm text-foreground/60">{Array.isArray(plan.meals) ? plan.meals.length : 0} meals • ৳{plan.budget} budget</p>
+                          <h3 className="text-xl font-black text-black">Meal Plan from {new Date(plan.createdAt).toLocaleDateString()}</h3>
+                          <div className="flex items-center gap-4 mt-2">
+                            <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground bg-gray-50 px-3 py-1 rounded-full border border-gray-100">
+                              {Array.isArray(plan.meals) ? plan.meals.length : 0} meals
+                            </span>
+                            <span className="text-[10px] font-black uppercase tracking-widest text-primary bg-primary/10 px-3 py-1 rounded-full border border-primary/20">
+                              ৳{plan.budget} budget
+                            </span>
+                          </div>
                         </div>
                         <button 
                           onClick={() => {
@@ -300,7 +346,7 @@ export default function MealPlannerPage() {
                             });
                             setViewMode('current');
                           }}
-                          className="px-4 py-2 bg-secondary text-foreground rounded-xl text-sm font-bold hover:bg-primary hover:text-white transition-all"
+                          className="px-8 py-3 bg-black text-white rounded-full text-xs font-black uppercase tracking-widest hover:bg-primary hover:text-black transition-all shadow-lg active:scale-95"
                         >
                           Load Plan
                         </button>
@@ -309,44 +355,53 @@ export default function MealPlannerPage() {
                   ))}
                 </div>
               ) : (
-                <div className="bg-card rounded-2xl border-2 border-dashed border-border p-12 text-center">
-                   <Calendar className="w-12 h-12 text-foreground/20 mx-auto mb-4" />
-                   <h3 className="text-lg font-bold">No saved plans yet</h3>
-                   <p className="text-foreground/60">Generate and save a plan to see it here.</p>
+                <div className="bg-white rounded-[2.5rem] border-2 border-dashed border-gray-100 p-20 text-center">
+                   <Calendar className="w-16 h-16 text-gray-200 mx-auto mb-6" />
+                   <h3 className="text-xl font-black text-black">No saved plans yet</h3>
+                   <p className="text-muted-foreground font-medium max-w-xs mx-auto mt-2">Generate and save a plan to see it archived here for future reference.</p>
                 </div>
               )}
             </div>
           ) : mealPlan ? (
-             <div className="space-y-6">
-               <div className="bg-primary/5 border border-primary/20 rounded-2xl p-6 flex justify-between items-start">
-                 <div className="flex-1">
-                   <h3 className="text-lg font-bold flex items-center gap-2 mb-2">
-                     <Info className="w-5 h-5 text-primary" />
-                     Plan Summary
+             <div className="space-y-8">
+               <div className="bg-white rounded-[2.5rem] p-10 shadow-soft border border-gray-50/50 flex flex-col md:flex-row justify-between items-center gap-8 relative overflow-hidden">
+                 <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full -mr-32 -mt-32 blur-3xl"></div>
+                 <div className="relative z-10 flex-1">
+                   <h3 className="text-2xl font-black text-black flex items-center gap-3 mb-4">
+                     <Info className="w-6 h-6 text-primary" />
+                     NutriAI Insights
                    </h3>
-                   <p className="text-foreground/80 leading-relaxed">{mealPlan.summary}</p>
-                   <div className="mt-4 flex items-center gap-4">
-                      <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm font-bold">
-                        Budget Used: ৳{mealPlan.totalEstimatedCost}
-                      </span>
-                   </div>
+                   <p className="text-muted-foreground font-medium leading-relaxed italic border-l-4 border-primary pl-6 py-2">
+                     "{mealPlan.summary}"
+                   </p>
                  </div>
-                 <button
-                    onClick={() => savePlan(mealPlan)}
-                    className="flex items-center gap-2 px-4 py-2 bg-background border border-primary/30 text-primary rounded-xl hover:bg-primary hover:text-white transition-all font-bold text-sm shadow-sm"
-                  >
-                    <ShoppingBag className="w-4 h-4" />
-                    Save Plan
-                  </button>
+                 <div className="relative z-10 flex flex-col items-center gap-4">
+                   <div className="bg-black text-white px-8 py-4 rounded-[1.5rem] shadow-2xl flex flex-col items-center">
+                     <span className="text-[10px] font-black uppercase tracking-[0.2em] opacity-60 mb-1">Estimated Cost</span>
+                     <span className="text-3xl font-black">৳{mealPlan.totalEstimatedCost}</span>
+                   </div>
+                   <button
+                      onClick={() => savePlan(mealPlan)}
+                      className="flex items-center gap-3 px-8 py-3 bg-gray-50 border border-gray-100 text-black rounded-full hover:bg-black hover:text-white transition-all font-black text-xs uppercase tracking-widest shadow-sm active:scale-95"
+                    >
+                      <ShoppingBag className="w-4 h-4" />
+                      Save Plan
+                    </button>
+                 </div>
                </div>
 
-               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                  {mealPlan.meals.map((meal, idx) => (
-                   <div key={idx} className="bg-card rounded-2xl border border-border overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-                     <div className="p-5 border-b border-border bg-secondary/5 flex justify-between items-start">
+                   <div key={idx} className="bg-white rounded-[2.5rem] border border-gray-50/50 overflow-hidden shadow-soft hover:shadow-xl transition-all group">
+                     <div className="p-8 border-b border-gray-50 bg-gray-50/50 flex justify-between items-center">
                        <div>
-                         <span className="text-xs font-bold text-primary uppercase tracking-wider">{meal.type}</span>
-                         <h4 className="text-lg font-bold text-foreground">
+                         <div className="flex items-center gap-3 mb-2">
+                           {meal.type.toLowerCase().includes('breakfast') ? <Sunrise className="w-4 h-4 text-orange-400" /> : 
+                            meal.type.toLowerCase().includes('lunch') ? <Sun className="w-4 h-4 text-primary" /> : 
+                            <Moon className="w-4 h-4 text-indigo-400" />}
+                           <span className="text-[10px] font-black text-black uppercase tracking-[0.2em] bg-white px-3 py-1 rounded-full border border-gray-100">{meal.type}</span>
+                         </div>
+                         <h4 className="text-2xl font-black text-black leading-tight">
                            <span 
                              className="cursor-pointer hover:text-primary transition-colors" 
                              onClick={() => handleMealClick(meal.name, [], meal.nutrition, meal.type)}
@@ -355,38 +410,38 @@ export default function MealPlannerPage() {
                            </span>
                          </h4>
                        </div>
-                       <ChefHat className="w-5 h-5 text-foreground/30" />
+                       <div className="bg-white p-3 rounded-2xl shadow-sm">
+                         <ChefHat className="w-6 h-6 text-gray-200" />
+                       </div>
                      </div>
                      
-                     <div className="p-5 space-y-4">
-                       {/* Nutrition Pills */}
-                       <div className="flex flex-wrap gap-2">
-                         <span className="text-[10px] bg-orange-100 text-orange-700 font-bold px-2 py-1 rounded">
-                           🔥 {meal.nutrition.calories} kcal
-                         </span>
-                         <span className="text-[10px] bg-blue-100 text-blue-700 font-bold px-2 py-1 rounded">
-                           🥩 {meal.nutrition.protein} Protein
-                         </span>
-                         <span className="text-[10px] bg-green-100 text-green-700 font-bold px-2 py-1 rounded">
-                           🍞 {meal.nutrition.carbs} Carbs
-                         </span>
+                     <div className="p-8 space-y-6">
+                       <div className="flex flex-wrap gap-3">
+                         <div className="text-[10px] font-black uppercase tracking-widest bg-gray-50 text-gray-600 px-4 py-2 rounded-full border border-gray-100">
+                           {meal.nutrition.calories} <span className="text-muted-foreground/60 ml-1">kcal</span>
+                         </div>
+                         <div className="text-[10px] font-black uppercase tracking-widest bg-gray-50 text-gray-600 px-4 py-2 rounded-full border border-gray-100">
+                            {meal.nutrition.protein} <span className="text-muted-foreground/60 ml-1">Protein</span>
+                         </div>
+                         <div className="text-[10px] font-black uppercase tracking-widest bg-gray-50 text-gray-600 px-4 py-2 rounded-full border border-gray-100">
+                            {meal.nutrition.carbs} <span className="text-muted-foreground/60 ml-1">Carbs</span>
+                         </div>
                        </div>
 
-                       {/* Options */}
-                       <div className="space-y-3 pt-2">
+                       <div className="space-y-4 pt-2">
                          {meal.option1 ? (
-                           <div className="p-3 bg-primary/5 rounded-xl border border-primary/20 relative overflow-hidden group/opt">
-                             <div className="absolute top-0 right-0 bg-primary text-[8px] text-white px-2 py-0.5 rounded-bl-lg font-bold">
+                           <div className="p-6 bg-primary/5 rounded-[2rem] border border-primary/20 relative overflow-hidden group/opt hover:bg-primary/10 transition-colors">
+                             <div className="absolute top-0 right-0 bg-black text-[8px] text-white px-4 py-1.5 rounded-bl-2xl font-black uppercase tracking-[0.2em]">
                                STOCK CONFIRMED
                              </div>
-                             <div className="flex justify-between items-center mb-2">
-                               <span className="text-xs font-bold text-primary flex items-center gap-1">
-                                 <CheckCircle2 className="w-3 h-3" />
+                             <div className="flex justify-between items-center mb-3">
+                               <span className="text-[10px] font-black text-black uppercase tracking-widest flex items-center gap-2">
+                                 <CheckCircle2 className="w-4 h-4 text-primary" />
                                  Inventory Option
                                </span>
-                               <span className="text-xs font-bold font-mono">৳{meal.option1.cost}</span>
+                               <span className="text-sm font-black text-black tracking-tight">৳{meal.option1.cost}</span>
                              </div>
-                             <p className="text-sm font-bold mb-1">
+                             <p className="text-lg font-black text-black mb-1">
                                <span 
                                  className="cursor-pointer hover:text-primary hover:underline transition-colors" 
                                  onClick={() => handleMealClick(meal.option1?.name || '', meal.option1?.items || [], meal.nutrition, meal.type)}
@@ -394,122 +449,218 @@ export default function MealPlannerPage() {
                                  {meal.option1?.name}
                                </span>
                              </p>
-                             <p className="text-[10px] text-foreground/60 leading-tight mb-3">
+                             <p className="text-xs text-muted-foreground font-medium mb-5 line-clamp-1">
                                Uses: {meal.option1.items.join(', ')}
                              </p>
                              <button
                                onClick={() => consumeMeal(idx, 'option1')}
                                disabled={consuming === `${idx}-option1`}
-                               className="w-full py-1.5 bg-primary/10 text-primary text-[10px] font-bold rounded-lg hover:bg-primary hover:text-white transition-all flex items-center justify-center gap-1 disabled:opacity-50"
+                               className="w-full py-4 bg-black text-white text-[10px] font-black rounded-2xl hover:bg-primary hover:text-black transition-all flex items-center justify-center gap-3 disabled:opacity-50 uppercase tracking-widest shadow-xl active:scale-95"
                              >
                                {consuming === `${idx}-option1` ? (
-                                 <div className="w-3 h-3 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                                ) : (
-                                 <Utensils className="w-3 h-3" />
+                                 <Utensils className="w-4 h-4" />
                                )}
                                Mark as Consumed
                              </button>
                            </div>
                          ) : (
-                           <div className="p-3 bg-amber-50 rounded-xl border border-amber-200">
-                             <p className="text-[10px] text-amber-700 font-bold flex items-center gap-1">
-                               <AlertCircle className="w-3 h-3" />
-                               No inventory match found
+                           <div className="p-6 bg-amber-50 rounded-[2rem] border border-amber-100">
+                             <p className="text-xs text-amber-700 font-bold flex items-center gap-3">
+                               <AlertCircle className="w-4 h-4" />
+                               No direct inventory match found
                              </p>
                            </div>
                          )}
 
-                         <div className="p-3 bg-secondary/10 rounded-xl border border-border group/opt">
-                           <div className="flex justify-between items-center mb-2">
-                             <span className="text-xs font-bold text-foreground/70 flex items-center gap-1">
-                               <ShoppingBag className="w-3 h-3" />
-                               Market Option
-                             </span>
-                             <span className="text-xs font-bold font-mono">৳{meal.option2.cost}</span>
-                           </div>
-                           <p className="text-sm font-bold mb-1"><span className="cursor-pointer hover:text-primary hover:underline transition-colors" onClick={() => handleMealClick(meal.option2.name, meal.option2.items, meal.nutrition, meal.type)}>{meal.option2.name}</span></p>
-                           <p className="text-[10px] text-foreground/60 leading-tight mb-3">
-                             Buy: {meal.option2.items.join(', ')}
-                           </p>
-                           <button
-                             onClick={() => consumeMeal(idx, 'option2')}
-                             disabled={consuming === `${idx}-option2`}
-                             className="w-full py-1.5 bg-secondary/20 text-foreground/70 text-[10px] font-bold rounded-lg hover:bg-primary hover:text-white transition-all flex items-center justify-center gap-1 disabled:opacity-50"
-                           >
-                             {consuming === `${idx}-option2` ? (
-                               <div className="w-3 h-3 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                             ) : (
-                               <Utensils className="w-3 h-3" />
-                             )}
-                             Mark as Consumed (Market Buy)
-                           </button>
-                         </div>
+                          <div className="p-6 bg-gray-50 rounded-[2rem] border border-gray-100 group/opt hover:bg-gray-100 transition-colors">
+                            <div className="flex justify-between items-center mb-3">
+                              <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest flex items-center gap-2">
+                                <ShoppingBag className="w-4 h-4" />
+                                Market Option
+                              </span>
+                              <span className="text-sm font-black text-black tracking-tight">৳{meal.option2.cost}</span>
+                            </div>
+                            <p className="text-lg font-black text-black mb-1">
+                              <span className="cursor-pointer hover:text-primary transition-colors" onClick={() => handleMealClick(meal.option2.name, meal.option2.items, meal.nutrition, meal.type)}>
+                                {meal.option2.name}
+                              </span>
+                            </p>
+                            <p className="text-xs text-muted-foreground font-medium mb-5 line-clamp-1">
+                              Buy: {meal.option2.items.join(', ')}
+                            </p>
+                            <button
+                              onClick={() => consumeMeal(idx, 'option2')}
+                              disabled={consuming === `${idx}-option2`}
+                              className="w-full py-4 bg-white border border-gray-200 text-black text-[10px] font-black rounded-2xl hover:bg-black hover:text-white transition-all flex items-center justify-center gap-3 disabled:opacity-50 uppercase tracking-widest shadow-sm active:scale-95"
+                            >
+                              {consuming === `${idx}-option2` ? (
+                                <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
+                              ) : (
+                                <Utensils className="w-4 h-4" />
+                              )}
+                              Purchase & Consume
+                            </button>
+                          </div>
                        </div>
                      </div>
                    </div>
                  ))}
                </div>
+
+               {/* Shopping List Card */}
+               <div className="bg-white rounded-[2.5rem] p-8 shadow-soft border border-gray-50/50 flex items-center justify-between group cursor-pointer hover:border-black transition-all">
+                 <div className="flex items-center gap-6">
+                   <div className="bg-primary/10 text-primary p-5 rounded-[1.5rem] group-hover:scale-110 transition-transform">
+                     <ShoppingBasket className="w-8 h-8" />
+                   </div>
+                   <div>
+                     <h3 className="text-2xl font-black text-black tracking-tight">Generate Shopping List</h3>
+                     <p className="text-muted-foreground font-medium mt-1">Export ingredients needed for the entire week.</p>
+                   </div>
+                 </div>
+                 <button className="bg-gray-50 text-black w-14 h-14 rounded-full flex items-center justify-center transition-all group-hover:bg-black group-hover:text-white group-hover:translate-x-2">
+                   <ChevronRight className="w-6 h-6" />
+                 </button>
+               </div>
              </div>
           ) : rawResponse ? (
-            <div className="bg-card rounded-2xl border border-border p-8 prose prose-slate dark:prose-invert max-w-none shadow-sm whitespace-pre-wrap">
+            <div className="bg-white rounded-[2.5rem] border border-gray-50 p-10 prose prose-slate max-w-none shadow-soft whitespace-pre-wrap font-medium text-black/80 leading-relaxed">
               {rawResponse}
             </div>
           ) : (
-            <div className="bg-card rounded-2xl border-2 border-dashed border-border p-12 flex flex-col items-center justify-center text-center space-y-4">
-              <div className="p-4 bg-secondary/20 rounded-full">
-                <Utensils className="w-10 h-10 text-foreground/40" />
+            <div className="bg-white rounded-[2.5rem] border-2 border-dashed border-gray-100 p-20 flex flex-col items-center justify-center text-center space-y-8">
+              <div className="p-8 bg-gray-50 rounded-full shadow-inner">
+                <Utensils className="w-20 h-20 text-gray-200" />
               </div>
               <div>
-                <h2 className="text-xl font-bold mb-2">No Active Meal Plan</h2>
-                <p className="text-foreground/60 max-w-md">
-                  Select a budget and time period to receive a price-smart meal plan tailored for you.
+                <h2 className="text-3xl font-black text-black tracking-tight mb-4">No Active Meal Plan</h2>
+                <p className="text-muted-foreground font-medium max-w-md mx-auto">
+                  Get a personalized, price-smart meal plan optimized for your metabolism and local bazaar prices.
                 </p>
               </div>
               <button
                 onClick={() => setShowConfig(true)}
-                className="px-6 py-2 bg-primary text-primary-foreground rounded-lg font-bold"
+                className="px-12 py-5 bg-black text-white rounded-full font-black text-xs uppercase tracking-widest hover:bg-primary hover:text-black transition-all shadow-2xl active:scale-95 flex items-center gap-3"
               >
-                Get Started
+                <Sparkles className="w-5 h-5" />
+                Get Started Now
               </button>
             </div>
           )}
         </div>
 
-        {/* Sidebar Mini Dashboard */}
-        <div className="space-y-6">
-          <div className="bg-card rounded-xl border border-border p-6 shadow-sm">
-            <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
-              <ShoppingBag className="w-5 h-5 text-primary" />
-              Your Metrics
-            </h3>
-            <div className="space-y-4">
-              <div className="flex justify-between items-center p-3 bg-secondary/20 rounded-lg">
-                <span className="text-sm font-medium opacity-70">Goal</span>
-                <span className="text-sm font-bold capitalize">{profile?.profile?.weightPreference}</span>
+        {/* Sidebar Mini Dashboard (Right Column) */}
+        <div className="col-span-12 lg:col-span-4 flex flex-col gap-8">
+          {/* Daily Nutrition Card */}
+          <div className="bg-white rounded-[2.5rem] p-10 shadow-soft border border-gray-50/50">
+            <div className="flex justify-between items-center mb-10">
+              <h3 className="text-xl font-black text-black tracking-tight">Daily Nutrition</h3>
+              <span className="text-[10px] font-black bg-primary/20 text-black px-4 py-1.5 rounded-full uppercase tracking-widest">Today</span>
+            </div>
+            <div className="flex flex-col items-center mb-12 relative">
+              <div className="w-56 h-56 rounded-full flex items-center justify-center relative bg-gray-50">
+                <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                  <circle className="text-gray-100" cx="50" cy="50" fill="none" r="44" stroke="currentColor" strokeWidth="10"></circle>
+                  <circle className="text-primary transition-all duration-1000 ease-out" cx="50" cy="50" fill="none" r="44" stroke="currentColor" strokeDasharray="276" strokeDashoffset="75" strokeLinecap="round" strokeWidth="10"></circle>
+                </svg>
+                <div className="text-center absolute inset-0 flex flex-col items-center justify-center">
+                  <div className="text-4xl font-black text-black tracking-tighter">1,450</div>
+                  <div className="text-[10px] text-muted-foreground font-black uppercase tracking-[0.2em] mt-1">Kcal Left</div>
+                </div>
               </div>
-              <div className="flex justify-between items-center p-3 bg-secondary/20 rounded-lg">
-                <span className="text-sm font-medium opacity-70">BMI Context</span>
-                <span className="text-sm font-bold">
-                  {profile?.profile?.weight && profile?.profile?.height
-                    ? (profile.profile.weight / Math.pow(profile.profile.height / 100, 2)).toFixed(1)
-                    : '--'}
-                </span>
+            </div>
+            <div className="space-y-6">
+              <div>
+                <div className="flex justify-between items-end text-xs mb-2">
+                  <span className="font-black text-black uppercase tracking-widest">Carbs</span>
+                  <span className="font-black text-black tracking-tighter">120g <span className="text-muted-foreground/60 font-medium">/ 250g</span></span>
+                </div>
+                <div className="h-3 w-full bg-gray-50 rounded-full overflow-hidden p-0.5 border border-gray-100">
+                  <div className="h-full bg-orange-400 w-1/2 rounded-full shadow-sm"></div>
+                </div>
+              </div>
+              <div>
+                <div className="flex justify-between items-end text-xs mb-2">
+                  <span className="font-black text-black uppercase tracking-widest">Protein</span>
+                  <span className="font-black text-black tracking-tighter">85g <span className="text-muted-foreground/60 font-medium">/ 140g</span></span>
+                </div>
+                <div className="h-3 w-full bg-gray-50 rounded-full overflow-hidden p-0.5 border border-gray-100">
+                  <div className="h-full bg-black w-2/3 rounded-full shadow-sm"></div>
+                </div>
+              </div>
+              <div>
+                <div className="flex justify-between items-end text-xs mb-2">
+                  <span className="font-black text-black uppercase tracking-widest">Fat</span>
+                  <span className="font-black text-black tracking-tighter">30g <span className="text-muted-foreground/60 font-medium">/ 65g</span></span>
+                </div>
+                <div className="h-3 w-full bg-gray-50 rounded-full overflow-hidden p-0.5 border border-gray-100">
+                  <div className="h-full bg-primary w-1/3 rounded-full shadow-sm"></div>
+                </div>
               </div>
             </div>
           </div>
 
-          <div className="bg-gradient-to-br from-[#16803C] to-[#9CB89F] rounded-2xl p-6 text-white shadow-xl">
-            <div className="flex items-center gap-2 mb-4">
-              <AlertCircle className="w-5 h-5" />
-              <h3 className="font-bold">Market Watch</h3>
+          {/* Hydration Card */}
+          <div className="bg-blue-50 rounded-[2.5rem] p-10 shadow-soft border border-blue-100/50 relative overflow-hidden flex flex-col justify-between min-h-[300px]">
+            <div className="absolute -right-8 -top-8 w-40 h-40 bg-blue-100 rounded-full blur-3xl opacity-50"></div>
+            <div className="relative z-10">
+              <h3 className="text-xl font-black text-blue-900 tracking-tight">Hydration</h3>
+              <p className="text-xs text-blue-700/70 font-black uppercase tracking-widest mt-1 mb-6">Metabolic Fuel</p>
+              
+              <div className="flex gap-3 flex-wrap mb-8">
+                {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+                  <div key={i} className={`w-10 h-14 rounded-2xl flex items-end justify-center pb-1 overflow-hidden shadow-sm transition-all border-2 ${i <= 4 ? 'bg-white border-blue-200' : 'bg-blue-100/50 border-transparent opacity-50'}`}>
+                    {i <= 4 && <div className="w-full bg-blue-500 rounded-xl" style={{ height: i === 4 ? '60%' : '100%' }}></div>}
+                  </div>
+                ))}
+              </div>
             </div>
-            <p className="text-sm text-white/90 mb-4 font-medium">
-              We sync with local Dhaka market prices to suggest the most cost-effective proteins and vegetables.
-            </p>
-            <div className="bg-white/20 h-px w-full my-4" />
-            <p className="text-xs text-white/70 italic text-center">
-              Inventory data included in plan
-            </p>
+            
+            <div className="flex items-center justify-between relative z-10">
+              <div>
+                <span className="text-4xl font-black text-blue-900 tracking-tighter">1.2<span className="text-xl opacity-60">L</span></span>
+                <span className="text-sm text-blue-700/60 font-bold ml-1">/ 2.5L</span>
+              </div>
+              <button className="bg-white text-blue-600 w-14 h-14 rounded-[1.5rem] shadow-xl hover:scale-110 transition-transform active:scale-95 flex items-center justify-center border border-blue-100">
+                <Plus className="w-8 h-8 font-black" />
+              </button>
+            </div>
+          </div>
+
+          {/* Weight Card */}
+          <div className="bg-white rounded-[2.5rem] p-10 shadow-soft border border-gray-50/50 flex flex-col justify-between">
+            <div className="flex justify-between items-start mb-8">
+              <div className="flex items-center gap-4">
+                <div className="bg-purple-100 p-4 rounded-[1.5rem] text-purple-600 shadow-sm">
+                  <Dumbbell className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-black text-black tracking-tight">Weight</h3>
+                  <p className="text-[10px] text-muted-foreground font-black uppercase tracking-widest mt-0.5">Progress Goal</p>
+                </div>
+              </div>
+              <div className="text-right">
+                <span className="text-3xl font-black text-black tracking-tighter">72</span>
+                <span className="text-xs text-muted-foreground font-black uppercase tracking-widest ml-1">kg</span>
+              </div>
+            </div>
+            
+            <div className="h-24 w-full bg-gray-50/50 rounded-3xl p-4 border border-gray-50">
+              <svg className="w-full h-full" preserveAspectRatio="none" viewBox="0 0 100 30">
+                <path className="stroke-purple-400" d="M0,25 Q10,20 20,25 T40,20 T60,25 T80,15 T100,20" fill="none" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"></path>
+                <circle className="fill-white stroke-purple-500" cx="80" cy="15" r="4" strokeWidth="2"></circle>
+              </svg>
+            </div>
+            
+            <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest mt-6">
+              <span className="text-red-500 flex items-center gap-1">
+                 <TrendingDown className="w-3 h-3" />
+                 -1.2 kg
+              </span>
+              <span className="text-muted-foreground">This week</span>
+            </div>
           </div>
         </div>
       </div>
@@ -517,41 +668,40 @@ export default function MealPlannerPage() {
       {/* Configuration Modal */}
       {showConfig && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-card w-full max-w-md rounded-2xl border border-border p-8 shadow-2xl animate-in zoom-in-95 duration-200">
-            <div className="flex items-center gap-2 mb-6">
-              <div className="p-2 bg-primary/10 rounded-lg">
-                <Sparkles className="w-5 h-5 text-primary" />
+          <div className="bg-card w-full max-w-md rounded-[2.5rem] border border-gray-100 p-10 shadow-2xl animate-in zoom-in-95 duration-200 bg-white">
+            <div className="flex items-center gap-4 mb-8">
+              <div className="p-3 bg-primary/10 rounded-2xl">
+                <Sparkles className="w-6 h-6 text-primary" />
               </div>
-              <h2 className="text-2xl font-bold">Plan Configuration</h2>
+              <h2 className="text-3xl font-black text-black tracking-tight">Plan Setup</h2>
             </div>
 
-            <div className="space-y-6">
+            <div className="space-y-8">
               <div>
-                <label className="block text-sm font-bold mb-2 flex items-center gap-2">
-                  <DollarSign className="w-4 h-4" />
+                <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground mb-3 flex items-center gap-2">
+                  <DollarSign className="w-3.5 h-3.5" />
                   Total Budget (BDT)
                 </label>
                 <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-foreground/40">৳</span>
+                  <span className="absolute left-6 top-1/2 -translate-y-1/2 font-black text-black text-lg">৳</span>
                   <input
                     type="number"
                     value={config.budget}
                     onChange={(e) => setConfig({ ...config, budget: parseInt(e.target.value) })}
-                    className="w-full pl-8 pr-4 py-3 bg-secondary/20 border-border border rounded-xl focus:ring-2 focus:ring-primary outline-none transition-all font-bold"
+                    className="w-full pl-12 pr-6 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-primary outline-none transition-all font-black text-lg text-black"
                   />
                 </div>
-                <p className="text-xs text-foreground/50 mt-2">Budget for the entire period selected</p>
               </div>
 
               <div>
-                <label className="block text-sm font-bold mb-2 flex items-center gap-2">
-                  <Calendar className="w-4 h-4" />
+                <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground mb-3 flex items-center gap-2">
+                  <Calendar className="w-3.5 h-3.5" />
                   Time Period
                 </label>
                 <select
                   value={config.timePeriod}
                   onChange={(e) => setConfig({ ...config, timePeriod: e.target.value })}
-                  className="w-full px-4 py-3 bg-secondary/20 border-border border rounded-xl outline-none font-medium"
+                  className="w-full px-6 py-4 bg-gray-50 border-none rounded-2xl outline-none font-black text-black focus:ring-2 focus:ring-primary appearance-none cursor-pointer"
                 >
                   <optgroup label="Single Meals">
                     <option value="breakfast">Breakfast Only</option>
@@ -566,183 +716,188 @@ export default function MealPlannerPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-bold mb-2 flex items-center gap-2">
-                  <MessageSquare className="w-4 h-4" />
-                  Special Considerations / Notes
+                <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground mb-3 flex items-center gap-2">
+                  <MessageSquare className="w-3.5 h-3.5" />
+                  Notes / Focus
                 </label>
                 <textarea
                   value={config.notes}
                   onChange={(e) => setConfig({ ...config, notes: e.target.value })}
-                  placeholder="I have got a fever/ cold today or I am outside"
-                  className="w-full px-4 py-3 bg-secondary/20 border-border border rounded-xl outline-none focus:ring-2 focus:ring-primary h-24 resize-none text-sm"
+                  placeholder="e.g. High protein, low carb, or avoiding nuts..."
+                  className="w-full px-6 py-4 bg-gray-50 border-none rounded-2xl outline-none focus:ring-2 focus:ring-primary h-32 resize-none text-sm font-medium text-black"
                 />
               </div>
 
               <div className="flex gap-4 pt-4">
                 <button
                   onClick={() => setShowConfig(false)}
-                  className="flex-1 py-3 px-4 bg-secondary text-foreground font-bold rounded-xl hover:bg-secondary/80 transition-all text-sm"
+                  className="flex-1 py-4 bg-gray-100 text-black font-black uppercase tracking-widest text-[10px] rounded-full hover:bg-gray-200 transition-all"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={generatePlan}
-                  className="flex-1 py-3 px-4 bg-primary text-primary-foreground font-bold rounded-xl hover:bg-primary/90 shadow-lg shadow-primary/20 transition-all text-sm"
+                  className="flex-1 py-4 bg-black text-white font-black uppercase tracking-widest text-[10px] rounded-full hover:bg-primary hover:text-black shadow-xl transition-all active:scale-95"
                 >
-                  Generate Plan
+                  Generate
                 </button>
               </div>
             </div>
           </div>
         </div>
       )}
+
       {/* Meal Detail Modal */}
       {activeMeal && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-          <div className="bg-card w-full max-w-2xl max-h-[90vh] rounded-3xl border border-border overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-200 flex flex-col">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/80 backdrop-blur-xl">
+          <div className="bg-white w-full max-w-3xl max-h-[90vh] rounded-[3rem] overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-300 flex flex-col border border-white/20">
             {/* Modal Header */}
-            <div className="p-6 border-b border-border bg-secondary/5 flex justify-between items-center">
+            <div className="p-10 pb-6 flex justify-between items-start">
               <div>
-                <span className="text-[10px] font-bold text-primary uppercase tracking-widest bg-primary/10 px-2 py-0.5 rounded mb-1 inline-block">
-                  {activeMeal.type}
-                </span>
-                <h2 className="text-2xl font-black text-foreground">{activeMeal.name}</h2>
+                <div className="flex items-center gap-3 mb-2">
+                  <span className="text-[10px] font-black text-black uppercase tracking-[0.2em] bg-primary/10 px-3 py-1 rounded-full border border-primary/20">
+                    {activeMeal.type}
+                  </span>
+                </div>
+                <h2 className="text-4xl font-black text-black tracking-tight leading-tight">{activeMeal.name}</h2>
               </div>
               <button 
                 onClick={() => setActiveMeal(null)}
-                className="p-2 hover:bg-secondary rounded-full transition-colors"
+                className="w-12 h-12 bg-gray-50 flex items-center justify-center text-muted-foreground hover:bg-black hover:text-white rounded-full transition-all active:scale-95"
               >
-                <X className="w-5 h-5" />
+                <X className="w-6 h-6" />
               </button>
             </div>
 
             {/* Tabs */}
-            <div className="flex border-b border-border bg-secondary/10 p-1 m-4 rounded-xl">
+            <div className="flex bg-gray-50 p-1.5 mx-10 rounded-2xl mb-8">
               <button
                 onClick={() => setModalTab('nutrition')}
-                className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all flex items-center justify-center gap-2 ${
-                  modalTab === 'nutrition' ? 'bg-background text-primary shadow-sm' : 'text-foreground/50 hover:text-foreground'
+                className={`flex-1 py-3 text-[10px] font-black uppercase tracking-widest rounded-[1rem] transition-all flex items-center justify-center gap-2 ${
+                  modalTab === 'nutrition' ? 'bg-white text-black shadow-lg shadow-black/5' : 'text-muted-foreground hover:text-black'
                 }`}
               >
                 <Brain className="w-4 h-4" /> Nutrition
               </button>
               <button
                 onClick={() => setModalTab('recipe')}
-                className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all flex items-center justify-center gap-2 ${
-                  modalTab === 'recipe' ? 'bg-background text-primary shadow-sm' : 'text-foreground/50 hover:text-foreground'
+                className={`flex-1 py-3 text-[10px] font-black uppercase tracking-widest rounded-[1rem] transition-all flex items-center justify-center gap-2 ${
+                  modalTab === 'recipe' ? 'bg-white text-black shadow-lg shadow-black/5' : 'text-muted-foreground hover:text-black'
                 }`}
               >
-                <ChefHat className="w-4 h-4" /> Recipe
+                <ChefHat className="w-4 h-4" /> Cooking Guide
               </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-6 pt-0">
+            <div className="flex-1 overflow-y-auto px-10 pb-10">
               {modalTab === 'nutrition' ? (
-                <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                    <div className="p-4 bg-orange-50 rounded-2xl border border-orange-100 text-center">
-                      <p className="text-[10px] font-bold text-orange-400 uppercase tracking-widest mb-1">Calories</p>
-                      <p className="text-xl font-black text-orange-600">{activeMeal.nutrition.calories}</p>
+                <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
+                    <div className="p-6 bg-gray-50 rounded-[2rem] border border-gray-100 text-center">
+                      <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-2">Calories</p>
+                      <p className="text-2xl font-black text-black">{activeMeal.nutrition.calories}</p>
                     </div>
-                    <div className="p-4 bg-blue-50 rounded-2xl border border-blue-100 text-center">
-                      <p className="text-[10px] font-bold text-blue-400 uppercase tracking-widest mb-1">Protein</p>
-                      <p className="text-xl font-black text-blue-600">{activeMeal.nutrition.protein}</p>
+                    <div className="p-6 bg-gray-50 rounded-[2rem] border border-gray-100 text-center">
+                      <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-2">Protein</p>
+                      <p className="text-2xl font-black text-black">{activeMeal.nutrition.protein}</p>
                     </div>
-                    <div className="p-4 bg-green-50 rounded-2xl border border-green-100 text-center">
-                      <p className="text-[10px] font-bold text-green-400 uppercase tracking-widest mb-1">Carbs</p>
-                      <p className="text-xl font-black text-green-600">{activeMeal.nutrition.carbs}</p>
+                    <div className="p-6 bg-gray-50 rounded-[2rem] border border-gray-100 text-center">
+                      <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-2">Carbs</p>
+                      <p className="text-2xl font-black text-black">{activeMeal.nutrition.carbs}</p>
                     </div>
-                    <div className="p-4 bg-purple-50 rounded-2xl border border-purple-100 text-center">
-                      <p className="text-[10px] font-bold text-purple-400 uppercase tracking-widest mb-1">Fat</p>
-                      <p className="text-xl font-black text-purple-600">{activeMeal.nutrition.fat}</p>
+                    <div className="p-6 bg-gray-50 rounded-[2rem] border border-gray-100 text-center">
+                      <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-2">Fat</p>
+                      <p className="text-2xl font-black text-black">{activeMeal.nutrition.fat}</p>
                     </div>
                   </div>
 
-                  <div className="space-y-4">
-                    <h3 className="font-bold text-lg flex items-center gap-2">
-                       <ShoppingBag className="w-5 h-5 text-primary" />
-                       Key Ingredients Used:
+                  <div className="space-y-6">
+                    <h3 className="text-xl font-black flex items-center gap-3">
+                       <ShoppingBag className="w-6 h-6 text-primary" />
+                       Included Ingredients
                     </h3>
-                    <div className="flex flex-wrap gap-2">
-                      {activeMeal.items.length > 0 ? (
+                    <div className="flex flex-wrap gap-3">
+                      {activeMeal?.items && activeMeal.items.length > 0 ? (
                         activeMeal.items.map((item, i) => (
-                          <span key={i} className="px-3 py-1.5 bg-secondary/50 rounded-lg border border-border text-sm font-medium">
+                          <span key={i} className="px-6 py-2.5 bg-white rounded-full border border-gray-100 shadow-sm text-sm font-black tracking-tight hover:border-black transition-colors">
                             {item}
                           </span>
                         ))
                       ) : (
-                        <p className="text-sm text-foreground/50 italic">Standard ingredients suitable for {activeMeal.type}</p>
+                        <p className="text-sm text-muted-foreground font-medium italic bg-gray-50 p-6 rounded-2xl border border-gray-100 w-full text-center">Standard healthy ingredients suitable for {activeMeal?.type}</p>
                       )}
                     </div>
                   </div>
                 </div>
               ) : (
-                <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+                <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
                   {selectedRecipe ? (
-                    <div className="space-y-8">
-                      <div>
-                        <p className="text-lg text-foreground/80 leading-relaxed italic border-l-4 border-primary pl-4">
+                    <div className="space-y-12">
+                      <div className="bg-primary/5 p-8 rounded-[2rem] border border-primary/20">
+                        <p className="text-xl font-medium text-black leading-relaxed italic">
                           "{selectedRecipe.description}"
                         </p>
                       </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <div className="space-y-4">
-                          <h3 className="text-lg font-bold flex items-center gap-2">
-                            <ShoppingBag className="w-5 h-5 text-primary" />
-                            Full Ingredients
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                        <div className="space-y-6">
+                          <h3 className="text-xl font-black flex items-center gap-3">
+                            <ShoppingBag className="w-6 h-6 text-primary" />
+                            Ingredients
                           </h3>
-                          <div className="space-y-2">
+                          <div className="space-y-3">
                             {selectedRecipe.ingredients.map((ing: any, i: number) => (
-                              <div key={i} className="flex justify-between items-center p-3 bg-secondary/20 rounded-xl border border-border/50">
-                                <span className="font-semibold">{ing.item}</span>
-                                <span className="text-sm opacity-60 font-mono bg-background/50 px-2 py-0.5 rounded-lg">{ing.amount}</span>
+                              <div key={i} className="flex justify-between items-center p-4 bg-gray-50 rounded-2xl border border-gray-100 group hover:bg-white hover:shadow-xl transition-all">
+                                <span className="font-black text-black">{ing.item}</span>
+                                <span className="text-xs font-black uppercase tracking-widest text-primary bg-primary/10 px-3 py-1 rounded-full">{ing.amount}</span>
                               </div>
                             ))}
                           </div>
                         </div>
 
-                        <div className="space-y-4">
-                          <h3 className="text-lg font-bold flex items-center gap-2">
-                            <ListChecks className="w-5 h-5 text-primary" />
-                            Instructions
+                        <div className="space-y-6">
+                          <h3 className="text-xl font-black flex items-center gap-3">
+                            <ListChecks className="w-6 h-6 text-primary" />
+                            Step-by-Step
                           </h3>
-                          <div className="space-y-4">
+                          <div className="space-y-6">
                             {selectedRecipe.instructions.map((step: string, i: number) => (
-                              <div key={i} className="flex gap-4">
-                                <span className="flex-shrink-0 w-6 h-6 bg-primary text-primary-foreground text-xs font-black rounded-full flex items-center justify-center">
+                              <div key={i} className="flex gap-6 group">
+                                <span className="flex-shrink-0 w-8 h-8 bg-black text-white text-[10px] font-black rounded-full flex items-center justify-center group-hover:bg-primary group-hover:text-black transition-colors shadow-lg">
                                   {i + 1}
                                 </span>
-                                <p className="text-sm leading-relaxed text-foreground/70">{step}</p>
+                                <p className="text-sm leading-relaxed text-muted-foreground font-medium group-hover:text-black transition-colors">{step}</p>
                               </div>
                             ))}
                           </div>
                         </div>
                       </div>
 
-                      <div className="bg-secondary/10 p-6 rounded-3xl border border-border">
-                        <h4 className="text-sm font-bold opacity-50 uppercase tracking-widest mb-2">Chef's Tips</h4>
-                        <p className="text-sm font-medium leading-relaxed">{selectedRecipe.chefTips}</p>
+                      <div className="bg-black text-white p-8 rounded-[2.5rem] shadow-2xl relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-primary/20 rounded-full -mr-16 -mt-16 blur-3xl"></div>
+                        <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-primary mb-3">Chef's Secret Tips</h4>
+                        <p className="text-sm font-medium leading-relaxed text-gray-300">{selectedRecipe.chefTips}</p>
                       </div>
                     </div>
                   ) : (
-                    <div className="flex flex-col items-center justify-center py-12 text-center space-y-4">
-                      <div className="p-6 bg-primary/5 rounded-full">
-                        <Utensils className="w-12 h-12 text-primary/40" />
+                    <div className="flex flex-col items-center justify-center py-20 text-center space-y-8">
+                      <div className="p-10 bg-gray-50 rounded-full shadow-inner relative group">
+                        <div className="absolute inset-0 bg-primary/20 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                        <Utensils className="w-20 h-20 text-gray-200 relative z-10" />
                       </div>
                       <div>
-                        <h3 className="text-xl font-bold">Ready to cook?</h3>
-                        <p className="text-foreground/60 max-w-xs mx-auto mt-2">
-                          AI will generate a custom recipe using your {activeMeal.items.length > 0 ? 'specific inventory' : 'suggested meal'} items.
+                        <h3 className="text-3xl font-black text-black tracking-tight mb-3">Ready to Cook?</h3>
+                        <p className="text-muted-foreground font-medium max-w-xs mx-auto">
+                          NutriAI will generate a custom culinary guide tailored to your selected items.
                         </p>
                       </div>
                       <button
-                        onClick={() => fetchRecipe(activeMeal.name, activeMeal.items)}
+                        onClick={() => activeMeal && fetchRecipe(activeMeal.name, activeMeal.items)}
                         disabled={isRecipeLoading}
-                        className="px-8 py-3 bg-primary text-white font-bold rounded-2xl hover:scale-105 transition-all shadow-lg shadow-primary/20 flex items-center gap-2"
+                        className="px-12 py-5 bg-black text-white font-black rounded-full hover:bg-primary hover:text-black transition-all shadow-xl flex items-center gap-3 active:scale-95 uppercase tracking-widest text-xs"
                       >
-                        {isRecipeLoading ? <Sparkles className="w-5 h-5 animate-spin" /> : <Sparkles className="w-5 h-5" />}
-                        Generate Detailed Recipe
+                        {isRecipeLoading ? <Sparkles className="w-5 h-5 animate-spin" /> : <Sparkles className="w-5 h-5 shadow-sm" />}
+                        Generate Cooking Protocol
                       </button>
                     </div>
                   )}
@@ -753,17 +908,17 @@ export default function MealPlannerPage() {
         </div>
       )}
 
-      {/* Persistent Loading for Recipes within Modal is handled by button state, 
-          but if it takes long, we keep this for UX */}
+      {/* Persistent Loading Overlay */}
       {isRecipeLoading && !selectedRecipe && (
-        <div className="fixed inset-0 z-[70] flex flex-col items-center justify-center bg-black/40 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[70] flex flex-col items-center justify-center bg-black/60 backdrop-blur-md">
           <div className="relative">
-            <div className="w-20 h-20 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-            <ChefHat className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 text-primary animate-pulse" />
+            <div className="w-24 h-24 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+            <ChefHat className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 text-primary animate-pulse" />
           </div>
-          <p className="mt-4 text-white font-black tracking-widest uppercase text-xs">AI is preparing your recipe instructions...</p>
+          <p className="mt-8 text-white font-black tracking-[0.3em] uppercase text-xs animate-pulse">Consulting NutriAI Chef...</p>
         </div>
       )}
-    </div>
+      </div>
+    </main>
   );
 }

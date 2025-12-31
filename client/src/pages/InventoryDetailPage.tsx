@@ -2,23 +2,6 @@ import { useAuth } from '@clerk/clerk-react';
 import { useQueryClient } from '@tanstack/react-query';
 import {
   AlertCircle,
-  Apple,
-  ArrowLeft,
-  Camera,
-  ChevronDown,
-  DollarSign,
-  Droplet,
-  Filter,
-  Flame,
-  Layers,
-  Minus,
-  Package,
-  Plus,
-  Search,
-  Timer,
-  Utensils,
-  X,
-  Zap,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -140,8 +123,8 @@ export default function InventoryDetailPage() {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-purple-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-gray-600 font-medium">Loading your premium pantry...</p>
+          <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-muted-foreground font-medium">Loading your premium pantry...</p>
         </div>
       </div>
     );
@@ -152,13 +135,13 @@ export default function InventoryDetailPage() {
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="text-center p-8 bg-white border border-red-100 shadow-xl rounded-2xl max-w-md">
           <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-          <h3 className="text-xl font-bold text-gray-900 mb-2">
+          <h3 className="text-xl font-bold text-foreground mb-2">
             Unable to Load Inventory
           </h3>
-          <p className="text-gray-500 mb-6">{error}</p>
+          <p className="text-muted-foreground mb-6">{error}</p>
           <button
             onClick={() => navigate('/inventory')}
-            className="px-6 py-2.5 bg-gray-900 text-white font-medium rounded-xl hover:bg-gray-800 transition-all shadow-lg shadow-gray-200"
+            className="px-6 py-2.5 bg-black text-white font-medium rounded-xl hover:bg-gray-900 transition-all shadow-lg"
           >
             Go Back
           </button>
@@ -340,219 +323,132 @@ export default function InventoryDetailPage() {
     return acc + (price * ratio);
   }, 0) || 0;
 
-  const expiringSoonCount = inventoryItems?.filter(item => {
-    if (!item.expiryDate) return false;
-    const diff = new Date(item.expiryDate).getTime() - new Date().getTime();
-    const days = Math.ceil(diff / (1000 * 3600 * 24));
-    return days >= 0 && days <= 3;
-  }).length || 0;
-
   return (
-    <div className="min-h-screen bg-gray-50/50">
-      {/* --- PREMIUM HEADER --- */}
-      <div className="bg-white border-b border-gray-100 shadow-sm sticky top-0 z-10 backdrop-blur-md bg-white/90 supports-[backdrop-filter]:bg-white/60">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div className="flex items-center gap-4">
-              <button
-                onClick={() => navigate('/inventory')}
-                className="p-2 -ml-2 hover:bg-gray-100 rounded-full transition-colors text-gray-500 hover:text-gray-900"
-              >
-                <ArrowLeft className="w-5 h-5" />
-              </button>
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-                  {inventory.name}
-                  {inventory.isPrivate && <span className="bg-gray-100 text-gray-600 text-xs px-2 py-0.5 rounded-full font-medium">Private</span>}
-                </h1>
-                <p className="text-sm text-gray-500 flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                  Active Inventory
-                </p>
-              </div>
-            </div>
-
-            {/* Stats Pills */}
-            <div className="flex items-center gap-3 overflow-x-auto pb-2 md:pb-0 no-scrollbar">
-              <div className="flex items-center gap-3 px-4 py-2 bg-gray-900 text-white rounded-xl shadow-lg shadow-gray-200 min-w-max">
-                <div className="p-1.5 bg-gray-800 rounded-lg">
-                  <DollarSign className="w-4 h-4 text-green-400" />
-                </div>
-                <div>
-                  <p className="text-xs text-gray-400 font-medium uppercase tracking-wider">Value</p>
-                  <p className="text-lg font-bold">‎৳{totalValue.toFixed(2)}</p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3 px-4 py-2 bg-white border border-gray-200 rounded-xl min-w-max">
-                <div className="p-1.5 bg-purple-50 rounded-lg">
-                  <Layers className="w-4 h-4 text-purple-600" />
-                </div>
-                <div>
-                  <p className="text-xs text-gray-500 font-medium uppercase tracking-wider">Items</p>
-                  <p className="text-lg font-bold text-gray-900">{totalItems}</p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3 px-4 py-2 bg-white border border-gray-200 rounded-xl min-w-max">
-                <div className="p-1.5 bg-orange-50 rounded-lg">
-                  <Timer className="w-4 h-4 text-orange-600" />
-                </div>
-                <div>
-                  <p className="text-xs text-gray-500 font-medium uppercase tracking-wider">Expiring</p>
-                  <p className="text-lg font-bold text-gray-900">{expiringSoonCount}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-
-        {/* Weather Widget */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-3">
-            <div className="flex gap-2 overflow-x-auto pb-4">
-              <WeatherWidget className="min-w-[300px]" />
-              {/* Could add generic nutrient summary widget here too */}
-            </div>
-            {!alertsLoading && weatherAlerts.length > 0 && <WeatherAlertBanner alerts={weatherAlerts} />}
+    <main className="flex-1 flex flex-col h-[calc(100vh-2rem)] overflow-hidden rounded-3xl relative">
+      {/* Premium Header */}
+      <header className="flex flex-col md:flex-row justify-between items-center mb-6 px-4 pt-2 gap-4">
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => navigate('/inventory')}
+            className="w-10 h-10 flex items-center justify-center rounded-full bg-white  shadow-soft hover:text-primary transition-all"
+          >
+            <span className="material-icons-outlined">arrow_back</span>
+          </button>
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight text-foreground font-display flex items-center gap-2">
+              {inventory.name}
+              {inventory.isPrivate && <span className="material-icons-outlined text-muted-foreground text-sm">lock</span>}
+            </h1>
+            <p className="text-muted-foreground text-sm">‎৳{totalValue.toFixed(2)} total value • {totalItems} items</p>
           </div>
         </div>
 
-        {/* --- ACTIONS & FILTERS --- */}
-        <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
-          <div className="flex-1 w-full relative group">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-purple-600 transition-colors" />
+        <div className="flex items-center gap-3">
+          <div className="relative hidden lg:block group">
+            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors">
+              <span className="material-icons-outlined">search</span>
+            </span>
             <input
               type="text"
-              placeholder="Search food, nutrients, or notes..."
+              placeholder="Search food, nutrients..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 bg-white border border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+              className="pl-12 pr-4 py-3 w-64 rounded-full bg-white border-none shadow-soft focus:ring-2 focus:ring-primary/50 text-sm transition-all placeholder-muted-foreground text-foreground"
             />
           </div>
+          
+          <button
+            onClick={() => setShowImageUploadModal(true)}
+            className="flex items-center gap-2 bg-primary text-gray-900 px-6 py-3 rounded-full hover:shadow-lg transition-all font-bold"
+          >
+            <span className="material-icons-round text-lg">photo_camera</span>
+            <span>Scan Receipt</span>
+          </button>
 
-          <div className="flex gap-2 w-full md:w-auto">
-            <button
-              onClick={() => setShowFilters(!showFilters)}
-              className={`flex items-center gap-2 px-4 py-3 rounded-xl border font-medium transition-all ${showFilters || hasActiveFilters
-                ? 'bg-purple-50 border-purple-200 text-purple-700'
-                : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'
-                }`}
-            >
-              <Filter className="w-4 h-4" />
-              <span>Filters</span>
-              {hasActiveFilters && <span className="w-2 h-2 bg-purple-600 rounded-full" />}
-            </button>
-
-            <button
-              onClick={() => setShowAddModal(true)}
-              className="flex items-center gap-2 px-4 py-3 bg-white border border-gray-200 text-gray-700 font-medium rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm"
-            >
-              <Plus className="w-4 h-4" />
-              <span className="hidden sm:inline">Add Item</span>
-            </button>
-
-            <button
-              onClick={() => setShowImageUploadModal(true)}
-              className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-medium rounded-xl hover:shadow-lg hover:shadow-purple-200 transition-all transform hover:-translate-y-0.5 active:translate-y-0"
-            >
-              <Camera className="w-4 h-4" />
-              <span>Scan Receipt (OCR)</span>
-            </button>
-          </div>
+          <button
+            onClick={() => setShowAddModal(true)}
+            className="flex items-center gap-2 bg-black text-white px-6 py-3 rounded-full hover:bg-gray-900 transition-all shadow-lg font-medium"
+          >
+            <span className="material-icons-round text-lg">add</span>
+            <span>Add Item</span>
+          </button>
         </div>
+      </header>
 
-        {/* Detailed Filters Panel */}
-        {showFilters && (
-          <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm grid grid-cols-1 md:grid-cols-3 gap-6 animate-in slide-in-from-top-2">
-            <div>
-              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 block">Category</label>
-              <div className="relative">
-                <select
-                  value={filters.category}
-                  onChange={(e) => setFilters(prev => ({ ...prev, category: e.target.value }))}
-                  className="w-full appearance-none bg-gray-50 border border-gray-200 text-gray-700 py-3 px-4 pr-8 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:bg-white transition-all"
-                >
-                  <option value="">All Categories</option>
-                  {availableCategories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
-                </select>
-                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-              </div>
-            </div>
-            <div>
-              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 block">Freshness</label>
-              <div className="relative">
-                <select
-                  value={filters.expiryStatus}
-                  onChange={(e) => setFilters(prev => ({ ...prev, expiryStatus: e.target.value }))}
-                  className="w-full appearance-none bg-gray-50 border border-gray-200 text-gray-700 py-3 px-4 pr-8 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:bg-white transition-all"
-                >
-                  <option value="">Any Status</option>
-                  <option value="fresh">Fresh & Good</option>
-                  <option value="expiring-soon">Expiring Soon (3 days)</option>
-                  <option value="expired">Expired</option>
-                </select>
-                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-              </div>
-            </div>
-            <div>
-              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 block">Stock</label>
-              <div className="relative">
-                <select
-                  value={filters.stockLevel}
-                  onChange={(e) => setFilters(prev => ({ ...prev, stockLevel: e.target.value }))}
-                  className="w-full appearance-none bg-gray-50 border border-gray-200 text-gray-700 py-3 px-4 pr-8 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:bg-white transition-all"
-                >
-                  <option value="">Any Level</option>
-                  <option value="in-stock">In Stock</option>
-                  <option value="low-stock">Running Low</option>
-                  <option value="out-of-stock">Out of Stock</option>
-                </select>
-                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-              </div>
-            </div>
-            {hasActiveFilters && (
-              <div className="md:col-span-3 flex justify-end border-t border-gray-100 pt-4">
-                <button onClick={clearFilters} className="text-sm font-medium text-red-600 hover:text-red-700 flex items-center gap-1">
-                  <X className="w-4 h-4" /> Clear All Filters
-                </button>
-              </div>
-            )}
+      {/* Main Scrollable Content */}
+      <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-6">
+        {/* Weather Alerts / Widgets */}
+        {!alertsLoading && weatherAlerts.length > 0 && (
+          <div className="animate-slide-in">
+            <WeatherAlertBanner alerts={weatherAlerts} />
           </div>
         )}
+        <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
+          <WeatherWidget className="min-w-[300px] shadow-soft rounded-3xl" />
+        </div>
 
-        {/* --- GRID LAYOUT --- */}
+        {/* Filter Bar */}
+        <div className="flex flex-wrap items-center gap-3">
+          <button 
+            onClick={() => clearFilters()}
+            className={`px-5 py-2 rounded-full font-medium text-sm transition-all ${!hasActiveFilters ? 'bg-black text-white' : 'bg-white text-muted-foreground hover:bg-gray-50 shadow-sm border border-transparent hover:border-gray-200'}`}
+          >
+            All Items
+          </button>
+          
+          <div className="flex gap-2">
+            <select
+              value={filters.category}
+              onChange={(e) => setFilters(prev => ({ ...prev, category: e.target.value }))}
+              className="px-4 py-2 rounded-full bg-white  border-none shadow-soft text-sm focus:ring-2 focus:ring-primary/50 outline-none"
+            >
+              <option value="">Categories</option>
+              {availableCategories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+            </select>
+
+            <select
+              value={filters.expiryStatus}
+              onChange={(e) => setFilters(prev => ({ ...prev, expiryStatus: e.target.value }))}
+              className="px-4 py-2 rounded-full bg-white  border-none shadow-soft text-sm focus:ring-2 focus:ring-primary/50 outline-none"
+            >
+              <option value="">Freshness</option>
+              <option value="fresh">Fresh</option>
+              <option value="expiring-soon">Expiring Soon</option>
+              <option value="expired">Expired</option>
+            </select>
+          </div>
+
+          <button 
+            onClick={() => setShowFilters(!showFilters)}
+            className="ml-auto w-10 h-10 flex items-center justify-center rounded-full bg-white text-muted-foreground shadow-sm hover:bg-gray-50 transition-colors"
+          >
+            <span className="material-icons-outlined text-xl">tune</span>
+          </button>
+        </div>
+
+        {/* Item Grid */}
         {itemsLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[1, 2, 3, 4, 5, 6].map(i => (
-              <div key={i} className="h-64 bg-gray-100 rounded-2xl animate-pulse" />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {Array(8).fill(0).map((_, i) => (
+              <div key={i} className="h-64 bg-white  rounded-3xl animate-pulse shadow-soft"></div>
             ))}
           </div>
         ) : filteredItems.length === 0 ? (
-          <div className="text-center py-20 bg-white rounded-3xl border border-dashed border-gray-200">
-            <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Package className="w-10 h-10 text-gray-300" />
+          <div className="text-center py-20 bg-white  rounded-3xl border-2 border-dashed border-gray-100 dark:border-gray-800">
+            <div className="w-20 h-20 bg-gray-50 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-6">
+              <span className="material-icons-outlined text-4xl text-gray-300">shopping_basket</span>
             </div>
-            <h3 className="text-xl font-bold text-gray-900 mb-2">Pantry is Empty</h3>
-            <p className="text-gray-500 max-w-sm mx-auto mb-8">It looks like this inventory is empty or no items match your search.</p>
+            <h3 className="text-xl font-bold text-foreground mb-2">Inventory is Empty</h3>
+            <p className="text-muted-foreground max-w-sm mx-auto mb-8">Start by adding items manually or scanning a grocery receipt.</p>
             <button
               onClick={() => setShowAddModal(true)}
-              className="px-8 py-3 bg-gray-900 text-white font-medium rounded-xl hover:bg-gray-800 transition-all"
+              className="px-8 py-3 bg-primary text-gray-900 font-bold rounded-full hover:shadow-lg transition-all"
             >
               Add First Item
             </button>
-            <button
-              onClick={() => setShowImageUploadModal(true)}
-              className="mt-4 text-purple-600 font-medium hover:text-purple-700 flex items-center justify-center gap-2 mx-auto"
-            >
-              <Camera className="w-4 h-4" /> Scan Receipt instead
-            </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {filteredItems.map(item => {
               const itemName = item.customName || item.foodItem?.name || 'Unknown Item';
               const category = item.foodItem?.category || 'General';
@@ -560,92 +456,51 @@ export default function InventoryDetailPage() {
               const today = new Date();
               const daysLeft = expDate ? Math.ceil((expDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)) : null;
 
-              let statusColor = 'bg-gray-100 text-gray-600 border-gray-200';
-              let statusLabel = 'No Date';
+              let statusColor = 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300';
+              let statusLabel = 'Fresh';
               if (daysLeft !== null) {
-                if (daysLeft < 0) { statusColor = 'bg-red-50 text-red-700 border-red-100'; statusLabel = 'Expired'; }
-                else if (daysLeft <= 3) { statusColor = 'bg-amber-50 text-amber-700 border-amber-100'; statusLabel = `Exp ${daysLeft}d`; }
-                else { statusColor = 'bg-green-50 text-green-700 border-green-100'; statusLabel = 'Fresh'; }
+                if (daysLeft < 0) {
+                  statusColor = 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300';
+                  statusLabel = 'Expired';
+                } else if (daysLeft <= 3) {
+                  statusColor = 'bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300';
+                  statusLabel = 'Low Freshness';
+                }
               }
 
-              // Nutrition Calculation
-              const nutrition = item.foodItem?.nutritionPerUnit || {};
-              // Show nutrition PER 100g/ml if basis is > 1 for standard comparison, OR per unit if standard is 1.
-              // Actually, let's just show what we have "per unit" or "per 100g" clearly.
-              // To keep it clean, we show the raw values linked to the basis.
-
-              const cal = nutrition.calories != null ? Math.round(nutrition.calories) : '-';
-              const protein = nutrition.protein != null ? Math.round(nutrition.protein) : '-';
-              const carbs = nutrition.carbohydrates != null ? Math.round(nutrition.carbohydrates) : '-';
-              const fat = nutrition.fat != null ? Math.round(nutrition.fat) : '-';
-
               return (
-                <div key={item.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl hover:border-purple-100 transition-all duration-300 group flex flex-col justify-between">
-                  <div className="p-5">
-                    <div className="flex justify-between items-start mb-4">
-                      <div className="flex items-center gap-4">
-                        <div className="w-14 h-14 bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl flex items-center justify-center text-2xl shadow-inner">
-                          {/* Simple emoji mapping or generic icon based on category */}
-                          {category.toLowerCase().includes('fruit') ? '🍎' :
-                            category.toLowerCase().includes('veg') ? '🥦' :
-                              category.toLowerCase().includes('meat') ? '🥩' :
-                                category.toLowerCase().includes('dairy') ? '🥛' :
-                                  category.toLowerCase().includes('grain') ? '🌾' : '📦'}
-                        </div>
-                        <div>
-                          <h3 className="font-bold text-gray-900 line-clamp-1 text-lg group-hover:text-purple-700 transition-colors">{itemName}</h3>
-                          <p className="text-sm text-gray-500">{category}</p>
-                        </div>
-                      </div>
-                      <div className={`px-2.5 py-1 rounded-lg border text-xs font-bold uppercase tracking-wide ${statusColor}`}>
-                        {statusLabel}
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-4 gap-2 mb-5">
-                      <div className="bg-orange-50 rounded-xl p-2 text-center">
-                        <div className="flex items-center justify-center text-orange-400 mb-1"><Flame className="w-3 h-3" /></div>
-                        <p className="text-xl font-bold text-gray-900">{cal}</p>
-                        <p className="text-sm text-gray-500">kcal</p>
-                      </div>
-                      <div className="bg-blue-50 rounded-xl p-2 text-center">
-                        <div className="flex items-center justify-center text-blue-400 mb-1"><Zap className="w-3 h-3" /></div>
-                        <p className="text-xl font-bold text-gray-900">{protein}{protein !== '-' ? 'g' : ''}</p>
-                        <p className="text-sm text-gray-500">prot</p>
-                      </div>
-                      <div className="bg-green-50 rounded-xl p-2 text-center">
-                        <div className="flex items-center justify-center text-green-400 mb-1"><Apple className="w-3 h-3" /></div>
-                        <p className="text-xl font-bold text-gray-900">{carbs}{carbs !== '-' ? 'g' : ''}</p>
-                        <p className="text-sm text-gray-500">carb</p>
-                      </div>
-                      <div className="bg-yellow-50 rounded-xl p-2 text-center">
-                        <div className="flex items-center justify-center text-yellow-400 mb-1"><Droplet className="w-3 h-3" /></div>
-                        <p className="text-xl font-bold text-gray-900">{fat}{fat !== '-' ? 'g' : ''}</p>
-                        <p className="text-sm text-gray-500">fat</p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between text-sm py-3 border-t border-gray-50">
-                      <div className="text-gray-500 font-medium">
-                        Qty: <span className="text-gray-900">{item.quantity} {item.unit}</span>
-                      </div>
-                      {item.foodItem?.basePrice && (
-                        <div className="text-gray-900 font-bold">
-                          ৳{((item.foodItem.basePrice * item.quantity) / (item.foodItem.nutritionBasis || 1)).toFixed(0)}
-                        </div>
-                      )}
-                      {!item.foodItem?.basePrice && <div className="text-gray-300 text-xs">No price</div>}
-                    </div>
+                <div key={item.id} className="bg-white  rounded-3xl p-5 shadow-soft hover:shadow-lg transition-all group relative border border-transparent hover:border-primary/20">
+                  <div className={`absolute top-4 right-4 text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wider ${statusColor}`}>
+                    {statusLabel}
+                  </div>
+                  
+                  <div className="flex items-center justify-center h-32 mb-4 bg-gray-50 dark:bg-gray-800 rounded-2xl group-hover:scale-[1.02] transition-transform duration-300 text-6xl">
+                    {category.toLowerCase().includes('fruit') ? '🍎' :
+                      category.toLowerCase().includes('veg') ? '🥦' :
+                        category.toLowerCase().includes('meat') ? '🥩' :
+                          category.toLowerCase().includes('dairy') ? '🥛' :
+                            category.toLowerCase().includes('grain') ? '🌾' : '📦'}
                   </div>
 
-                  <button
-                    onClick={() => handleConsumption(item)}
-                    disabled={item.quantity <= 0}
-                    className="w-full py-3 bg-gray-50 text-gray-600 font-medium text-sm hover:bg-purple-600 hover:text-white transition-colors flex items-center justify-center gap-2 rounded-b-2xl border-t border-gray-100"
-                  >
-                    <Utensils className="w-4 h-4" />
-                    {item.quantity <= 0 ? 'Out of Stock' : 'Log Consumption'}
-                  </button>
+                  <h4 className="font-bold text-lg text-foreground mb-1 line-clamp-1">{itemName}</h4>
+                  <p className="text-xs text-muted-foreground mb-4">
+                    {category} • {expDate ? `Expires in ${daysLeft} days` : 'No expiry'}
+                  </p>
+
+                  <div className="flex items-center justify-between mt-auto">
+                    <div>
+                      <span className="text-2xl font-bold text-foreground">{item.quantity}</span>
+                      <span className="text-xs text-muted-foreground ml-1">{item.unit || 'pcs'}</span>
+                    </div>
+                    
+                    <button
+                      onClick={() => handleConsumption(item)}
+                      disabled={item.quantity <= 0}
+                      className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-gray-900 hover:bg-primary-dark transition-colors shadow-md shadow-primary/30 disabled:opacity-50"
+                    >
+                      <span className="material-icons-round text-lg">restaurant</span>
+                    </button>
+                  </div>
                 </div>
               );
             })}
@@ -653,7 +508,21 @@ export default function InventoryDetailPage() {
         )}
       </div>
 
-      {/* Consumption Modal */}
+      {/* --- MODALS & OVERLAYS --- */}
+      {showAddModal && (
+        <AddItemModal
+          onClose={() => setShowAddModal(false)}
+          onAdd={(itemData) => {
+            addItemMutation.mutate(itemData);
+            setShowAddModal(false);
+          }}
+          onScan={() => {
+            setShowAddModal(false);
+            setShowImageUploadModal(true);
+          }}
+        />
+      )}
+
       {showConsumptionModal && selectedItem && (
         <ConsumptionModal
           item={selectedItem}
@@ -665,19 +534,6 @@ export default function InventoryDetailPage() {
         />
       )}
 
-      {/* Add Item Modal */}
-      {showAddModal && (
-        <AddItemModal
-          onClose={() => setShowAddModal(false)}
-          onAdd={addItemMutation.mutate}
-          onScan={() => {
-            setShowAddModal(false);
-            setShowImageUploadModal(true);
-          }}
-        />
-      )}
-
-      {/* Smart OCR Upload Modal */}
       {showImageUploadModal && (
         <ImageUploadModal
           inventoryId={inventoryId!}
@@ -685,7 +541,7 @@ export default function InventoryDetailPage() {
           onSuccess={handleImageUploadSuccess}
         />
       )}
-    </div>
+    </main>
   );
 }
 
@@ -758,9 +614,9 @@ function ConsumptionModal({ item, onClose, onConsume }: ConsumptionModalProps) {
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
       <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden animate-in zoom-in-95 duration-200">
         <div className="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-          <h3 className="text-lg font-bold text-gray-900">Log Consumption</h3>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
-            <X className="w-5 h-5" />
+          <h3 className="text-lg font-bold text-foreground">Log Consumption</h3>
+          <button onClick={onClose} className="text-muted-foreground hover:text-black transition-colors">
+            <span className="material-icons-outlined">close</span>
           </button>
         </div>
 
@@ -772,22 +628,22 @@ function ConsumptionModal({ item, onClose, onConsume }: ConsumptionModalProps) {
           )}
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Item</label>
-            <div className="text-gray-900 font-semibold text-lg">{itemName}</div>
-            <div className="text-sm text-gray-500">Current Stock: {maxQuantity} {item.unit}</div>
+            <label className="block text-sm font-medium text-muted-foreground mb-1">Item</label>
+            <div className="text-foreground font-semibold text-lg">{itemName}</div>
+            <div className="text-sm text-muted-foreground">Current Stock: {maxQuantity} {item.unit}</div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Quantity Consumed</label>
+            <label className="block text-sm font-medium text-muted-foreground mb-1">Quantity Consumed</label>
             <div className="flex gap-2">
-              <div className="flex items-center border border-gray-300 rounded-xl overflow-hidden">
+              <div className="flex items-center border border-gray-200 rounded-xl overflow-hidden">
                 <button
                   type="button"
                   onClick={() => setForm(prev => ({ ...prev, quantity: Math.max(0, prev.quantity - 1) }))}
                   disabled={form.quantity <= 0}
-                  className="px-3 py-2 bg-gray-50 hover:bg-gray-100 text-gray-600 font-bold disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="px-3 py-2 bg-gray-50 hover:bg-gray-100 text-foreground font-bold disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
-                  <Minus className="w-4 h-4" />
+                  <span className="material-icons-outlined text-sm">remove</span>
                 </button>
                 <input
                   type="number"
@@ -797,18 +653,18 @@ function ConsumptionModal({ item, onClose, onConsume }: ConsumptionModalProps) {
                   max={maxQuantity}
                   value={form.quantity}
                   onChange={handleChange}
-                  className="flex-1 px-4 py-2 text-center border-0 focus:ring-0 focus:outline-none"
+                  className="flex-1 px-4 py-2 text-center border-0 focus:ring-0 focus:outline-none text-foreground"
                 />
                 <button
                   type="button"
                   onClick={() => setForm(prev => ({ ...prev, quantity: Math.min(maxQuantity, prev.quantity + 1) }))}
                   disabled={form.quantity >= maxQuantity}
-                  className="px-3 py-2 bg-gray-50 hover:bg-gray-100 text-gray-600 font-bold disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="px-3 py-2 bg-gray-50 hover:bg-gray-100 text-foreground font-bold disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
-                  <Plus className="w-4 h-4" />
+                  <span className="material-icons-outlined text-sm">add</span>
                 </button>
               </div>
-              <div className="px-4 py-2 bg-gray-100 rounded-xl text-gray-600 font-medium flex items-center">
+              <div className="px-4 py-2 bg-gray-100 rounded-xl text-muted-foreground font-medium flex items-center">
                 {item.unit || 'units'}
               </div>
             </div>
@@ -816,7 +672,7 @@ function ConsumptionModal({ item, onClose, onConsume }: ConsumptionModalProps) {
               <button
                 type="button"
                 onClick={() => setForm(prev => ({ ...prev, quantity: maxQuantity }))}
-                className="text-sm text-purple-600 hover:text-purple-700 font-medium"
+                className="text-sm text-primary-dark hover:text-primary font-bold transition-colors"
               >
                 Consume All ({maxQuantity} {item.unit})
               </button>
@@ -824,14 +680,14 @@ function ConsumptionModal({ item, onClose, onConsume }: ConsumptionModalProps) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Notes (Optional)</label>
+            <label className="block text-sm font-medium text-muted-foreground mb-1">Notes (Optional)</label>
             <textarea
               name="notes"
               value={form.notes}
               onChange={handleChange}
               rows={2}
               placeholder="e.g., Used for dinner..."
-              className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+              className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/50 focus:border-transparent resize-none text-foreground placeholder-muted-foreground"
             />
           </div>
 
@@ -839,9 +695,9 @@ function ConsumptionModal({ item, onClose, onConsume }: ConsumptionModalProps) {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 bg-purple-600 text-white font-bold rounded-xl hover:bg-purple-700 transition-colors shadow-lg shadow-purple-200 disabled:opacity-70 disabled:cursor-not-allowed flex justify-center items-center gap-2"
+              className="w-full py-3 bg-black text-white font-bold rounded-xl hover:bg-gray-900 transition-colors shadow-lg disabled:opacity-70 disabled:cursor-not-allowed flex justify-center items-center gap-2"
             >
-              {loading ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" /> : <Utensils className="w-5 h-5" />}
+              {loading ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" /> : <span className="material-icons-outlined">restaurant</span>}
               {loading ? 'Logging...' : 'Confirm Consumption'}
             </button>
           </div>
@@ -980,30 +836,30 @@ function AddItemModal({ onClose, onAdd, onScan }: {
         {/* Quick Action for OCR */}
         <button
           onClick={() => { onClose(); onScan(); }}
-          className="w-full mb-4 py-3 bg-purple-50 text-purple-700 font-bold rounded-xl flex items-center justify-center gap-2 border border-purple-100 hover:bg-purple-100 transition-colors"
+          className="w-full mb-4 py-3 bg-primary/20 text-black font-bold rounded-xl flex items-center justify-center gap-2 border border-primary/30 hover:bg-primary/30 transition-colors"
         >
-          <Camera className="w-5 h-5" />
+          <span className="material-icons-outlined">photo_camera</span>
           Scan Receipt (OCR)
         </button>
 
         <div className="relative my-4">
-          <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-200"></div></div>
-          <div className="relative flex justify-center text-sm"><span className="px-2 bg-white text-gray-500">Or add manually</span></div>
+          <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-100"></div></div>
+          <div className="relative flex justify-center text-sm"><span className="px-2 bg-white text-muted-foreground">Or add manually</span></div>
         </div>
 
         {/* USDA Search */}
         <div className="mb-4 relative">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <span className="material-icons-outlined absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">search</span>
             <input
-              className="w-full border pl-10 pr-10 py-3 rounded-xl bg-gray-50 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
+              className="w-full border border-gray-100 pl-10 pr-10 py-3 rounded-xl bg-gray-50 placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-foreground"
               placeholder="Search USDA (e.g. 'Apple', 'Oats')"
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
             />
             {isSearching && (
               <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                <div className="w-4 h-4 border-2 border-purple-600 border-t-transparent rounded-full animate-spin" />
+                <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
               </div>
             )}
           </div>
@@ -1015,10 +871,10 @@ function AddItemModal({ onClose, onAdd, onScan }: {
                   key={idx}
                   type="button"
                   onClick={() => handleSelectFood(item)}
-                  className="w-full text-left px-4 py-3 text-sm hover:bg-purple-50 transition-colors border-b border-gray-50 last:border-0"
+                  className="w-full text-left px-4 py-3 text-sm hover:bg-gray-50 transition-colors border-b border-gray-50 last:border-0"
                 >
-                  <div className="font-bold text-gray-900">{item.description}</div>
-                  <div className="text-[10px] text-gray-500 uppercase tracking-wide">{item.dataType} • {item.unitName}</div>
+                  <div className="font-bold text-foreground">{item.description}</div>
+                  <div className="text-[10px] text-muted-foreground uppercase tracking-wide">{item.dataType} • {item.unitName}</div>
                 </button>
               ))}
             </div>
@@ -1027,7 +883,7 @@ function AddItemModal({ onClose, onAdd, onScan }: {
 
         <div className="space-y-3">
           <input
-            className="w-full border p-3 rounded-xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500"
+            className="w-full border border-gray-100 p-3 rounded-xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary/50 text-foreground"
             placeholder="Item Name (e.g. Fuji Apple)"
             value={form.name}
             onChange={e => setForm({ ...form, name: e.target.value })}
@@ -1035,12 +891,12 @@ function AddItemModal({ onClose, onAdd, onScan }: {
           <div className="flex gap-2">
             <input
               type="number"
-              className="w-1/2 border p-3 rounded-xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="w-1/2 border border-gray-100 p-3 rounded-xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary/50 text-foreground"
               value={form.quantity}
               onChange={e => setForm({ ...form, quantity: parseFloat(e.target.value) })}
             />
             <input
-              className="w-1/2 border p-3 rounded-xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="w-1/2 border border-gray-100 p-3 rounded-xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary/50 text-foreground"
               placeholder="Unit"
               value={form.unit}
               onChange={e => setForm({ ...form, unit: e.target.value })}
@@ -1048,7 +904,7 @@ function AddItemModal({ onClose, onAdd, onScan }: {
           </div>
           <input
             type="date"
-            className="w-full border p-3 rounded-xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500"
+            className="w-full border border-gray-100 p-3 rounded-xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary/50 text-foreground"
             value={form.expiryDate}
             onChange={e => setForm({ ...form, expiryDate: e.target.value })}
           />
@@ -1056,7 +912,7 @@ function AddItemModal({ onClose, onAdd, onScan }: {
           {/* Location & Price Section */}
           <div className="p-3 bg-gray-50 rounded-xl border border-gray-100">
             <div className="flex items-center justify-between mb-2">
-              <label className="text-sm font-semibold text-gray-700">Price Estimation</label>
+              <label className="text-sm font-semibold text-foreground">Price Estimation</label>
 
               <div className="flex gap-2">
                 {/* Auto Location Toggle */}
@@ -1065,12 +921,12 @@ function AddItemModal({ onClose, onAdd, onScan }: {
                   onClick={handleUseLocation}
                   disabled={locating || locationMode === 'manual'}
                   className={`text-xs px-2 py-1 rounded-lg border flex items-center gap-1 transition-all ${locationMode === 'auto'
-                      ? 'bg-green-100 text-green-700 border-green-200'
-                      : 'bg-white text-gray-600 border-gray-200 hover:bg-purple-50 hover:text-purple-700 disabled:opacity-50'
+                      ? 'bg-primary text-black border-primary/50 font-bold'
+                      : 'bg-white text-muted-foreground border-gray-200 hover:bg-gray-50 hover:text-black disabled:opacity-50'
                     }`}
                 >
                   {locating ? (
-                    <div className="w-3 h-3 border-2 border-purple-600 border-t-transparent rounded-full animate-spin" />
+                    <div className="w-3 h-3 border-2 border-primary border-t-transparent rounded-full animate-spin" />
                   ) : (
                     <div className="w-3 h-3">📍</div>
                   )}
@@ -1083,8 +939,8 @@ function AddItemModal({ onClose, onAdd, onScan }: {
                   onClick={() => setLocationMode(prev => prev === 'manual' ? 'none' : 'manual')}
                   disabled={locating || locationMode === 'auto'}
                   className={`text-xs px-2 py-1 rounded-lg border flex items-center gap-1 transition-all ${locationMode === 'manual'
-                      ? 'bg-blue-100 text-blue-700 border-blue-200'
-                      : 'bg-white text-gray-600 border-gray-200 hover:bg-blue-50 hover:text-blue-700 disabled:opacity-50'
+                      ? 'bg-primary text-black border-primary/50 font-bold'
+                      : 'bg-white text-muted-foreground border-gray-200 hover:bg-gray-50 hover:text-black disabled:opacity-50'
                     }`}
                 >
                   <div className="w-3 h-3">📝</div>
@@ -1099,7 +955,7 @@ function AddItemModal({ onClose, onAdd, onScan }: {
                 <input
                   type="text"
                   placeholder="Enter Country or City (e.g. London, UK)"
-                  className="w-full border p-2 text-sm rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full border border-gray-100 p-2 text-sm rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-primary/50 text-foreground"
                   value={manualRegion}
                   onChange={e => setManualRegion(e.target.value)}
                 />
@@ -1110,20 +966,20 @@ function AddItemModal({ onClose, onAdd, onScan }: {
               <input
                 type="number"
                 disabled={priceLoading}
-                className={`w-full border p-3 pl-8 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all ${priceLoading ? 'opacity-50' : ''}`}
+                className={`w-full border border-gray-100 p-3 pl-8 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-foreground ${priceLoading ? 'opacity-50' : ''}`}
                 placeholder="0.00"
                 value={form.basePrice || ''}
                 onChange={e => setForm({ ...form, basePrice: parseFloat(e.target.value) })}
               />
-              <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-bold">৳</div>
+              <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground font-bold">৳</div>
               {priceLoading && (
                 <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                  <div className="w-4 h-4 border-2 border-purple-600 border-t-transparent rounded-full animate-spin" />
+                  <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
                 </div>
               )}
             </div>
             {locationMode !== 'none' && form.basePrice && (
-              <p className="text-[10px] text-gray-500 mt-1 text-right">
+              <p className="text-[10px] text-muted-foreground mt-1 text-right">
                 *Estimated for {locationMode === 'manual' ? (manualRegion || 'your region') : 'your location'}
               </p>
             )}
@@ -1144,11 +1000,11 @@ function AddItemModal({ onClose, onAdd, onScan }: {
               });
               onClose();
             }}
-            className="w-full bg-gray-900 text-white py-4 rounded-xl font-bold hover:bg-gray-800 transition-all shadow-lg active:scale-[0.98]"
+            className="w-full bg-black text-white py-4 rounded-xl font-bold hover:bg-gray-900 transition-all shadow-lg active:scale-[0.98]"
           >
             Add Item Manually
           </button>
-          <button onClick={onClose} className="w-full text-gray-500 py-2 hover:text-gray-700 font-medium">Cancel</button>
+          <button onClick={onClose} className="w-full text-muted-foreground py-2 hover:text-black font-medium">Cancel</button>
         </div>
       </div>
     </div>

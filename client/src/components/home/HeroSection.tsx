@@ -7,11 +7,11 @@ export default function HeroSection() {
    const { isSignedIn } = useAuth();
 
    return (
-      <section className="relative w-full pt-16 pb-10 md:pt-31 md:pb-10 overflow-hidden bg-background">
+      <section className="relative w-full pt-16 pb-10 md:pt-32 md:pb-10 overflow-hidden bg-white">
          {/* Balanced Background: Tech + Nature */}
          <div className="absolute inset-0 -z-10 overflow-hidden">
-            <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-green-100/30 rounded-full blur-[100px]" />
-            <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-orange-100/30 rounded-full blur-[100px]" />
+            <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-primary/10 rounded-full blur-[120px] -mr-40 -mt-40" />
+            <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-gray-50 rounded-full blur-[100px] -ml-20 -mb-20" />
             <div className="absolute inset-0 bg-[url('/grid-pattern.svg')] opacity-[0.03]" />
          </div>
 
@@ -22,29 +22,29 @@ export default function HeroSection() {
                <div className="flex flex-col gap-8 relative z-10">
 
 
-                  <h1 className="text-5xl md:text-6xl lg:text-6xl font-bold tracking-tight text-gray-900 leading-[1.1]">
+                  <h1 className="text-5xl md:text-6xl lg:text-7xl font-black tracking-tight text-foreground leading-[1.05]">
                      Manage Food.<br />
-                     <span>
+                     <span className="text-primary-dark">
                         Master Nutrition.
                      </span> <br />
                      Minimize Waste.
                   </h1>
 
-                  <p className="text-xl text-gray-600 leading-relaxed max-w-lg">
+                  <p className="text-xl text-muted-foreground leading-relaxed max-w-lg font-medium">
                      NutriAI connects your pantry inventory with personalized nutrition goals and sustainability tracking. Buying, cooking, and saving—simplified.
                   </p>
 
                   <div className="flex flex-col sm:flex-row gap-4 pt-4">
                      <Link
                         to={isSignedIn ? '/dashboard' : '/sign-in'}
-                        className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-gray-900 text-white rounded-2xl hover:bg-black hover:scale-[1.02] transition-all duration-300 font-bold text-lg shadow-xl shadow-gray-900/10"
+                        className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-black text-white rounded-2xl hover:bg-gray-900 hover:scale-[1.02] transition-all duration-300 font-bold text-lg shadow-xl shadow-black/10"
                      >
                         {isSignedIn ? 'Go to Dashboard' : 'Get Started'}
                         <ArrowRight className="w-5 h-5" />
                      </Link>
                      <a
                         href="#how-it-works"
-                        className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white text-gray-700 border border-gray-200 rounded-2xl hover:bg-gray-50 hover:border-gray-300 transition-all duration-300 font-medium text-lg"
+                        className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white text-black border border-gray-100 rounded-2xl hover:bg-gray-50 transition-all duration-300 font-bold text-lg shadow-soft"
                      >
                         See How It Works
                      </a>
@@ -58,60 +58,60 @@ export default function HeroSection() {
                      {/* Header */}
                      <div className="flex items-center justify-between mb-8 pb-4 border-b border-gray-50">
                         <div className="flex items-center gap-3">
-                           <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
-                              <ScanLine className="w-5 h-5 text-gray-700" />
+                           <div className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center border border-gray-100">
+                              <ScanLine className="w-5 h-5 text-black" />
                            </div>
                            <div>
-                              <div className="font-bold text-gray-900">Kitchen Overview</div>
-                              <div className="text-xs text-gray-500">Live Inventory Status</div>
+                              <div className="font-bold text-foreground">Kitchen Overview</div>
+                              <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Live Inventory Status</div>
                            </div>
                         </div>
-                        <div className="px-3 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full">Score: 92/100</div>
+                        <div className="px-3 py-1 bg-primary/20 text-black text-[10px] font-bold rounded-full border border-primary/30 uppercase tracking-widest">Score: 92/100</div>
                      </div>
 
                      {/* Stats Row */}
                      <div className="flex gap-4 mb-6">
-                        <div className="flex-1 bg-orange-50 p-4 rounded-xl border border-orange-100">
-                           <div className="text-2xl font-bold text-gray-900 mb-1">3</div>
-                           <div className="text-xs text-orange-700 font-bold mb-1">Expires Soon</div>
-                           <div className="text-[10px] text-gray-500">Tomatoes, Milk, Bread</div>
+                        <div className="flex-1 bg-gray-50 p-4 rounded-xl border border-gray-100">
+                           <div className="text-2xl font-black text-foreground mb-1">3</div>
+                           <div className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider mb-1">Expires Soon</div>
+                           <div className="text-[10px] text-foreground font-medium">Tomatoes, Milk, Bread</div>
                         </div>
-                        <div className="flex-1 bg-blue-50 p-4 rounded-xl border border-blue-100">
-                           <div className="text-2xl font-bold text-gray-900 mb-1">1,850</div>
-                           <div className="text-xs text-blue-700 font-bold mb-1">Kcal Today</div>
-                           <div className="text-[10px] text-gray-500">On Target</div>
+                        <div className="flex-1 bg-gray-50 p-4 rounded-xl border border-gray-100">
+                           <div className="text-2xl font-black text-foreground mb-1">1,850</div>
+                           <div className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider mb-1">Kcal Today</div>
+                           <div className="text-[10px] text-foreground font-medium">On Target</div>
                         </div>
                      </div>
 
                      {/* AI Recommendation */}
                      <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100 flex gap-4">
-                        <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center text-xl shadow-sm">🥘</div>
+                        <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center text-xl shadow-soft border border-gray-100">🥘</div>
                         <div>
-                           <div className="text-xs font-bold text-primary mb-0.5">Recommended Dinner</div>
-                           <div className="font-bold text-gray-900 text-sm">Roasted Tomato Soup</div>
-                           <div className="text-xs text-gray-500 mt-1">Uses expiring tomatoes • Low Calorie</div>
+                           <div className="text-[10px] font-bold text-primary-dark mb-0.5 uppercase tracking-wider">Recommended Dinner</div>
+                           <div className="font-bold text-foreground text-sm">Roasted Tomato Soup</div>
+                           <div className="text-[10px] text-muted-foreground font-medium mt-1 uppercase tracking-tight">Uses expiring tomatoes • Low Calorie</div>
                         </div>
                      </div>
                   </div>
 
                   {/* Floating Cards */}
                   <div className="absolute top-1/2 -left-4 bg-white p-4 rounded-2xl shadow-xl border border-gray-100 flex items-center gap-3 animate-float delay-100 z-20">
-                     <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                        <img className="w-5 h-5 text-green-700" src='/gajor.png'/>
+                     <div className="w-10 h-10 bg-primary/20 rounded-lg flex items-center justify-center border border-primary/30">
+                        <img className="w-5 h-5" src='/gajor.png'/>
                      </div>
                      <div>
-                        <div className="text-xs font-bold text-gray-900">Waste Prevented</div>
-                        <div className="text-[10px] text-gray-500">1.2kg saved this week</div>
+                        <div className="text-xs font-bold text-foreground uppercase tracking-tight">Waste Prevented</div>
+                        <div className="text-[10px] font-bold text-primary-dark">1.2kg saved this week</div>
                      </div>
                   </div>
 
                   <div className="absolute bottom-1/4 -right-8 bg-white p-4 rounded-2xl shadow-xl border border-gray-100 flex items-center gap-3 animate-float delay-300 z-20">
-                     <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
-                        <ChefHat className="w-5 h-5 text-orange-700" />
+                     <div className="w-10 h-10 bg-gray-50 rounded-lg flex items-center justify-center border border-gray-100">
+                        <ChefHat className="w-5 h-5 text-black" />
                      </div>
                      <div>
-                        <div className="text-xs font-bold text-gray-900">New Recipe Unlocked</div>
-                        <div className="text-[10px] text-gray-500">Based on your pantry</div>
+                        <div className="text-xs font-bold text-foreground uppercase tracking-tight">New Recipe Unlocked</div>
+                        <div className="text-[10px] font-bold text-primary-dark">Based on your pantry</div>
                      </div>
                   </div>
 

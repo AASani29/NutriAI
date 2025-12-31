@@ -144,12 +144,12 @@ export default function CreateListing({ onSuccess }: CreateListingProps) {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h2 className="text-xl font-bold text-foreground mb-2">
-          Share Your Food
+      <div className="mb-8">
+        <h2 className="text-3xl font-black text-black tracking-tight mb-2">
+          Share Food
         </h2>
-        <p className="text-foreground/70">
-          Turn your surplus into someone else's meal
+        <p className="text-muted-foreground font-medium">
+          Turn your surplus into someone else's meal. Simple, fast, and sustainable.
         </p>
       </div>
 
@@ -171,15 +171,15 @@ export default function CreateListing({ onSuccess }: CreateListingProps) {
       )}
 
       {/* Form */}
-      <form onSubmit={handleSubmit} className="bg-card rounded-xl border border-border p-6 space-y-6">
+      <form onSubmit={handleSubmit} className="bg-white rounded-[2.5rem] border border-gray-100 p-8 space-y-8 shadow-soft">
         {/* Item Selection */}
         <div>
-          <label className="block text-sm font-medium text-foreground mb-3">
-            Select Item to Share *
+          <label className="block text-xs font-black text-muted-foreground uppercase tracking-widest mb-4">
+            Select Item to Share
           </label>
 
           {selectedItem ? (
-            <div className="border border-border rounded-lg p-4 bg-secondary/5">
+            <div className="border border-gray-100 rounded-2xl p-6 bg-gray-50/50">
               <div className="flex items-center justify-between mb-2">
                 <div>
                   <h4 className="font-medium text-foreground">
@@ -323,10 +323,10 @@ export default function CreateListing({ onSuccess }: CreateListingProps) {
         <button
           type="submit"
           disabled={!selectedItem || createListingMutation.isPending}
-          className="w-full px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 disabled:opacity-50 transition-smooth font-medium flex items-center justify-center gap-2"
+          className="w-full px-6 py-4 bg-black text-white rounded-2xl hover:bg-primary hover:text-black disabled:opacity-50 transition-all font-black flex items-center justify-center gap-2 shadow-xl shadow-black/10 active:scale-95"
         >
           <Plus className="w-5 h-5" />
-          {createListingMutation.isPending ? 'Creating Listing...' : 'Create Listing'}
+          {createListingMutation.isPending ? 'Creating Listing...' : 'Broadcast to Neighbourhood'}
         </button>
       </form>
 

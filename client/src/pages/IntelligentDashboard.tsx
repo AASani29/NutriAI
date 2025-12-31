@@ -270,14 +270,14 @@ const IntelligentDashboard: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                <Brain className="w-5 h-5 text-purple-600" />
+              <div className="w-10 h-10 bg-primary/20 rounded-lg flex items-center justify-center">
+                <Brain className="w-5 h-5 text-black" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">
+                <h1 className="text-2xl font-bold text-foreground">
                   AI Intelligence Dashboard
                 </h1>
-                <p className="text-gray-600">
+                <p className="text-muted-foreground">
                   Personalized insights and recommendations
                 </p>
               </div>
@@ -304,9 +304,9 @@ const IntelligentDashboard: React.FC = () => {
                     if (tab.id !== 'overview') setQuickActionResponse(null);
                     if (tab.id !== 'nutrition') setNutritionInsights(null);
                   }}
-                  className={`flex items-center gap-2 py-2 px-1 border-b-2 font-medium text-sm ${activeTab === tab.id
-                    ? 'border-purple-500 text-purple-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  className={`flex items-center gap-2 py-2 px-1 border-b-2 font-bold text-sm transition-colors ${activeTab === tab.id
+                    ? 'border-primary text-black'
+                    : 'border-transparent text-muted-foreground hover:text-black hover:border-gray-200'
                     }`}
                 >
                   <tab.icon className="w-4 h-4" />
@@ -318,62 +318,62 @@ const IntelligentDashboard: React.FC = () => {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-8 max-w-7xl">
         {/* Overview Tab */}
         {activeTab === 'overview' && (
           <div className="space-y-6">
             {/* Quick Stats */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-              <div className="bg-white p-6 rounded-lg shadow">
+              <div className="bg-white p-6 rounded-2xl shadow-soft">
                 <div className="flex items-center gap-3 mb-2">
-                  <TrendingUp className="w-5 h-5 text-blue-600" />
-                  <h3 className="font-medium text-gray-900">
+                  <TrendingUp className="w-5 h-5 text-black" />
+                  <h3 className="font-bold text-foreground">
                     Consumption Score
                   </h3>
                 </div>
-                <div className="text-2xl font-bold text-blue-600">
+                <div className="text-2xl font-bold text-black">
                   {insights.consumption?.patterns?.consistencyScore || 0}%
                 </div>
-                <p className="text-sm text-gray-600">Tracking consistency</p>
+                <p className="text-sm text-muted-foreground">Tracking consistency</p>
               </div>
 
-              <div className="bg-white p-6 rounded-lg shadow">
+              <div className="bg-white p-6 rounded-2xl shadow-soft">
                 <div className="flex items-center gap-3 mb-2">
-                  <AlertTriangle className="w-5 h-5 text-orange-600" />
-                  <h3 className="font-medium text-gray-900">Items at Risk</h3>
+                  <AlertTriangle className="w-5 h-5 text-red-600" />
+                  <h3 className="font-bold text-foreground">Items at Risk</h3>
                 </div>
-                <div className="text-2xl font-bold text-orange-600">
+                <div className="text-2xl font-bold text-red-600">
                   {insights.waste?.summary?.totalAtRisk || 0}
                 </div>
-                <p className="text-sm text-gray-600">Expiring soon</p>
+                <p className="text-sm text-muted-foreground">Expiring soon</p>
               </div>
 
-              <div className="bg-white p-6 rounded-lg shadow">
+              <div className="bg-white p-6 rounded-2xl shadow-soft">
                 <div className="flex items-center gap-3 mb-2">
-                  <Leaf className="w-5 h-5 text-green-600" />
-                  <h3 className="font-medium text-gray-900">CO₂ Saved</h3>
+                  <Leaf className="w-5 h-5 text-black" />
+                  <h3 className="font-bold text-foreground">CO₂ Saved</h3>
                 </div>
-                <div className="text-2xl font-bold text-green-600">
+                <div className="text-2xl font-bold text-black">
                   {insights.impact?.impact?.environmental?.co2Saved || 0}kg
                 </div>
-                <p className="text-sm text-gray-600">This month</p>
+                <p className="text-sm text-muted-foreground">This month</p>
               </div>
 
-              <div className="bg-white p-6 rounded-lg shadow">
+              <div className="bg-white p-6 rounded-2xl shadow-soft">
                 <div className="flex items-center gap-3 mb-2">
-                  <DollarSign className="w-5 h-5 text-purple-600" />
-                  <h3 className="font-medium text-gray-900">Money Saved</h3>
+                  <DollarSign className="w-5 h-5 text-black" />
+                  <h3 className="font-bold text-foreground">Money Saved</h3>
                 </div>
-                <div className="text-2xl font-bold text-purple-600">
-                  ${insights.impact?.impact?.financial?.moneySaved || 0}
+                <div className="text-2xl font-bold text-black">
+                  ৳{insights.impact?.impact?.financial?.moneySaved || 0}
                 </div>
-                <p className="text-sm text-gray-600">This month</p>
+                <p className="text-sm text-muted-foreground">This month</p>
               </div>
             </div>
 
             {/* Cost Chart - Overview */}
-            <div className="bg-white p-6 rounded-lg shadow">
-              <h3 className="font-medium text-gray-900 mb-4">
+            <div className="bg-white p-6 rounded-2xl shadow-soft">
+              <h3 className="font-bold text-foreground mb-4">
                 Spending Trend (Last 7 Days)
               </h3>
               {insights.consumption?.patterns?.dailyCost &&
@@ -392,23 +392,23 @@ const IntelligentDashboard: React.FC = () => {
                         }}
                       />
                       <YAxis />
-                      <Tooltip formatter={(value) => [`$${value}`, 'Cost']} />
+                      <Tooltip formatter={(value) => [`৳${value}`, 'Cost']} />
                       <Legend />
-                      <Line type="monotone" dataKey="cost" stroke="#82ca9d" name="Cost ($)" strokeWidth={2} />
+                      <Line type="monotone" dataKey="cost" stroke="#D2E823" name="Cost (৳)" strokeWidth={3} />
                     </LineChart>
                   </ResponsiveContainer>
                 </div>
               ) : (
-                <div className="h-32 flex items-center justify-center text-gray-500">
+                <div className="h-32 flex items-center justify-center text-muted-foreground">
                   <p>Not enough data to show spending trends.</p>
                 </div>
               )}
             </div>
 
             {/* Quick Actions */}
-            <div className="bg-white rounded-lg shadow">
-              <div className="p-6 border-b border-gray-200">
-                <h2 className="text-lg font-semibold text-gray-900">
+            <div className="bg-white rounded-2xl shadow-soft">
+              <div className="p-6 border-b border-gray-100">
+                <h2 className="text-lg font-bold text-foreground">
                   Quick Actions
                 </h2>
               </div>
@@ -457,7 +457,7 @@ const IntelligentDashboard: React.FC = () => {
                       key={index}
                       onClick={action.action}
                       disabled={loadingInsight !== null}
-                      className="p-4 border border-gray-200 rounded-lg hover:border-purple-300 hover:bg-purple-50 transition-colors text-left disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="p-4 border border-gray-100 rounded-xl hover:border-primary/50 hover:bg-gray-50 transition-all text-left disabled:opacity-50 disabled:cursor-not-allowed group"
                     >
                       <div className="flex items-center gap-3 mb-2">
                         {loadingInsight &&
@@ -471,15 +471,15 @@ const IntelligentDashboard: React.FC = () => {
                               loadingInsight === 'impact-analytics') ||
                             (action.title === 'Get Recommendations' &&
                               loadingInsight === 'recommendations')) ? (
-                          <div className="w-5 h-5 border-2 border-purple-600 border-t-transparent rounded-full animate-spin" />
+                          <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
                         ) : (
-                          <action.icon className="w-5 h-5 text-purple-600" />
+                          <action.icon className="w-5 h-5 text-black group-hover:text-primary transition-colors" />
                         )}
-                        <h3 className="font-medium text-gray-900">
+                        <h3 className="font-bold text-foreground">
                           {action.title}
                         </h3>
                       </div>
-                      <p className="text-sm text-gray-600">
+                      <p className="text-sm text-muted-foreground">
                         {action.description}
                       </p>
                     </button>
@@ -516,10 +516,10 @@ const IntelligentDashboard: React.FC = () => {
           <div className="space-y-6">
             <div className="bg-white rounded-lg shadow">
               <div className="p-6 border-b border-gray-200">
-                <h2 className="text-lg font-semibold text-gray-900">
+                <h2 className="text-lg font-bold text-foreground">
                   AI Assistant
                 </h2>
-                <p className="text-gray-600">
+                <p className="text-muted-foreground">
                   Ask me anything about your food management, nutrition, or
                   waste reduction!
                 </p>
@@ -533,13 +533,13 @@ const IntelligentDashboard: React.FC = () => {
                       value={chatQuery}
                       onChange={e => setChatQuery(e.target.value)}
                       placeholder="Ask me about your consumption patterns, waste prediction, meal planning..."
-                      className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      className="flex-1 px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50 text-foreground placeholder-muted-foreground transition-all"
                       disabled={chatLoading}
                     />
                     <button
                       type="submit"
                       disabled={chatLoading || !chatQuery.trim()}
-                      className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                      className="px-6 py-3 bg-black text-white rounded-xl hover:bg-gray-900 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 font-bold transition-all shadow-lg"
                     >
                       {chatLoading ? (
                         <>
@@ -577,7 +577,7 @@ const IntelligentDashboard: React.FC = () => {
                       <button
                         key={index}
                         onClick={() => setChatQuery(question)}
-                        className="text-left p-3 text-sm bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 transition-colors"
+                        className="text-left p-3 text-sm bg-gray-50 text-foreground border border-gray-100 rounded-xl hover:bg-primary/20 hover:border-primary/30 transition-all font-medium"
                       >
                         "{question}"
                       </button>
@@ -604,19 +604,19 @@ const IntelligentDashboard: React.FC = () => {
             </h2>
             {insights.consumption?.aiInsights && (
               <div className="mb-6">
-                <h3 className="font-medium text-gray-900 mb-3">AI Insights</h3>
-                <div className="bg-blue-50 p-4 rounded-lg">
+                <h3 className="font-bold text-foreground mb-3">AI Insights</h3>
+                <div className="bg-primary/10 p-4 rounded-xl border border-primary/20">
                   <MarkdownRenderer
                     content={insights.consumption.aiInsights}
-                    className="space-y-3 text-gray-700"
+                    className="space-y-3 text-foreground"
                   />
                 </div>
               </div>
             )}
             {insights.consumption?.patterns && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <h4 className="font-medium text-gray-900 mb-3">
+                <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
+                  <h4 className="font-bold text-foreground mb-3">
                     Category Breakdown
                   </h4>
                   {Object.entries(
@@ -624,10 +624,10 @@ const IntelligentDashboard: React.FC = () => {
                   ).map(([category, count]) => (
                     <div
                       key={category}
-                      className="flex justify-between items-center py-1"
+                      className="flex justify-between items-center py-1 border-b border-gray-100 last:border-0"
                     >
-                      <span className="text-gray-600">{category}</span>
-                      <span className="font-medium text-gray-900">{count}</span>
+                      <span className="text-muted-foreground">{category}</span>
+                      <span className="font-bold text-foreground">{count}</span>
                     </div>
                   ))}
                 </div>
@@ -651,13 +651,13 @@ const IntelligentDashboard: React.FC = () => {
             )}
             {!insights.consumption && (
               <div className="text-center py-12">
-                <TrendingUp className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-600 mb-4">
+                <span className="material-icons-outlined text-5xl text-muted-foreground/30 mb-4">trending_up</span>
+                <p className="text-muted-foreground mb-4">
                   No consumption analysis available yet.
                 </p>
                 <button
                   onClick={() => fetchSpecificInsight('consumption-analysis')}
-                  className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+                  className="px-8 py-3 bg-black text-white rounded-full font-bold hover:bg-gray-900 transition-all shadow-lg"
                 >
                   Generate Consumption Report
                 </button>
@@ -804,7 +804,7 @@ const IntelligentDashboard: React.FC = () => {
 
                 {insights.impact.impact.achievements && insights.impact.impact.achievements.length > 0 && (
                   <div>
-                    <h4 className="font-medium text-gray-900 mb-3">
+                    <h4 className="font-bold text-foreground mb-3">
                       Achievements
                     </h4>
                     <div className="flex flex-wrap gap-2">
@@ -812,7 +812,7 @@ const IntelligentDashboard: React.FC = () => {
                         (achievement: string, index: number) => (
                           <span
                             key={index}
-                            className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm font-medium"
+                            className="px-3 py-1 bg-primary/20 text-black rounded-full text-sm font-bold border border-primary/30"
                           >
                             🏆 {achievement}
                           </span>
@@ -823,7 +823,7 @@ const IntelligentDashboard: React.FC = () => {
                 )}
                 {insights.impact.impact.recommendations && insights.impact.impact.recommendations.length > 0 && (
                   <div>
-                    <h4 className="font-medium text-gray-900 mb-3">
+                    <h4 className="font-bold text-foreground mb-3">
                       Recommendations
                     </h4>
                     <div className="space-y-2">
@@ -831,10 +831,10 @@ const IntelligentDashboard: React.FC = () => {
                         (rec: string, index: number) => (
                           <div
                             key={index}
-                            className="flex items-start gap-2 p-3 bg-blue-50 rounded-lg"
+                            className="flex items-start gap-2 p-3 bg-gray-50 border border-gray-100 rounded-xl"
                           >
-                            <Lightbulb className="w-4 h-4 text-blue-600 mt-1 shrink-0" />
-                            <span className="text-gray-700">{rec}</span>
+                            <Lightbulb className="w-4 h-4 text-black mt-1 shrink-0" />
+                            <span className="text-muted-foreground font-medium">{rec}</span>
                           </div>
                         ),
                       )}
@@ -845,13 +845,13 @@ const IntelligentDashboard: React.FC = () => {
             )}
             {!insights.impact && (
               <div className="text-center py-12">
-                <Leaf className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-600 mb-4">
+                <span className="material-icons-outlined text-5xl text-muted-foreground/30 mb-4">eco</span>
+                <p className="text-muted-foreground mb-4">
                   No impact analysis available yet.
                 </p>
                 <button
                   onClick={() => fetchSpecificInsight('impact-analytics')}
-                  className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+                  className="px-8 py-3 bg-black text-white rounded-full font-bold hover:bg-gray-900 transition-all shadow-lg"
                 >
                   Generate Impact Report
                 </button>
@@ -965,8 +965,8 @@ const IntelligentDashboard: React.FC = () => {
             {/* Cost Chart */}
             {insights.consumption?.patterns?.dailyCost &&
               insights.consumption.patterns.dailyCost.length > 0 && (
-                <div className="bg-white p-6 rounded-lg shadow mb-6">
-                  <h3 className="font-medium text-gray-900 mb-4">
+                <div className="bg-white p-6 rounded-2xl shadow-soft mb-6">
+                  <h3 className="font-bold text-foreground mb-4">
                     Daily Food Cost
                   </h3>
                   <div className="h-80 w-full">
@@ -983,9 +983,9 @@ const IntelligentDashboard: React.FC = () => {
                           }}
                         />
                         <YAxis />
-                        <Tooltip formatter={(value) => [`$${value}`, 'Cost']} />
+                        <Tooltip formatter={(value) => [`৳${value}`, 'Cost']} />
                         <Legend />
-                        <Line type="monotone" dataKey="cost" stroke="#82ca9d" name="Cost ($)" strokeWidth={2} />
+                        <Line type="monotone" dataKey="cost" stroke="#D2E823" name="Cost (৳)" strokeWidth={3} />
                       </LineChart>
                     </ResponsiveContainer>
                   </div>
@@ -1005,27 +1005,27 @@ const IntelligentDashboard: React.FC = () => {
             {/* Generate button or loading state */}
             {!nutritionInsights && (
               <div className="text-center py-12">
-                <Target className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                <span className="material-icons-outlined text-5xl text-muted-foreground/30 mb-4">track_changes</span>
+                <h3 className="text-xl font-bold text-foreground mb-2">
                   Nutrition Analysis
                 </h3>
-                <p className="text-gray-600 mb-4">
+                <p className="text-muted-foreground mb-6 max-w-md mx-auto">
                   Get detailed nutrition insights and recommendations based on
                   your consumption patterns.
                 </p>
                 <button
                   onClick={() => fetchSpecificInsight('nutrition-analysis')}
                   disabled={loadingInsight === 'nutrition-analysis'}
-                  className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 mx-auto"
+                  className="px-8 py-4 bg-black text-white rounded-full font-bold hover:bg-gray-900 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 mx-auto transition-all shadow-lg"
                 >
                   {loadingInsight === 'nutrition-analysis' ? (
                     <>
-                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                       Analyzing Nutrition...
                     </>
                   ) : (
                     <>
-                      <Target className="w-4 h-4" />
+                      <span className="material-icons-outlined">track_changes</span>
                       Generate Nutrition Report
                     </>
                   )}
@@ -1038,7 +1038,7 @@ const IntelligentDashboard: React.FC = () => {
               <div className="mt-6 text-center">
                 <button
                   onClick={() => setNutritionInsights(null)}
-                  className="text-sm text-gray-500 hover:text-gray-700 underline"
+                  className="text-sm text-muted-foreground hover:text-black underline font-medium"
                 >
                   Clear Analysis
                 </button>

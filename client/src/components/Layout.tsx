@@ -1,11 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import { useProfile } from '../context/ProfileContext';
 
 export default function Layout() {
-  const [collapsed, setCollapsed] = useState(false);
   const { isNewUser, loading } = useProfile();
+  const [isExpanded, setIsExpanded] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -17,26 +17,25 @@ export default function Layout() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center min-h-screen bg-background">
         <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen bg-background">
-      <Sidebar collapsed={collapsed} setCollapsed={setCollapsed} />
+    <div className="flex min-h-screen bg-background p-4 gap-4 overflow-hidden">
+      <Sidebar isExpanded={isExpanded} setIsExpanded={setIsExpanded} />
       
-      <div
-        className={`flex-1 transition-all duration-300 ${
-          collapsed ? 'ml-20' : 'ml-64'
+      {/* Spacer to push content away from fixed sidebar */}
+      <div 
+        className={`flex-shrink-0 transition-all duration-300 ease-in-out ${
+          isExpanded ? 'w-64' : 'w-20 lg:w-24'
         }`}
-      >
-        <main className="p-4 sm:p-6 lg:p-8">
-          <div className="max-w-7xl mx-auto">
-            <Outlet />
-          </div>
-        </main>
+      />
+      
+      <div className="flex-1 overflow-y-auto">
+        <Outlet />
       </div>
     </div>
   );
