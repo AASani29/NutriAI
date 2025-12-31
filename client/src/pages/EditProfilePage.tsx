@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { User, Utensils, MapPin, DollarSign, Save, ArrowLeft, Ruler, Scale, Target, AlertCircle, Heart } from 'lucide-react';
+import { User, Utensils, MapPin, Save, ArrowLeft, Ruler, Scale, Target, AlertCircle, Heart } from 'lucide-react';
 import { useProfile } from '../context/ProfileContext';
 import { useApi } from '../hooks/useApi';
 
@@ -114,216 +114,251 @@ export default function EditProfilePage() {
   ];
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
+    <div className="container mx-auto px-4 py-8 max-w-7xl">
+      <div className="max-w-2xl mx-auto space-y-6">
       {/* Back Button */}
       <Link
         to="/profile"
-        className="inline-flex items-center gap-2 text-foreground/70 hover:text-primary transition-smooth"
+        className="inline-flex items-center gap-2 text-muted-foreground hover:text-black transition-all font-bold group"
       >
-        <ArrowLeft className="w-4 h-4" />
+        <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
         Back to Profile
       </Link>
 
       {/* Form */}
-      <div className="bg-card rounded-2xl border border-border p-8">
-        <h1 className="text-2xl font-bold text-foreground mb-6">Edit Profile</h1>
+      <div className="bg-white rounded-2xl border border-gray-100 p-8 shadow-soft">
+        <h1 className="text-3xl font-black text-foreground mb-8 tracking-tight">Edit Profile</h1>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-8">
           {/* Full Name */}
           <div>
-            <label htmlFor="fullName" className="flex items-center gap-2 text-sm font-medium text-foreground mb-2">
-              <User className="w-4 h-4 text-primary" />
-              Full Name <span className="text-primary">*</span>
+            <label htmlFor="fullName" className="block text-xs font-bold text-muted-foreground mb-3 uppercase tracking-wider">
+              Full Name <span className="text-primary-dark">*</span>
             </label>
-            <input
-              type="text"
-              id="fullName"
-              name="fullName"
-              value={formData.fullName}
-              onChange={handleChange}
-              className="w-full px-4 py-3 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-foreground"
-              placeholder="Enter your full name"
-              required
-            />
+            <div className="relative group">
+               <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-black transition-colors">
+                  <User className="w-5 h-5" />
+               </div>
+               <input
+                 type="text"
+                 id="fullName"
+                 name="fullName"
+                 value={formData.fullName}
+                 onChange={handleChange}
+                 className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50 text-foreground font-medium placeholder:text-muted-foreground transition-all"
+                 placeholder="Enter your full name"
+                 required
+               />
+            </div>
           </div>
 
           {/* Dietary Preference */}
           <div>
-            <label htmlFor="dietaryPreference" className="flex items-center gap-2 text-sm font-medium text-foreground mb-2">
-              <Utensils className="w-4 h-4 text-primary" />
+            <label htmlFor="dietaryPreference" className="block text-xs font-bold text-muted-foreground mb-3 uppercase tracking-wider">
               Dietary Preference
             </label>
-            <select
-              id="dietaryPreference"
-              name="dietaryPreference"
-              value={formData.dietaryPreference}
-              onChange={handleChange}
-              className="w-full px-4 py-3 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-foreground"
-            >
-              {dietaryOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
+            <div className="relative group">
+               <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-black transition-colors">
+                  <Utensils className="w-5 h-5" />
+               </div>
+               <select
+                 id="dietaryPreference"
+                 name="dietaryPreference"
+                 value={formData.dietaryPreference}
+                 onChange={handleChange}
+                 className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50 text-foreground font-medium transition-all appearance-none"
+               >
+                 {dietaryOptions.map((option) => (
+                   <option key={option.value} value={option.value}>
+                     {option.label}
+                   </option>
+                 ))}
+               </select>
+            </div>
           </div>
 
           {/* Location */}
           <div>
-            <label htmlFor="location" className="flex items-center gap-2 text-sm font-medium text-foreground mb-2">
-              <MapPin className="w-4 h-4 text-primary" />
+            <label htmlFor="location" className="block text-xs font-bold text-muted-foreground mb-3 uppercase tracking-wider">
               Location
             </label>
-            <input
-              type="text"
-              id="location"
-              name="location"
-              value={formData.location}
-              onChange={handleChange}
-              className="w-full px-4 py-3 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-foreground"
-              placeholder="e.g., Dhaka, Bangladesh"
-            />
+            <div className="relative group">
+               <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-black transition-colors">
+                  <MapPin className="w-5 h-5" />
+               </div>
+               <input
+                 type="text"
+                 id="location"
+                 name="location"
+                 value={formData.location}
+                 onChange={handleChange}
+                 className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50 text-foreground font-medium placeholder:text-muted-foreground transition-all"
+                 placeholder="e.g., Dhaka, Bangladesh"
+               />
+            </div>
           </div>
 
           {/* Budget Range */}
           <div>
-            <label htmlFor="budgetRange" className="flex items-center gap-2 text-sm font-medium text-foreground mb-2">
-              <DollarSign className="w-4 h-4 text-primary" />
-              Monthly Budget
+            <label htmlFor="budgetRange" className="block text-xs font-bold text-muted-foreground mb-3 uppercase tracking-wider">
+              Monthly Budget (৳)
             </label>
-            <input
-              type="number"
-              id="budgetRange"
-              name="budgetRange"
-              value={formData.budgetRange}
-              onChange={handleChange}
-              min="0"
-              step="0.01"
-              className="w-full px-4 py-3 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-foreground"
-              placeholder="e.g., 3000"
-            />
+            <div className="relative group">
+               <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-black transition-colors font-bold text-lg">
+                  <span className="ml-1">৳</span>
+               </div>
+               <input
+                 type="number"
+                 id="budgetRange"
+                 name="budgetRange"
+                 value={formData.budgetRange}
+                 onChange={handleChange}
+                 min="0"
+                 step="0.01"
+                 className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50 text-foreground font-medium placeholder:text-muted-foreground transition-all"
+                 placeholder="e.g., 5000"
+               />
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Height */}
             <div>
-              <label htmlFor="height" className="flex items-center gap-2 text-sm font-medium text-foreground mb-2">
-                <Ruler className="w-4 h-4 text-primary" />
+              <label htmlFor="height" className="block text-xs font-bold text-muted-foreground mb-3 uppercase tracking-wider">
                 Height (cm)
               </label>
-              <input
-                type="number"
-                id="height"
-                name="height"
-                value={formData.height}
-                onChange={handleChange}
-                min="0"
-                step="0.1"
-                className="w-full px-4 py-3 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-foreground"
-                placeholder="e.g., 170"
-              />
+              <div className="relative group">
+                 <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-black transition-colors">
+                    <Ruler className="w-5 h-5" />
+                 </div>
+                 <input
+                   type="number"
+                   id="height"
+                   name="height"
+                   value={formData.height}
+                   onChange={handleChange}
+                   min="0"
+                   step="0.1"
+                   className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50 text-foreground font-medium placeholder:text-muted-foreground transition-all"
+                   placeholder="e.g., 170"
+                 />
+              </div>
             </div>
 
-            {/* Weight */}
             <div>
-              <label htmlFor="weight" className="flex items-center gap-2 text-sm font-medium text-foreground mb-2">
-                <Scale className="w-4 h-4 text-primary" />
+              <label htmlFor="weight" className="block text-xs font-bold text-muted-foreground mb-3 uppercase tracking-wider">
                 Weight (kg)
               </label>
-              <input
-                type="number"
-                id="weight"
-                name="weight"
-                value={formData.weight}
-                onChange={handleChange}
-                min="0"
-                step="0.1"
-                className="w-full px-4 py-3 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-foreground"
-                placeholder="e.g., 70"
-              />
+              <div className="relative group">
+                 <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-black transition-colors">
+                    <Scale className="w-5 h-5" />
+                 </div>
+                 <input
+                   type="number"
+                   id="weight"
+                   name="weight"
+                   value={formData.weight}
+                   onChange={handleChange}
+                   min="0"
+                   step="0.1"
+                   className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50 text-foreground font-medium placeholder:text-muted-foreground transition-all"
+                   placeholder="e.g., 70"
+                 />
+              </div>
             </div>
           </div>
 
           {/* Weight Preference */}
           <div>
-            <label htmlFor="weightPreference" className="flex items-center gap-2 text-sm font-medium text-foreground mb-2">
-              <Target className="w-4 h-4 text-primary" />
+            <label htmlFor="weightPreference" className="block text-xs font-bold text-muted-foreground mb-3 uppercase tracking-wider">
               Weight Goal
             </label>
-            <select
-              id="weightPreference"
-              name="weightPreference"
-              value={formData.weightPreference}
-              onChange={handleChange}
-              className="w-full px-4 py-3 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-foreground"
-            >
-              <option value="">Select a goal</option>
-              <option value="lose">Lose Weight</option>
-              <option value="maintain">Maintain Weight</option>
-              <option value="gain">Gain Weight</option>
-            </select>
+            <div className="relative group">
+               <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-black transition-colors">
+                  <Target className="w-5 h-5" />
+               </div>
+               <select
+                 id="weightPreference"
+                 name="weightPreference"
+                 value={formData.weightPreference}
+                 onChange={handleChange}
+                 className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50 text-foreground font-medium transition-all appearance-none"
+               >
+                 <option value="">Select a goal</option>
+                 <option value="lose">Lose Weight</option>
+                 <option value="maintain">Maintain Weight</option>
+                 <option value="gain">Gain Weight</option>
+               </select>
+            </div>
           </div>
 
           {/* Allergies */}
           <div>
-            <label htmlFor="allergies" className="flex items-center gap-2 text-sm font-medium text-foreground mb-2">
-              <AlertCircle className="w-4 h-4 text-primary" />
+            <label htmlFor="allergies" className="block text-xs font-bold text-muted-foreground mb-3 uppercase tracking-wider">
               Allergies
             </label>
-            <input
-              type="text"
-              id="allergies"
-              name="allergies"
-              value={formData.allergies}
-              onChange={handleChange}
-              className="w-full px-4 py-3 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-foreground"
-              placeholder="e.g., Peanuts, Seafood, Dairy"
-            />
-            <p className="mt-1 text-xs text-foreground/50">Separate allergies with commas</p>
+            <div className="relative group">
+               <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-black transition-colors">
+                  <AlertCircle className="w-5 h-5" />
+               </div>
+               <input
+                 type="text"
+                 id="allergies"
+                 name="allergies"
+                 value={formData.allergies}
+                 onChange={handleChange}
+                 className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50 text-foreground font-medium placeholder:text-muted-foreground transition-all"
+                 placeholder="e.g., Peanuts, Seafood, Dairy"
+               />
+            </div>
+            <p className="mt-2 text-xs text-muted-foreground font-medium">Separate allergies with commas</p>
           </div>
 
           {/* Health Conditions */}
           <div>
-            <label htmlFor="healthConditions" className="flex items-center gap-2 text-sm font-medium text-foreground mb-2">
-              <Heart className="w-4 h-4 text-primary" />
+            <label htmlFor="healthConditions" className="block text-xs font-bold text-muted-foreground mb-3 uppercase tracking-wider">
               Health Condition
             </label>
-            <select
-              id="healthConditions"
-              name="healthConditions"
-              value={formData.healthConditions}
-              onChange={handleChange}
-              className="w-full px-4 py-3 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-foreground"
-            >
-              {healthOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-            <p className="mt-1 text-xs text-foreground/50">Used to provide health-safe meal recommendations</p>
+            <div className="relative group">
+               <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-black transition-colors">
+                  <Heart className="w-5 h-5" />
+               </div>
+               <select
+                 id="healthConditions"
+                 name="healthConditions"
+                 value={formData.healthConditions}
+                 onChange={handleChange}
+                 className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50 text-foreground font-medium transition-all appearance-none"
+               >
+                 {healthOptions.map((option) => (
+                   <option key={option.value} value={option.value}>
+                     {option.label}
+                   </option>
+                 ))}
+               </select>
+            </div>
+            <p className="mt-2 text-xs text-muted-foreground font-medium">Used to provide health-safe meal recommendations</p>
           </div>
 
           {/* Error Message */}
           {error && (
-            <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-sm text-red-600">{error}</p>
+            <div className="p-4 bg-red-50/50 border border-red-100 rounded-xl">
+              <p className="text-sm text-red-600 font-bold">{error}</p>
             </div>
           )}
 
           {/* Success Message */}
           {success && (
-            <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-              <p className="text-sm text-green-600">Profile updated successfully! Redirecting...</p>
+            <div className="p-4 bg-primary/20 border border-primary/30 rounded-xl">
+              <p className="text-sm text-black font-bold">Profile updated successfully! Redirecting...</p>
             </div>
           )}
 
           {/* Submit Button */}
-          <div className="flex gap-4">
+          <div className="flex gap-4 pt-4">
             <button
               type="button"
               onClick={() => navigate('/profile')}
-              className="flex-1 px-6 py-3 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/90 transition-smooth font-medium"
+              className="flex-1 px-6 py-4 bg-gray-100 text-black rounded-xl hover:bg-gray-200 transition-all font-bold shadow-sm"
               disabled={loading}
             >
               Cancel
@@ -331,22 +366,23 @@ export default function EditProfilePage() {
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 inline-flex items-center justify-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-smooth font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 inline-flex items-center justify-center gap-2 px-6 py-4 bg-black text-white rounded-xl hover:bg-gray-900 transition-all font-bold disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
             >
               {loading ? (
                 <>
-                  <div className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                   Saving...
                 </>
               ) : (
                 <>
-                  <Save className="w-4 h-4" />
+                  <Save className="w-5 h-5" />
                   Save Changes
                 </>
               )}
             </button>
           </div>
         </form>
+      </div>
       </div>
     </div>
   );

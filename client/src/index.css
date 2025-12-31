@@ -1,33 +1,35 @@
 @import "tailwindcss";
 
 @theme {
-  --font-display: 'Poppins', system-ui, sans-serif;
-  --font-body: 'Poppins', system-ui, sans-serif;
+  --font-display: 'Outfit', 'Poppins', system-ui, sans-serif;
+  --font-body: 'Outfit', 'Poppins', system-ui, sans-serif;
 
-  --color-primary: #2E7D32;
-  /* Basil Green */
-  --color-primary-foreground: #ffffff;
+  --color-primary: #f3dfa2;
+  --color-primary-dark: #89F336;
+  --color-primary-foreground: #FFFFFF;
 
-  --color-secondary: #FFF3E0;
-  /* Creamy background */
+  --color-secondary: #a7754d;
   --color-secondary-foreground: #E65100;
 
   --color-accent: #FF7043;
-  /* Savory Coral/Orange */
+  --color-accent-blue: #82CBE6;
   --color-accent-foreground: #ffffff;
 
-  --color-background: #FAFAF9;
-  /* Warm off-white */
-  --color-foreground: #262626;
+  --color-background: #EAF6FA;
+  --color-background-dark: #18181b;
+  --color-foreground: #000000;
 
   --color-card: #ffffff;
-  --color-card-foreground: #262626;
+  --color-card-dark: #27272a;
+  --color-card-foreground: #000000;
 
-  --color-muted: #f5f5f5;
-  --color-muted-foreground: #737373;
+  --color-muted: #f3f4f6;
+  --color-muted-foreground: #525252;
 
-  --color-border: #e5e5e5;
-  --color-input: #e5e5e5;
+  --color-border: #e2e8f0;
+  --color-input: #e2e8f0;
+
+  --shadow-soft: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
 }
 
 /* Base Styles */
@@ -35,6 +37,7 @@
   html {
     font-family: var(--font-body);
     scroll-behavior: smooth;
+    color-scheme: light;
   }
 
   body {
@@ -59,6 +62,10 @@
 
   .transform-style-3d {
     transform-style: preserve-3d;
+  }
+
+  .shadow-soft {
+    box-shadow: var(--shadow-soft);
   }
 }
 
@@ -105,6 +112,7 @@
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);

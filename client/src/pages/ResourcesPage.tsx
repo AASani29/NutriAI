@@ -94,19 +94,23 @@ export function ResourcesPage() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="container mx-auto px-4 py-8 max-w-7xl space-y-8">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <div className="flex items-center space-x-3 mb-2">
-            <BookOpen className="h-6 w-6 text-green-600" />
-            <h1 className="text-xl font-bold text-gray-900">Food Sustainability Resources</h1>
+          <div className="flex items-center gap-4 mb-3">
+            <div className="w-12 h-12 bg-black rounded-2xl flex items-center justify-center shadow-lg shadow-black/10">
+              <BookOpen className="h-6 w-6 text-white" />
+            </div>
+            <h1 className="text-4xl font-black text-foreground tracking-tight">Resources</h1>
           </div>
-          <p className="text-gray-600">Learn best practices for food management and waste reduction</p>
+          <p className="text-muted-foreground font-medium ml-1">
+            Master the art of kitchen management, sustainability, and waste reduction.
+          </p>
         </div>
         {isSignedIn && activeTab === 'library' && (
           <button
             onClick={() => setIsAddModalOpen(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
+            className="flex items-center justify-center gap-2 px-6 py-4 bg-black text-white rounded-2xl hover:bg-gray-900 transition-all font-bold shadow-xl shadow-black/10"
           >
             <Plus className="h-5 w-5" />
             Add Resource
@@ -116,30 +120,26 @@ export function ResourcesPage() {
 
       {/* Tab Navigation */}
       {isSignedIn && (
-        <div className="flex gap-2 border-b border-gray-200">
+        <div className="flex gap-2 p-1.5 bg-gray-50 rounded-2xl border border-gray-100 max-w-fit">
           <button
             onClick={() => setActiveTab('personalized')}
-            className={`px-4 py-2 font-medium text-sm transition-colors border-b-2 ${activeTab === 'personalized'
-                ? 'border-green-600 text-green-600'
-                : 'border-transparent text-gray-600 hover:text-gray-900'
+            className={`px-6 py-2.5 font-bold text-sm transition-all rounded-xl flex items-center gap-2 ${activeTab === 'personalized'
+                ? 'bg-black text-white shadow-lg'
+                : 'text-muted-foreground hover:text-black hover:bg-gray-100'
               }`}
           >
-            <div className="flex items-center gap-2">
-              <Sparkles className="h-4 w-4" />
-              Recommended For You
-            </div>
+            <Sparkles className="h-4 w-4" />
+            Recommended For You
           </button>
           <button
             onClick={() => setActiveTab('library')}
-            className={`px-4 py-2 font-medium text-sm transition-colors border-b-2 ${activeTab === 'library'
-                ? 'border-green-600 text-green-600'
-                : 'border-transparent text-gray-600 hover:text-gray-900'
+            className={`px-6 py-2.5 font-bold text-sm transition-all rounded-xl flex items-center gap-2 ${activeTab === 'library'
+                ? 'bg-black text-white shadow-lg'
+                : 'text-muted-foreground hover:text-black hover:bg-gray-100'
               }`}
           >
-            <div className="flex items-center gap-2">
-              <BookOpen className="h-4 w-4" />
-              Resource Library
-            </div>
+            <BookOpen className="h-4 w-4" />
+            Resource Library
           </button>
         </div>
       )}
@@ -168,28 +168,35 @@ export function ResourcesPage() {
             <>
               {/* User Profile Summary */}
               {recommendations.userProfile && (
-                <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-lg p-4 border border-green-200">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Sparkles className="h-5 w-5 text-green-600" />
-                    <h3 className="font-semibold text-gray-900">Your Personalized Feed</h3>
+                <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-soft relative overflow-hidden group">
+                  <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full -mr-20 -mt-20 transition-transform group-hover:scale-110" />
+                  <div className="relative z-10">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="w-10 h-10 bg-primary/20 rounded-xl flex items-center justify-center border border-primary/30">
+                        <Sparkles className="h-5 w-5 text-black" />
+                      </div>
+                      <h3 className="text-xl font-black text-foreground tracking-tight">Your Personalized Feed</h3>
+                    </div>
+                    <p className="text-muted-foreground font-medium leading-relaxed max-w-2xl">
+                      Optimized for your <span className="text-black font-bold">{recommendations.userProfile.wasteReductionPercentage}% waste reduction rate</span>
+                      {recommendations.userProfile.budgetRange && <> and <span className="text-black font-bold">৳{recommendations.userProfile.budgetRange} monthly budget</span></>}.
+                      {recommendations.userProfile.primaryConcerns.length > 0 && (
+                        <> Focusing on: <span className="text-primary-dark font-black uppercase tracking-wider text-xs">{recommendations.userProfile.primaryConcerns.join(', ')}</span>.</>
+                      )}
+                    </p>
                   </div>
-                  <p className="text-sm text-gray-700">
-                    Based on your {recommendations.userProfile.wasteReductionPercentage}% waste reduction rate
-                    {recommendations.userProfile.budgetRange && ` and ${recommendations.userProfile.budgetRange} BDT monthly budget`}.
-                    {recommendations.userProfile.primaryConcerns.length > 0 && (
-                      <> Focusing on: <span className="font-medium">{recommendations.userProfile.primaryConcerns.join(', ')}</span>.</>
-                    )}
-                  </p>
                 </div>
               )}
 
               {/* Articles Section */}
               {recommendations.articles && recommendations.articles.length > 0 && (
                 <div>
-                  <div className="flex items-center gap-2 mb-4">
-                    <Newspaper className="h-5 w-5 text-gray-700" />
-                    <h2 className="text-lg font-semibold text-gray-900">Recommended Articles</h2>
-                    <span className="text-sm text-gray-500">({recommendations.articles.length})</span>
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
+                      <Newspaper className="h-4 w-4 text-black" />
+                    </div>
+                    <h2 className="text-xl font-black text-foreground tracking-tight">Recommended Articles</h2>
+                    <span className="bg-gray-50 text-muted-foreground text-xs font-bold px-3 py-1 rounded-full border border-gray-100">{recommendations.articles.length}</span>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {recommendations.articles.map((article) => (
@@ -202,10 +209,12 @@ export function ResourcesPage() {
               {/* Videos Section */}
               {recommendations.videos && recommendations.videos.length > 0 && (
                 <div>
-                  <div className="flex items-center gap-2 mb-4">
-                    <VideoIcon className="h-5 w-5 text-gray-700" />
-                    <h2 className="text-lg font-semibold text-gray-900">Recommended Videos</h2>
-                    <span className="text-sm text-gray-500">({recommendations.videos.length})</span>
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
+                      <VideoIcon className="h-4 w-4 text-black" />
+                    </div>
+                    <h2 className="text-xl font-black text-foreground tracking-tight">Recommended Videos</h2>
+                    <span className="bg-gray-50 text-muted-foreground text-xs font-bold px-3 py-1 rounded-full border border-gray-100">{recommendations.videos.length}</span>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {recommendations.videos.map((video) => (
@@ -239,8 +248,8 @@ export function ResourcesPage() {
       {activeTab === 'library' && (
         <div className="space-y-6">
           {/* Search Bar */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <h3 className="font-semibold text-gray-900 mb-4">Search External Content</h3>
+          <div className="bg-white rounded-3xl shadow-soft border border-gray-100 p-8">
+            <h3 className="text-xl font-black text-foreground mb-6 tracking-tight">Search Knowledge Base</h3>
             <SearchBar
               onSearch={handleSearch}
               onClear={handleClearSearch}
@@ -326,20 +335,20 @@ export function ResourcesPage() {
           )}
 
           {/* Static Resources */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <h3 className="font-semibold text-gray-900 mb-4">Curated Resources</h3>
+          <div className="bg-white rounded-3xl shadow-soft border border-gray-100 p-8">
+            <h3 className="text-xl font-black text-foreground mb-8 tracking-tight">Curated Learning Path</h3>
 
-            <div className="flex flex-wrap gap-2 mb-6">
+            <div className="flex flex-wrap gap-2 mb-8">
               {tags.map((tag: string) => (
                 <button
                   key={tag}
                   type="button"
                   onClick={() => setSelectedTag(tag as string)}
                   className={
-                    `px-3 py-1 rounded-full border text-sm font-medium transition-colors ` +
+                    `px-5 py-2 rounded-xl border text-sm font-black transition-all uppercase tracking-wider ` +
                     (selectedTag === tag
-                      ? 'bg-green-600 text-white border-green-600 shadow'
-                      : 'bg-white text-gray-800 border-gray-300 hover:bg-green-50')
+                      ? 'bg-black text-white border-black shadow-lg shadow-black/10'
+                      : 'bg-white text-muted-foreground border-gray-100 hover:bg-gray-50 hover:text-black')
                   }
                 >
                   {tag as string}

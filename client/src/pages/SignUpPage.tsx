@@ -1,21 +1,22 @@
 import { SignUp } from '@clerk/clerk-react'
-
 import { Link } from 'react-router-dom'
 
 export default function SignUpPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5 flex items-center justify-center p-4">
-      <div className="absolute top-6 left-6">
-        <Link to="/" className="flex items-center gap-2">
-          <img src='/gajor.png' width={50} height={25} className='rounded-xl'/>
-          <span className="font-bold text-lg text-foreground hidden sm:inline">NutriAI</span>
+    <div className="min-h-screen bg-background flex items-center justify-center p-4 relative overflow-hidden">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,theme(colors.primary.DEFAULT/0.1),transparent_50%)]"></div>
+      
+      <div className="absolute top-8 left-8 relative z-10">
+        <Link to="/" className="flex items-center gap-2 group">
+          <img src='/gajor.png' width={50} height={25} className='rounded-xl shadow-soft group-hover:scale-105 transition-transform'/>
+          <span className="font-bold text-xl tracking-tighter text-foreground">NutriAI</span>
         </Link>
       </div>
       
-      <div className="w-full max-w-md">
+      <div className="w-full max-w-md relative z-10">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-foreground mb-2">Get Started</h1>
-          <p className="text-foreground/70">Create your account and start your sustainable journey</p>
+          <h1 className="text-4xl font-black text-foreground mb-3 tracking-tight">Join NutriAI</h1>
+          <p className="text-muted-foreground font-medium">Create your account and start your sustainable journey</p>
         </div>
         
         <SignUp 
@@ -25,21 +26,21 @@ export default function SignUpPage() {
           appearance={{
             elements: {
               rootBox: "w-full",
-              card: "bg-card shadow-xl rounded-2xl border border-border",
-              headerTitle: "text-foreground",
-              headerSubtitle: "text-foreground/70",
-              socialButtonsBlockButton: "bg-card border border-border text-foreground hover:bg-secondary/10",
-              socialButtonsBlockButtonText: "text-foreground font-medium",
-              formButtonPrimary: "bg-primary hover:bg-primary/90 text-primary-foreground",
-              formFieldInput: "bg-background border-border text-foreground focus:border-primary focus:ring-primary",
-              formFieldLabel: "text-foreground",
-              footerActionLink: "text-primary hover:text-primary/80",
-              identityPreviewText: "text-foreground",
-              identityPreviewEditButtonIcon: "text-foreground/70",
-              formHeaderTitle: "text-foreground",
-              formHeaderSubtitle: "text-foreground/70",
+              card: "bg-card shadow-soft rounded-2xl border border-border",
+              headerTitle: "text-foreground font-bold",
+              headerSubtitle: "text-muted-foreground",
+              socialButtonsBlockButton: "bg-card border border-border text-foreground hover:bg-accent transition-all",
+              socialButtonsBlockButtonText: "text-foreground font-bold",
+              formButtonPrimary: "bg-primary hover:bg-primary-dark text-primary-foreground font-bold transition-all shadow-lg",
+              formFieldInput: "bg-input border-border text-foreground focus:border-primary focus:ring-primary transition-all rounded-xl",
+              formFieldLabel: "text-foreground font-bold px-1",
+              footerActionLink: "text-primary hover:underline font-bold",
+              identityPreviewText: "text-foreground font-medium",
+              identityPreviewEditButtonIcon: "text-muted-foreground",
+              formHeaderTitle: "text-foreground font-bold",
+              formHeaderSubtitle: "text-muted-foreground",
               otpCodeFieldInput: "border-border text-foreground",
-              formResendCodeLink: "text-primary hover:text-primary/80",
+              formResendCodeLink: "text-primary hover:underline font-bold",
               footer: "hidden",
             },
             layout: {
@@ -47,18 +48,18 @@ export default function SignUpPage() {
               socialButtonsVariant: "blockButton",
             },
             variables: {
-              colorPrimary: "#16803C",
-              colorBackground: "#ffffff",
-              colorInputBackground: "#fafafa",
-              colorInputText: "#262626",
-              borderRadius: "0.625rem",
+              colorPrimary: "hsl(var(--primary))",
+              colorBackground: "hsl(var(--background))",
+              colorInputBackground: "hsl(var(--input))",
+              colorInputText: "hsl(var(--foreground))",
+              borderRadius: "0.75rem",
             }
           }}
         />
         
-        <p className="text-center mt-6 text-sm text-foreground/60">
+        <p className="text-center mt-6 text-sm text-foreground/60 font-medium">
           Already have an account?{' '}
-          <Link to="/sign-in" className="text-primary hover:text-primary/80 font-medium">
+          <Link to="/sign-in" className="text-primary hover:underline font-bold">
             Sign in
           </Link>
         </p>
