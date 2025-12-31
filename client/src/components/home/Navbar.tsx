@@ -40,8 +40,10 @@ export default function Navbar() {
     <nav className=" fixed  w-full bg-background/10 backdrop-blur-md z-50 transition-smooth">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          <Link to="/" className="flex items-center gap-2 group">
-              <img src='/gajor.png' width={50} height={25} className='rounded-[50%] bg-white'/>
+          <Link to="/" className="flex items-center gap-0.5 group">
+            <div className='rounded-[50%]'>
+              <img src='/gajor.png' width={50} height={50} className='bg-white rounded-[50%]' />
+            </div>
             <span className=" text-lg text-white hidden sm:inline font-operetta">
               NutriAI
             </span>

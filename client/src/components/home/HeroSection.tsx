@@ -35,7 +35,7 @@ export default function HeroSection() {
                      </motion.span>
                   </h1>
 
-                  <motion.p transition={{duration:1, ease:'easeIn', delay:1}} whileInView={{opacity:1, y:0}} initial={{y:80, opacity:0}}  viewport={{once:true}} className="text-xl font-operetta font-bold text-white leading-relaxed max-w-lg pt-10">
+                  <motion.p transition={{duration:0.7, ease:'easeIn', delay:0.7}} whileInView={{opacity:1, y:0}} initial={{y:80, opacity:0}}  viewport={{once:true}} className="text-xl font-operetta font-bold text-white leading-relaxed max-w-lg pt-10">
                      NutriAI connects your pantry inventory with personalized nutrition goals and sustainability tracking. Buying, cooking, and saving—simplified.
                   </motion.p>
 
