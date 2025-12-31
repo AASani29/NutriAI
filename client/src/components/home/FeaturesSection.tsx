@@ -1,25 +1,25 @@
 import { ScanBarcode, ChefHat, Recycle, Bell, Share2, BarChart } from 'lucide-react'
-
+import { motion } from 'framer-motion'
 export default function FeaturesSection() {
   return (
-    <section id="features" className="relative py-24 bg-white/50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section id="features" className="relative py-1 bg-[#e6ebf7]">
+      <div className="max-w-7xl mb-16 mx-auto px-4 sm:px-6 lg:px-8">
 
-        <div className="text-center max-w-3xl mx-auto mb-20">
-          <h2 className="text-4xl md:text-5xl font-black text-foreground mb-6 leading-tight">
+        <div className="text-center max-w-3xl mx-auto mb-16 mt-16">
+          <h2 className="text-4xl md:text-5xl font-operetta font-bold text-gray-900 mb-6 leading-tight">
             Three powerful modules, <br />
             <span className="text-primary-dark">One seamless platform.</span>
           </h2>
-          <p className="text-xl text-muted-foreground leading-relaxed font-medium">
+          <p className="text-xl text-gray-500 leading-relaxed font-operetta font-bold">
             NutriAI bridges the gap between what you buy, what you eat, and how you impact the planet.
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* Column 1: Inventory (Manage) */}
-          <div className="space-y-6">
-            <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-soft hover:shadow-xl transition-all duration-500 relative overflow-hidden group h-full">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-gray-50 rounded-full -mr-8 -mt-8 opacity-50 transition-transform group-hover:scale-110" />
+          <motion.div transition={{duration:0.5, ease:'easeIn',delay:0.2}} whileInView={{opacity:1, y:0}} initial={{y:20, opacity:0}}  viewport={{once:true}} className="space-y-6">
+            <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-xl hover:shadow-lg hover:translate-y-[-10px] transition-all duration-300 relative overflow-hidden group h-full">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-gray-100 rounded-full -mr-8 -mt-8 opacity-50" />
               <div className="relative z-10 text-center">
                 <div className="w-16 h-16 mx-auto bg-gray-50 rounded-2xl flex items-center justify-center mb-8 border border-gray-100 transition-colors group-hover:bg-primary/20">
                   <ScanBarcode className="w-8 h-8 text-black" />
@@ -39,10 +39,10 @@ export default function FeaturesSection() {
                 </div>
               </div>
             </div>
-          </div>
+          </motion.div>
 
           {/* Column 2: Nutrition (Nourish) - Highlighted */}
-          <div className="space-y-6">
+          <motion.div transition={{duration:0.5, ease:'easeIn',delay:0.2}} whileInView={{opacity:1, y:0}} initial={{y:-20, opacity:0}}  viewport={{once:true}} className="space-y-6">
             <div className="bg-black p-8 rounded-3xl shadow-2xl shadow-black/20 transform md:-translate-y-6 hover:translate-y-[-24px] transition-all duration-500 relative overflow-hidden h-full border border-white/5">
               <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_top_right,rgba(210,232,35,0.15),transparent_70%)]" />
               <div className="absolute bottom-0 right-0 w-48 h-48 bg-primary/10 rounded-full -mr-12 -mb-12 blur-3xl" />
@@ -70,12 +70,12 @@ export default function FeaturesSection() {
                 </div>
               </div>
             </div>
-          </div>
+          </motion.div>
 
           {/* Column 3: Sustainability (Sustain) */}
-          <div className="space-y-6">
-            <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-soft hover:shadow-xl transition-all duration-500 relative overflow-hidden group h-full">
-              <div className="absolute top-0 left-0 w-32 h-32 bg-gray-50 rounded-full -ml-8 -mt-8 opacity-50 transition-transform group-hover:scale-110" />
+          <motion.div transition={{duration:0.5, ease:'easeIn', delay:0.2}} whileInView={{opacity:1, y:0}} initial={{y:20, opacity:0}}  viewport={{once:true}} className="space-y-6">
+            <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm  hover:translate-y-[-10px] hover:shadow-lg transition-all duration-300 relative overflow-hidden group h-full">
+              <div className="absolute top-0 left-0 w-32 h-32 bg-green-50 rounded-full -ml-8 -mt-8 opacity-50" />
               <div className="relative z-10 text-center">
                 <div className="w-16 h-16 mx-auto bg-gray-50 rounded-2xl flex items-center justify-center mb-8 border border-gray-100 transition-colors group-hover:bg-primary/20">
                   <Recycle className="w-8 h-8 text-black" />
@@ -97,7 +97,7 @@ export default function FeaturesSection() {
                 </div>
               </div>
             </div>
-          </div>
+          </motion.div>
 
         </div>
       </div>

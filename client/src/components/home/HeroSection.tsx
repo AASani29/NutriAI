@@ -2,37 +2,42 @@
 import { useAuth } from '@clerk/clerk-react';
 import { ArrowRight, ChefHat, ScanLine } from 'lucide-react';
 import { Link } from 'react-router-dom';
-
+import {motion} from 'framer-motion'
 export default function HeroSection() {
    const { isSignedIn } = useAuth();
 
    return (
-      <section className="relative w-full pt-16 pb-10 md:pt-32 md:pb-10 overflow-hidden bg-white">
+      <section className=" relative w-full pt-16 pb-10 md:pt-31 bg-[url('/diet.jpg')] bg-cover bg-center bg-opacity-10 md:pb-10 overflow-hidden bg-background">
          {/* Balanced Background: Tech + Nature */}
-         <div className="absolute inset-0 -z-10 overflow-hidden">
-            <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-primary/10 rounded-full blur-[120px] -mr-40 -mt-40" />
-            <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-gray-50 rounded-full blur-[100px] -ml-20 -mb-20" />
+         <div className="absolute inset-0 bg-black/40"></div>
+         {/* <div className="absolute inset-0 -z-10 overflow-hidden">
+            <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-green-100/30 rounded-full blur-[100px]" />
+            <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-orange-100/30 rounded-full blur-[100px]" />
             <div className="absolute inset-0 bg-[url('/grid-pattern.svg')] opacity-[0.03]" />
-         </div>
+         </div> */}
 
-         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 ">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
 
                {/* Left Content */}
                <div className="flex flex-col gap-8 relative z-10">
 
 
-                  <h1 className="text-5xl md:text-6xl lg:text-7xl font-black tracking-tight text-foreground leading-[1.05]">
-                     Manage Food.<br />
-                     <span className="text-primary-dark">
-                        Master Nutrition.
-                     </span> <br />
-                     Minimize Waste.
+                  <h1 >
+                     <motion.span transition={{duration:0.7, ease:'easeIn'}} whileInView={{opacity:1, x:0}} initial={{x:-80, opacity:0}}  viewport={{once:true}} className="block ml-4 text-5xl md:text-6xl lg:text-6xl font-operetta tracking-tight text-white leading-[1.1]">
+                     Manage Food
+                     </motion.span><br />
+                     <motion.span transition={{duration:0.7, ease:'easeIn', delay:0.5}} whileInView={{opacity:1, x:10}} initial={{x:-80, opacity:0}}  viewport={{once:true}} className="block ml-8 text-5xl md:text-6xl font-operetta lg:text-6xl  tracking-tight text-white leading-[1.1]">
+                        Master Nutrition
+                     </motion.span> <br />
+                     <motion.span transition={{duration:0.9, ease:'easeIn', delay:0.7}} whileInView={{opacity:1, x:20}} initial={{x:-80, opacity:0}}  viewport={{once:true}} className="block ml-12 text-5xl font-operetta md:text-6xl lg:text-6xl tracking-tight text-white leading-[1.1]">
+                     Minimize Waste
+                     </motion.span>
                   </h1>
 
-                  <p className="text-xl text-muted-foreground leading-relaxed max-w-lg font-medium">
+                  <motion.p transition={{duration:0.7, ease:'easeIn', delay:0.7}} whileInView={{opacity:1, y:0}} initial={{y:80, opacity:0}}  viewport={{once:true}} className="text-xl font-operetta font-bold text-white leading-relaxed max-w-lg pt-10">
                      NutriAI connects your pantry inventory with personalized nutrition goals and sustainability tracking. Buying, cooking, and saving—simplified.
-                  </p>
+                  </motion.p>
 
                   <div className="flex flex-col sm:flex-row gap-4 pt-4">
                      <Link
@@ -52,7 +57,7 @@ export default function HeroSection() {
                </div>
 
                {/* Right Visuals (Unified Dashboard) */}
-               <div className="relative w-full h-[600px] hidden lg:block perspective-1000">
+               <motion.div transition={{duration:1, ease:'easeIn'}} whileInView={{opacity:1, x:0}} initial={{x:80, opacity:0}}  viewport={{once:true}} className="relative w-full h-[600px] hidden lg:block perspective-1000">
                   {/* Main Interface Card */}
                   <div className="absolute top-10 right-0 w-[500px] h-[380px] bg-white rounded-3xl shadow-2xl border border-gray-100 overflow-hidden transform rotate-y-[-5deg] hover:rotate-y-0 transition-transform duration-700 p-6 z-10">
                      {/* Header */}
@@ -115,7 +120,7 @@ export default function HeroSection() {
                      </div>
                   </div>
 
-               </div>
+               </motion.div>
             </div>
          </div>
       </section>

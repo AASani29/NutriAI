@@ -37,24 +37,24 @@ export default function Navbar() {
   ];
 
   return (
-    <nav className="fixed top-0 w-full bg-background/90 backdrop-blur-md border-b border-border z-50 transition-all duration-300">
+    <nav className=" fixed  w-full bg-background/10 backdrop-blur-md z-50 transition-smooth">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-20">
-          <Link to="/" className="flex items-center gap-2 group">
-            <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center shadow-lg shadow-primary/10">
-              <Utensils className="w-5 h-5 text-primary-foreground" />
+        <div className="flex justify-between items-center h-16">
+          <Link to="/" className="flex items-center gap-0.5 group">
+            <div className='rounded-[50%]'>
+              <img src='/gajor.png' width={50} height={50} className='bg-white rounded-[50%]' />
             </div>
-            <span className="font-black text-xl tracking-tighter text-foreground">
+            <span className=" text-lg text-white hidden sm:inline font-operetta">
               NutriAI
             </span>
           </Link>
 
-          <div className="hidden md:flex items-center gap-10">
+          <div className="hidden md:flex items-start gap-4">
             {navLinks.map(link => (
               <a
                 key={link.href}
                 href={link.href}
-                className="text-muted-foreground hover:text-foreground transition-all text-sm font-bold uppercase tracking-widest"
+                className="text-white hover:text-primary  p-5 rounded-2xl transition-smooth text-lg font-operetta font-bold"
               >
                 {link.label}
               </a>
@@ -107,7 +107,7 @@ export default function Navbar() {
               <>
                 <Link
                   to="/sign-in"
-                  className="text-muted-foreground hover:text-foreground transition-all text-sm font-bold uppercase tracking-widest px-4"
+                  className="text-white/80 hover:text-primary transition-smooth text-sm font-medium pr-5"
                 >
                   Log In
                 </Link>
