@@ -64,7 +64,6 @@ export default function ImpactSection() {
           {stats.map((stat, index) => {
             const Icon = stat.icon;
             // Update currency in display
-            const displayValue = stat.label === 'Annual Savings' ? '৳12,000' : stat.number;
             
             return (
               <motion.div transition={{ duration: 0.5, ease: 'easeIn', delay: stat.delay }} whileInView={{ opacity: 1, x: 0 }} initial={{ x: stat.xpos, opacity: 0 }} viewport={{ once: true }} key={index} className="bg-white/5 backdrop-blur-md border border-white/10 p-8 rounded-3xl hover:bg-white/10 transition-colors duration-300 flex flex-col items-center text-center">

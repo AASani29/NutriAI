@@ -3,9 +3,6 @@ import { useQueryClient } from '@tanstack/react-query';
 import {
   AlertCircle,
   ArrowRight,
-  Plus,
-  Search,
-  Package,
   Apple,
   Droplet,
   Flame,
@@ -48,7 +45,6 @@ export default function InventoryDetailPage() {
   const [showConsumptionModal, setShowConsumptionModal] = useState(false);
   const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
   const [search, setSearch] = useState('');
-  const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState({
     category: '',
     expiryStatus: '',
