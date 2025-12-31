@@ -21,8 +21,8 @@ export default function FeaturesSection() {
             <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-soft hover:shadow-xl transition-all duration-500 relative overflow-hidden group h-full">
               <div className="absolute top-0 right-0 w-32 h-32 bg-gray-50 rounded-full -mr-8 -mt-8 opacity-50 transition-transform group-hover:scale-110" />
               <div className="relative z-10 text-center">
-                <div className="w-16 h-16 mx-auto bg-gray-50 rounded-2xl flex items-center justify-center mb-8 border border-gray-100 transition-colors group-hover:bg-primary/20">
-                  <ScanBarcode className="w-8 h-8 text-black" />
+                <div className="w-16 h-16 mx-auto bg-primary/10 rounded-2xl flex items-center justify-center mb-8 border border-primary/20 transition-colors group-hover:bg-primary group-hover:text-white">
+                  <ScanBarcode className="w-8 h-8 text-primary group-hover:text-white" />
                 </div>
                 <h3 className="text-2xl font-bold text-foreground mb-4">Smart Inventory</h3>
                 <p className="text-muted-foreground mb-8 font-medium">Scan barcodes or receipts to digitize your pantry in seconds.</p>
@@ -44,8 +44,8 @@ export default function FeaturesSection() {
           {/* Column 2: Nutrition (Nourish) - Highlighted */}
           <div className="space-y-6">
             <div className="bg-black p-8 rounded-3xl shadow-2xl shadow-black/20 transform md:-translate-y-6 hover:translate-y-[-24px] transition-all duration-500 relative overflow-hidden h-full border border-white/5">
-              <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_top_right,rgba(210,232,35,0.15),transparent_70%)]" />
-              <div className="absolute bottom-0 right-0 w-48 h-48 bg-primary/10 rounded-full -mr-12 -mb-12 blur-3xl" />
+              <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_top_right,rgba(172,156,6,0.15),transparent_70%)]" />
+              <div className="absolute bottom-0 right-0 w-48 h-48 bg-primary/20 rounded-full -mr-12 -mb-12 blur-3xl" />
 
               <div className="relative z-10 text-center text-white">
                 <div className="w-16 h-16 mx-auto bg-primary text-black rounded-2xl flex items-center justify-center mb-8 shadow-lg shadow-primary/20">
@@ -77,8 +77,8 @@ export default function FeaturesSection() {
             <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-soft hover:shadow-xl transition-all duration-500 relative overflow-hidden group h-full">
               <div className="absolute top-0 left-0 w-32 h-32 bg-gray-50 rounded-full -ml-8 -mt-8 opacity-50 transition-transform group-hover:scale-110" />
               <div className="relative z-10 text-center">
-                <div className="w-16 h-16 mx-auto bg-gray-50 rounded-2xl flex items-center justify-center mb-8 border border-gray-100 transition-colors group-hover:bg-primary/20">
-                  <Recycle className="w-8 h-8 text-black" />
+                <div className="w-16 h-16 mx-auto bg-primary/10 rounded-2xl flex items-center justify-center mb-8 border border-primary/20 transition-colors group-hover:bg-primary group-hover:text-white">
+                  <Recycle className="w-8 h-8 text-primary group-hover:text-white" />
                 </div>
                 <h3 className="text-2xl font-bold text-foreground mb-4">Zero-Waste Impact</h3>
                 <p className="text-muted-foreground mb-8 font-medium">Close the loop by sharing surplus and tracking your eco-footprint.</p>

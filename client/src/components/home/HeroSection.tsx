@@ -37,7 +37,7 @@ export default function HeroSection() {
                   <div className="flex flex-col sm:flex-row gap-4 pt-4">
                      <Link
                         to={isSignedIn ? '/dashboard' : '/sign-in'}
-                        className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-black text-white rounded-2xl hover:bg-gray-900 hover:scale-[1.02] transition-all duration-300 font-bold text-lg shadow-xl shadow-black/10"
+                        className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-primary text-white rounded-2xl hover:bg-primary-dark hover:scale-[1.02] transition-all duration-300 font-bold text-lg shadow-xl shadow-primary/10"
                      >
                         {isSignedIn ? 'Go to Dashboard' : 'Get Started'}
                         <ArrowRight className="w-5 h-5" />
@@ -58,15 +58,15 @@ export default function HeroSection() {
                      {/* Header */}
                      <div className="flex items-center justify-between mb-8 pb-4 border-b border-gray-50">
                         <div className="flex items-center gap-3">
-                           <div className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center border border-gray-100">
-                              <ScanLine className="w-5 h-5 text-black" />
+                           <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center border border-primary/20">
+                              <ScanLine className="w-5 h-5 text-primary" />
                            </div>
                            <div>
                               <div className="font-bold text-foreground">Kitchen Overview</div>
                               <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Live Inventory Status</div>
                            </div>
                         </div>
-                        <div className="px-3 py-1 bg-primary/20 text-black text-[10px] font-bold rounded-full border border-primary/30 uppercase tracking-widest">Score: 92/100</div>
+                        <div className="px-3 py-1 bg-primary/10 text-primary-dark text-[10px] font-bold rounded-full border border-primary/20 uppercase tracking-widest">Score: 92/100</div>
                      </div>
 
                      {/* Stats Row */}
@@ -106,8 +106,8 @@ export default function HeroSection() {
                   </div>
 
                   <div className="absolute bottom-1/4 -right-8 bg-white p-4 rounded-2xl shadow-xl border border-gray-100 flex items-center gap-3 animate-float delay-300 z-20">
-                     <div className="w-10 h-10 bg-gray-50 rounded-lg flex items-center justify-center border border-gray-100">
-                        <ChefHat className="w-5 h-5 text-black" />
+                     <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center border border-primary/20">
+                        <ChefHat className="w-5 h-5 text-primary" />
                      </div>
                      <div>
                         <div className="text-xs font-bold text-foreground uppercase tracking-tight">New Recipe Unlocked</div>
