@@ -37,22 +37,22 @@ export default function Navbar() {
   ];
 
   return (
-    <nav className="fixed top-0 w-full bg-background/95 backdrop-blur-md border-b border-border z-50 transition-smooth">
+    <nav className=" fixed  w-full bg-background/10 backdrop-blur-md z-50 transition-smooth">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <Link to="/" className="flex items-center gap-2 group">
-              <img src='/gajor.png' width={50} height={25} className='rounded-xl'/>
-            <span className="font-bold text-lg text-foreground hidden sm:inline">
+              <img src='/gajor.png' width={50} height={25} className='rounded-[50%] bg-white'/>
+            <span className=" text-lg text-white hidden sm:inline font-operetta">
               NutriAI
             </span>
           </Link>
 
-          <div className="hidden md:flex items-center gap-8">
+          <div className="hidden md:flex items-start gap-4">
             {navLinks.map(link => (
               <a
                 key={link.href}
                 href={link.href}
-                className="text-foreground/80 hover:text-primary transition-smooth text-md font-medium"
+                className="text-white hover:text-primary  p-5 rounded-2xl transition-smooth text-lg font-operetta font-bold"
               >
                 {link.label}
               </a>
@@ -105,7 +105,7 @@ export default function Navbar() {
               <>
                 <Link
                   to="/sign-in"
-                  className="text-foreground/80 hover:text-primary transition-smooth text-sm font-medium"
+                  className="text-white/80 hover:text-primary transition-smooth text-sm font-medium pr-5"
                 >
                   Log In
                 </Link>

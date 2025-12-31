@@ -7,15 +7,16 @@ export default function HeroSection() {
    const { isSignedIn } = useAuth();
 
    return (
-      <section className="relative w-full pt-16 pb-10 md:pt-31 md:pb-10 overflow-hidden bg-background">
+      <section className=" relative w-full pt-16 pb-10 md:pt-31 bg-[url('/diet.jpg')] bg-cover bg-center bg-opacity-10 md:pb-10 overflow-hidden bg-background">
          {/* Balanced Background: Tech + Nature */}
-         <div className="absolute inset-0 -z-10 overflow-hidden">
+         <div className="absolute inset-0 bg-black/40"></div>
+         {/* <div className="absolute inset-0 -z-10 overflow-hidden">
             <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-green-100/30 rounded-full blur-[100px]" />
             <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-orange-100/30 rounded-full blur-[100px]" />
             <div className="absolute inset-0 bg-[url('/grid-pattern.svg')] opacity-[0.03]" />
-         </div>
+         </div> */}
 
-         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 ">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
 
                {/* Left Content */}
@@ -23,18 +24,18 @@ export default function HeroSection() {
 
 
                   <h1 >
-                     <motion.span transition={{duration:0.7, ease:'easeIn'}} whileInView={{opacity:1, x:0}} initial={{x:-80, opacity:0}}  viewport={{once:true}} className="block ml-4 text-5xl md:text-6xl lg:text-6xl font-bold tracking-tight text-gray-900 leading-[1.1]">
+                     <motion.span transition={{duration:0.7, ease:'easeIn'}} whileInView={{opacity:1, x:0}} initial={{x:-80, opacity:0}}  viewport={{once:true}} className="block ml-4 text-5xl md:text-6xl lg:text-6xl font-operetta tracking-tight text-white leading-[1.1]">
                      Manage Food
                      </motion.span><br />
-                     <motion.span transition={{duration:0.7, ease:'easeIn', delay:0.5}} whileInView={{opacity:1, x:10}} initial={{x:-80, opacity:0}}  viewport={{once:true}} className="block ml-8 text-5xl md:text-6xl lg:text-6xl font-bold tracking-tight text-gray-900 leading-[1.1]">
+                     <motion.span transition={{duration:0.7, ease:'easeIn', delay:0.5}} whileInView={{opacity:1, x:10}} initial={{x:-80, opacity:0}}  viewport={{once:true}} className="block ml-8 text-5xl md:text-6xl font-operetta lg:text-6xl  tracking-tight text-white leading-[1.1]">
                         Master Nutrition
                      </motion.span> <br />
-                     <motion.span transition={{duration:0.9, ease:'easeIn', delay:0.7}} whileInView={{opacity:1, x:20}} initial={{x:-80, opacity:0}}  viewport={{once:true}} className="block ml-12 text-5xl md:text-6xl lg:text-6xl font-bold tracking-tight text-gray-900 leading-[1.1]">
+                     <motion.span transition={{duration:0.9, ease:'easeIn', delay:0.7}} whileInView={{opacity:1, x:20}} initial={{x:-80, opacity:0}}  viewport={{once:true}} className="block ml-12 text-5xl font-operetta md:text-6xl lg:text-6xl tracking-tight text-white leading-[1.1]">
                      Minimize Waste
                      </motion.span>
                   </h1>
 
-                  <motion.p transition={{duration:1, ease:'easeIn', delay:1}} whileInView={{opacity:1, y:0}} initial={{y:80, opacity:0}}  viewport={{once:true}} className="text-xl text-gray-600 leading-relaxed max-w-lg">
+                  <motion.p transition={{duration:1, ease:'easeIn', delay:1}} whileInView={{opacity:1, y:0}} initial={{y:80, opacity:0}}  viewport={{once:true}} className="text-xl font-operetta font-bold text-white leading-relaxed max-w-lg pt-10">
                      NutriAI connects your pantry inventory with personalized nutrition goals and sustainability tracking. Buying, cooking, and saving—simplified.
                   </motion.p>
 

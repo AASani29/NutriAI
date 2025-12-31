@@ -8,6 +8,9 @@ export default {
           secondary: 'rgb(249 115 22 / <alpha-value>)',
           background: '#ffffff',
         },
+        fontFamily: {
+        operetta: ['"operetta"', 'sans-serif'], // fallback is important
+      },
       },
     },
     safelist: [

@@ -21,7 +21,8 @@ export default function Home() {
   }, [isSignedIn, navigate]);
 
   return (
-    <main className="w-full">
+    <main className="w-full ">
+
       <Navbar />
       <HeroSection />
       <FeaturesSection />
