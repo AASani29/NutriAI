@@ -1,5 +1,5 @@
 import { useAuth, useClerk } from '@clerk/clerk-react';
-import { LogOut, Menu, Settings, User, X, Utensils } from 'lucide-react';
+import { LogOut, Menu, Settings, User, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 

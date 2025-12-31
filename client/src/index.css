@@ -7,27 +7,26 @@
   --font-body: 'Poppins', system-ui, sans-serif;
 
 
-  --color-primary: #f3dfa2;
-  --color-primary-dark: #89F336;
+  --color-primary: #ac9c06;
+  --color-primary-dark: #8a7d05;
   --color-primary-foreground: #FFFFFF;
 
-  --color-secondary: #a7754d;
-  --color-secondary-foreground: #E65100;
+  --color-secondary: #fdfbf0;
+  --color-secondary-foreground: #ac9c06;
 
-  --color-accent: #FF7043;
-  --color-accent-blue: #82CBE6;
-  --color-accent-foreground: #ffffff;
+  --color-accent: #f5f0d3;
+  --color-accent-foreground: #8a7d05;
 
-  --color-background: #EAF6FA;
+  --color-background: #ffffff;
   --color-background-dark: #18181b;
-  --color-foreground: #000000;
+  --color-foreground: #1c1917;
 
   --color-card: #ffffff;
   --color-card-dark: #27272a;
-  --color-card-foreground: #000000;
+  --color-card-foreground: #1c1917;
 
-  --color-muted: #f3f4f6;
-  --color-muted-foreground: #525252;
+  --color-muted: #f8fafc;
+  --color-muted-foreground: #64748b;
 
   --color-border: #e2e8f0;
   --color-input: #e2e8f0;

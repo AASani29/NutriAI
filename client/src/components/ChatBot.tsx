@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { X, Send, Minimize2, Mic, Image as ImageIcon, StopCircle } from 'lucide-react';
+import { X, Send, Mic, Image as ImageIcon, StopCircle } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { useUser, useAuth } from '@clerk/clerk-react';
 
@@ -11,8 +11,8 @@ interface Message {
 export const ChatBot: React.FC = () => {
     const { user } = useUser();
     const { getToken } = useAuth();
+    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
     const [isOpen, setIsOpen] = useState(false);
-    const [isMinimized, setIsMinimized] = useState(false);
     const [input, setInput] = useState('');
     const [messages, setMessages] = useState<Message[]>([]);
     const [isLoading, setIsLoading] = useState(false);
@@ -77,7 +77,7 @@ export const ChatBot: React.FC = () => {
         setIsProcessingMedia(true);
         try {
             const token = await getToken();
-            const response = await fetch('http://localhost:3000/api/intelligence/analyze-voice', {
+            const response = await fetch(`${API_URL}/intelligence/analyze-voice`, {
                 method: 'POST',
                 // Content-Type header is set automatically by fetch for FormData
                 headers: {
@@ -114,7 +114,7 @@ export const ChatBot: React.FC = () => {
             setIsProcessingMedia(true);
             try {
                 const token = await getToken();
-                const response = await fetch('http://localhost:3000/api/intelligence/analyze-image', {
+                const response = await fetch(`${API_URL}/intelligence/analyze-image`, {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${token}`
@@ -159,7 +159,7 @@ export const ChatBot: React.FC = () => {
 
         try {
             const token = await getToken();
-            const response = await fetch('http://localhost:3000/api/chat', {
+            const response = await fetch(`${API_URL}/chat`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -193,79 +193,59 @@ export const ChatBot: React.FC = () => {
 
     if (!isOpen) {
         return (
-            <button
+            <div
+                className="fixed bottom-8 right-8 w-auto min-w-[260px] bg-white rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.1)] border border-primary/10 overflow-hidden z-50 flex justify-between items-center p-3 cursor-pointer hover:shadow-[0_20px_50px_rgba(172,156,6,0.15)] transition-all transform hover:-translate-y-1 group"
                 onClick={() => setIsOpen(true)}
-                className="fixed bottom-6 right-6 p-0 w-16 h-16 rounded-full shadow-2xl hover:scale-110 transition-all z-50 overflow-hidden border-4 border-white ring-2 ring-green-100"
             >
-                <img src="/gajor2.png" alt="Chat" className="w-full h-full object-cover" />
-            </button>
+                <div className="flex items-center gap-3">
+                    <div className="relative">
+                        <img src="/chatbot.png" alt="Bot" className="w-10 h-10 rounded-xl bg-primary/5 p-1.5 object-contain" />
+                        <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-primary border-2 border-white"></div>
+                    </div>
+                    <div>
+                        <h4 className="font-black text-slate-800 text-sm tracking-tight">NutriAI Assistant</h4>
+                        <p className="text-[10px] text-primary font-black uppercase tracking-widest opacity-70">Online</p>
+                    </div>
+                </div>
+                <div className="ml-6 mr-1 bg-primary/10 p-2 rounded-lg text-primary group-hover:bg-primary group-hover:text-white transition-colors">
+                    <Send className="w-4 h-4 rotate-45" />
+                </div>
+            </div>
         );
     }
 
-    if (isMinimized) {
-        return (
-            <div
-                className="fixed bottom-6 right-6 w-auto min-w-[200px] bg-white/90 backdrop-blur-md rounded-2xl shadow-2xl border border-white/50 overflow-hidden z-50 flex justify-between items-center p-3 cursor-pointer hover:bg-white transition-all transform hover:-translate-y-1"
-                onClick={() => setIsMinimized(false)}
-            >
-                <div className="flex items-center gap-3">
-                    <div className="relative">
-                        <img src="/gajor2.png" alt="Bot" className="w-10 h-10 rounded-full bg-green-50 p-1" />
-                        <div className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-green-500 border-2 border-white animate-pulse"></div>
-                    </div>
-                    <div>
-                        <h4 className="font-bold text-gray-800 text-sm">Gajor Assistant</h4>
-                        <p className="text-xs text-green-600 font-medium">Click to expand</p>
-                    </div>
-                </div>
-                <button
-                    onClick={(e) => { e.stopPropagation(); setIsOpen(false); }}
-                    className="ml-4 hover:bg-gray-100 p-2 rounded-full transition-colors"
-                >
-                    <X className="w-4 h-4 text-gray-400" />
-                </button>
-            </div>
-        )
-    }
-
     return (
-        <div className="fixed bottom-6 right-6 w-[400px] h-[600px] bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/50 overflow-hidden z-50 flex flex-col font-sans animate-slide-in">
+        <div className="fixed bottom-8 right-8 w-[400px] h-[600px] bg-white rounded-3xl shadow-[0_20px_60px_rgba(0,0,0,0.15)] border border-gray-100 overflow-hidden z-50 flex flex-col font-sans animate-slide-in">
             {/* Header */}
-            <div className="bg-white/50 backdrop-blur-sm p-4 border-b border-gray-100 flex justify-between items-center shrink-0 sticky top-0 z-10">
+            <div className="bg-white p-5 border-b border-gray-50 flex justify-between items-center shrink-0">
                 <div className="flex items-center gap-3">
                     <div className="relative">
-                        <img src="/gajor2.png" alt="Bot" className="w-10 h-10 rounded-full bg-green-50 p-1 object-contain" />
-                        <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full"></span>
+                        <img src="/chatbot.png" alt="Bot" className="w-10 h-10 rounded-xl bg-primary/5 p-1.5 object-contain" />
+                        <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-primary border-2 border-white rounded-full"></span>
                     </div>
                     <div>
-                        <h3 className="font-bold text-gray-800 text-lg leading-tight">Gajor AI</h3>
-                        <p className="text-xs text-green-600 font-medium flex items-center gap-1">
-                            <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
-                            Online & Ready
-                        </p>
+                        <h3 className="font-black text-slate-800 text-base tracking-tight leading-tight">NutriAI Assistant</h3>
+                        <p className="text-[10px] text-primary font-bold uppercase tracking-widest">Active session</p>
                     </div>
                 </div>
-                <div className="flex gap-1">
-                    <button onClick={() => setIsMinimized(true)} className="hover:bg-gray-100 p-2 rounded-full transition-colors text-gray-500 hover:text-gray-700">
-                        <Minimize2 className="w-4 h-4" />
-                    </button>
-                    <button onClick={() => setIsOpen(false)} className="hover:bg-red-50 p-2 rounded-full transition-colors text-gray-400 hover:text-red-500">
-                        <X className="w-5 h-5" />
-                    </button>
-                </div>
+                <button 
+                    onClick={() => setIsOpen(false)} 
+                    className="hover:bg-red-50 p-2 rounded-xl transition-all text-slate-400 hover:text-red-500 border border-transparent hover:border-red-100"
+                >
+                    <X className="w-5 h-5" />
+                </button>
             </div>
 
             {/* Messages Area */}
             <div className="flex-1 overflow-y-auto p-4 space-y-6 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent">
                 {messages.length === 0 && (
-                    <div className="text-center mt-20 px-6">
-                        <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-4 relative">
-                            <img src="/gajor2.png" alt="Logo" className="w-12 h-12 object-contain opacity-80" />
-                            <div className="absolute inset-0 rounded-full border border-green-100 animate-[spin_10s_linear_infinite]"></div>
+                    <div className="text-center mt-24 px-10">
+                        <div className="w-20 h-20 bg-primary/5 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                            <img src="/chatbot.png" alt="Logo" className="w-10 h-10 object-contain" />
                         </div>
-                        <h4 className="text-gray-900 font-semibold mb-2">Welcome to Gajor!</h4>
-                        <p className="text-sm text-gray-500 leading-relaxed">
-                            I'm here to help you track inventory, plan meals, and manage nutrition. What's on your mind?
+                        <h4 className="text-slate-900 font-black text-lg mb-2 tracking-tight">How can I help you?</h4>
+                        <p className="text-xs text-slate-500 leading-relaxed">
+                            I can help with inventory, meal planning, and nutrition insights.
                         </p>
                     </div>
                 )}
@@ -274,22 +254,11 @@ export const ChatBot: React.FC = () => {
                         key={index}
                         className={`flex gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}
                     >
-                        {/* Avatar */}
-                        <div className="shrink-0 mt-auto">
-                            {msg.role === 'model' ? (
-                                <img src="/gajor2.png" className="w-8 h-8 rounded-full bg-green-50 p-1 object-contain" alt="AI" />
-                            ) : (
-                                <div className="w-8 h-8 rounded-full bg-gray-900 flex items-center justify-center text-white text-xs font-bold">
-                                    {user?.firstName?.[0] || 'U'}
-                                </div>
-                            )}
-                        </div>
-
                         {/* Bubble */}
                         <div
-                            className={`max-w-[80%] rounded-2xl p-3.5 text-sm shadow-sm leading-relaxed ${msg.role === 'user'
-                                ? 'bg-gray-900 text-white rounded-br-none'
-                                : 'bg-white text-gray-800 border border-gray-100 rounded-bl-none shadow-[0_2px_8px_rgba(0,0,0,0.04)]'
+                            className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${msg.role === 'user'
+                                ? 'bg-primary text-white ml-auto'
+                                : 'bg-slate-50 text-slate-800'
                                 }`}
                         >
                             <ReactMarkdown>{msg.content}</ReactMarkdown>
@@ -297,50 +266,33 @@ export const ChatBot: React.FC = () => {
                     </div>
                 ))}
                 {(isLoading || isProcessingMedia) && (
-                    <div className="flex gap-3">
-                        <img src="/gajor2.png" className="w-8 h-8 rounded-full bg-green-50 p-1 object-contain mt-auto" alt="AI" />
-                        <div className="bg-white rounded-2xl rounded-bl-none p-4 shadow-sm border border-gray-100 flex items-center gap-2">
-                            <div className="flex gap-1">
-                                <span className="w-2 h-2 bg-green-500 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
-                                <span className="w-2 h-2 bg-green-500 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
-                                <span className="w-2 h-2 bg-green-500 rounded-full animate-bounce"></span>
-                            </div>
-                        </div>
+                    <div className="flex gap-1.5 items-center bg-slate-50 w-fit px-4 py-3 rounded-2xl">
+                        <span className="w-1.5 h-1.5 bg-primary/40 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
+                        <span className="w-1.5 h-1.5 bg-primary/40 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
+                        <span className="w-1.5 h-1.5 bg-primary/40 rounded-full animate-bounce"></span>
                     </div>
                 )}
                 <div ref={messagesEndRef} />
             </div>
 
             {/* Input Area */}
-            <form onSubmit={handleSubmit} className="p-4 bg-white/80 backdrop-blur-md border-t border-gray-100 shrink-0">
-                <div className="relative flex items-center gap-2 bg-gray-50 p-1.5 rounded-full border border-gray-200 focus-within:border-green-500 focus-within:ring-4 focus-within:ring-green-500/10 transition-all">
-                    {/* Media Controls */}
+            <form onSubmit={handleSubmit} className="p-4 bg-white border-t border-gray-50 shrink-0">
+                <div className="flex items-center gap-2 bg-slate-50 p-1.5 rounded-xl border border-gray-100 focus-within:bg-white focus-within:ring-2 focus-within:ring-primary/10 transition-all">
                     <button
                         type="button"
                         onClick={triggerImageUpload}
                         disabled={isLoading || isProcessingMedia || isRecording}
-                        className="p-2.5 text-gray-400 hover:text-green-600 hover:bg-white rounded-full transition-all shadow-sm"
-                        title="Upload Image"
+                        className="p-2 text-slate-400 hover:text-primary transition-colors"
                     >
                         <ImageIcon className="w-5 h-5" />
                     </button>
-                    <input
-                        type="file"
-                        ref={fileInputRef}
-                        className="hidden"
-                        accept="image/*"
-                        onChange={handleImageSelect}
-                    />
+                    <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleImageSelect} />
 
                     <button
                         type="button"
                         onClick={isRecording ? stopRecording : startRecording}
                         disabled={isLoading || isProcessingMedia}
-                        className={`p-2.5 rounded-full transition-all shadow-sm ${isRecording
-                            ? 'bg-red-500 text-white animate-pulse'
-                            : 'text-gray-400 hover:text-green-600 hover:bg-white'
-                            }`}
-                        title={isRecording ? "Stop Recording" : "Record Voice"}
+                        className={`p-2 rounded-lg transition-all ${isRecording ? 'bg-red-500 text-white animate-pulse' : 'text-slate-400 hover:text-primary'}`}
                     >
                         {isRecording ? <StopCircle className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
                     </button>
@@ -349,15 +301,15 @@ export const ChatBot: React.FC = () => {
                         type="text"
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
-                        placeholder={isRecording ? "Listening..." : "Ask Gajor..."}
-                        className="flex-1 bg-transparent border-none focus:ring-0 text-gray-900 placeholder:text-gray-400 font-medium px-2"
+                        placeholder="Type a message..."
+                        className="flex-1 bg-transparent border-none focus:ring-0 text-slate-800 text-sm py-1"
                         disabled={isLoading || isProcessingMedia || isRecording}
                     />
 
                     <button
                         type="submit"
                         disabled={!input.trim() || isLoading || isProcessingMedia || isRecording}
-                        className="p-2.5 bg-gray-900 text-white rounded-full hover:bg-black disabled:opacity-50 disabled:hover:bg-gray-900 transition-all shadow-sm"
+                        className="p-2 bg-primary text-white rounded-lg hover:bg-primary-dark disabled:opacity-30 transition-all"
                     >
                         <Send className="w-4 h-4" />
                     </button>

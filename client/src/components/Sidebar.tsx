@@ -1,41 +1,81 @@
 import { useClerk, useUser } from '@clerk/clerk-react';
 import { Link, useLocation } from 'react-router-dom';
+import { 
+  LayoutDashboard, 
+  Brain, 
+  Package, 
+  NotebookPen, 
+  UtensilsCrossed, 
+  Library, 
+  MapPinHouse, 
+  ChevronLeft, 
+  LogOut, 
+  User 
+} from 'lucide-react';
+import { clsx } from 'clsx';
+import { twMerge } from 'tailwind-merge';
+
+// Helper for conditional classes
+function cn(...inputs: (string | undefined | null | false)[]) {
+  return twMerge(clsx(inputs));
+}
 
 const navItems = [
   {
     label: 'Dashboard',
     to: '/dashboard',
-    icon: 'home',
+    icon: LayoutDashboard,
+    color: 'text-sky-500',
+    bgColor: 'bg-sky-50',
+    activeColor: 'bg-primary text-white',
   },
   {
     label: 'AI Intelligence',
     to: '/intelligence',
-    icon: 'analytics',
+    icon: Brain,
+    color: 'text-purple-500',
+    bgColor: 'bg-purple-50',
+    activeColor: 'bg-primary text-white',
   },
   {
     label: 'Inventory',
     to: '/inventory',
-    icon: 'inventory_2',
+    icon: Package,
+    color: 'text-emerald-500',
+    bgColor: 'bg-emerald-50',
+    activeColor: 'bg-primary text-white',
   },
   {
     label: 'Daily Log',
     to: '/daily-log',
-    icon: 'book',
+    icon: NotebookPen,
+    color: 'text-orange-500',
+    bgColor: 'bg-orange-50',
+    activeColor: 'bg-primary text-white',
   },
   {
     label: 'Meal Planner',
     to: '/meal-planner',
-    icon: 'calendar_today',
+    icon: UtensilsCrossed,
+    color: 'text-pink-500',
+    bgColor: 'bg-pink-50',
+    activeColor: 'bg-primary text-white',
   },
   {
     label: 'Resources',
     to: '/resources',
-    icon: 'bookmark',
+    icon: Library,
+    color: 'text-blue-500',
+    bgColor: 'bg-blue-50',
+    activeColor: 'bg-primary text-white',
   },
   {
     label: 'Neighbourhood',
     to: '/neighbourhood',
-    icon: 'groups',
+    icon: MapPinHouse,
+    color: 'text-indigo-500',
+    bgColor: 'bg-indigo-50',
+    activeColor: 'bg-primary text-white',
   },
 ];
 
@@ -50,114 +90,127 @@ export default function Sidebar({ isExpanded, setIsExpanded }: { isExpanded: boo
 
   return (
     <aside 
-      className={`flex-shrink-0 flex flex-col items-center py-8 bg-card rounded-3xl shadow-soft h-[calc(100vh-2rem)] fixed top-4 left-4 justify-between z-20 transition-all duration-300 ease-in-out ${
-        isExpanded ? 'w-64 px-6' : 'w-20 lg:w-24'
-      }`}
+      className={cn(
+        "flex-shrink-0 flex flex-col items-center py-6 bg-white/90 backdrop-blur-xl border border-white/20 rounded-3xl shadow-xl h-[calc(100vh-2rem)] fixed top-4 left-4 justify-between z-50 transition-all duration-500 cubic-bezier(0.4, 0, 0.2, 1)",
+        isExpanded ? 'w-72 px-4' : 'w-20 lg:w-24'
+      )}
     >
-      <div className="flex flex-col items-center gap-8 w-full">
+      <div className="flex flex-col items-center gap-6 w-full">
         {/* Logo / Toggle Button */}
-        <div className="w-full flex items-center justify-between px-4">
-          <div className={`flex items-center gap-3 text-primary transition-all duration-300 ${!isExpanded && 'mx-auto'}`}>
-            <span className="material-icons-round text-4xl">grid_view</span>
-            {isExpanded && <span className="text-xl font-black text-foreground tracking-tight">NutriAI</span>}
+        <div className="w-full flex items-center justify-between px-2 mb-2">
+          <div className={cn("hidden transition-all duration-300", isExpanded && "block px-2")}>
+            <img src="/logo.png" alt="NutriAI Logo" className="h-13 w-auto object-contain" />
           </div>
+          
           <button 
             onClick={() => setIsExpanded(!isExpanded)}
-            className={`w-8 h-8 flex items-center justify-center rounded-lg bg-gray-50 text-muted-foreground hover:bg-primary hover:text-black transition-all ${!isExpanded && 'hidden'}`}
+            className={cn(
+              "flex items-center justify-center rounded-2xl transition-all duration-300 hover:scale-105 active:scale-95 overflow-hidden",
+              isExpanded 
+                ? "w-10 h-10 bg-slate-100 text-slate-500 hover:bg-slate-200" 
+                : "w-12 h-12 bg-primary shadow-lg mx-auto"
+            )}
           >
-            <span className="material-icons-round text-sm">
-              {isExpanded ? 'chevron_left' : 'chevron_right'}
-            </span>
+            {isExpanded ? (
+              <ChevronLeft size={18} />
+            ) : (
+              <img src="/gajor-white.png" alt="N" className="w-8 h-8 object-contain" />
+            )}
           </button>
         </div>
 
         {/* Navigation */}
-        <nav className="flex flex-col gap-4 w-full px-2">
+        <nav className="flex flex-col gap-2 w-full">
           {navItems.map((item) => {
             const isActive = location.pathname.startsWith(item.to);
+            const Icon = item.icon;
+            
             return (
               <Link
                 key={item.to}
                 to={item.to}
                 title={!isExpanded ? item.label : ''}
-                className={`flex items-center gap-4 rounded-full transition-all duration-300 group ${
-                  isExpanded ? 'px-4 py-3 justify-start w-full' : 'w-12 h-12 justify-center mx-auto'
-                } ${
-                  isActive
-                    ? 'bg-primary text-black shadow-lg shadow-primary/30 scale-105'
-                    : 'text-muted-foreground hover:text-primary hover:bg-gray-50'
-                }`}
+                className={cn(
+                  "relative flex items-center gap-3 rounded-2xl transition-all duration-300 group overflow-hidden",
+                  isExpanded ? 'px-4 py-3.5 w-full' : 'w-12 h-12 justify-center mx-auto',
+                  isActive 
+                    ? cn(item.activeColor, "shadow-lg shadow-primary/20 font-medium") 
+                    : "text-slate-500 hover:bg-slate-50"
+                )}
               >
-                <span className={`material-icons-outlined text-2xl ${isActive ? 'text-black' : ''}`}>{item.icon}</span>
+                <Icon 
+                  size={22} 
+                  className={cn(
+                    "transition-all duration-300",
+                    isActive ? "scale-110" : cn(item.color, "group-hover:scale-110")
+                  )} 
+                />
+                
                 {isExpanded && (
-                  <span className={`font-bold whitespace-nowrap overflow-hidden transition-all duration-300 ${
-                    isActive ? 'text-black' : 'text-foreground'
-                  }`}>
+                  <span className="font-medium whitespace-nowrap tracking-wide">
                     {item.label}
                   </span>
+                )}
+                
+                {/* Active Indicator Dot (Collapsed) */}
+                {!isExpanded && isActive && (
+                  <div className={cn("absolute right-2 top-2 w-2 h-2 rounded-full ring-2 ring-white", item.activeColor.split(' ')[0])} />
                 )}
               </Link>
             );
           })}
         </nav>
-
-        {/* Mini Toggle for Collapsed State */}
-        {!isExpanded && (
-          <button 
-            onClick={() => setIsExpanded(true)}
-            className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 text-muted-foreground hover:bg-primary hover:text-black transition-all"
-          >
-            <span className="material-icons-round">chevron_right</span>
-          </button>
-        )}
       </div>
 
-      {/* Bottom Actions */}
-      <div className="flex flex-col items-center gap-6 w-full px-2">
-        <Link
-          to="/profile"
-          className={`flex items-center gap-4 rounded-full text-muted-foreground hover:text-primary hover:bg-gray-50 transition-all font-display ${
-            isExpanded ? 'px-4 py-3 justify-start w-full' : 'w-12 h-12 justify-center mx-auto'
-          }`}
-        >
-          <span className="material-icons-outlined text-2xl">profile</span>
-          {isExpanded && <span className="font-bold text-foreground">Profile</span>}
-        </Link>
-
-        {/* User Profile / Logout Toggle */}
-        <div 
-          className={`relative group cursor-pointer w-full flex items-center transition-all ${
-            isExpanded ? 'gap-4 px-2' : 'justify-center'
-          }`} 
-          onClick={handleLogout} 
-          title={!isExpanded ? 'Logout' : ''}
-        >
-          <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-transparent group-hover:border-primary transition-all shadow-sm flex-shrink-0">
-            {user?.imageUrl ? (
-              <img
-                src={user.imageUrl}
-                alt={user.fullName || 'User'}
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <div className="w-full h-full bg-primary flex items-center justify-center text-white">
-                <span className="material-icons-outlined">person</span>
+      {/* Bottom Actions - User Logic */}
+      <div className="flex flex-col gap-3 w-full">
+        {isExpanded ? (
+          // Expanded User Card
+          <div className="bg-slate-50 p-2 rounded-2xl border border-slate-100 flex items-center gap-3 shadow-sm group hover:shadow-md transition-all duration-300 cursor-default">
+            <Link to="/profile" className="relative cursor-pointer">
+              <div className="w-10 h-10 rounded-xl overflow-hidden ring-2 ring-white shadow-sm">
+                {user?.imageUrl ? (
+                  <img src={user.imageUrl} alt="User" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full bg-slate-200 flex items-center justify-center text-slate-400">
+                    <User size={20} />
+                  </div>
+                )}
               </div>
-            )}
+            </Link>
+            
+            <div className="flex-1 min-w-0">
+              <Link to="/profile" className="block truncate font-bold text-slate-800 hover:text-emerald-600 transition-colors">
+                {user?.fullName || 'User'}
+              </Link>
+              <div className="text-xs text-slate-400 font-medium truncate">
+                {user?.primaryEmailAddress?.emailAddress || 'user@example.com'}
+              </div>
+            </div>
+
+            <button 
+              onClick={handleLogout}
+              className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
+              title="Logout"
+            >
+              <LogOut size={18} />
+            </button>
           </div>
-          {isExpanded && (
-            <div className="flex flex-col min-w-0">
-              <span className="text-sm font-black text-foreground truncate">{user?.fullName || 'User'}</span>
-              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Logout</span>
-            </div>
-          )}
-          {/* Logout Overlay on Hover (only for collapsed state) */}
-          {!isExpanded && (
-            <div className="absolute inset-0 bg-black/40 rounded-full opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity w-12 h-12 mx-auto">
-              <span className="material-icons-outlined text-white text-xl">logout</span>
-            </div>
-          )}
-        </div>
+        ) : (
+          // Collapsed User Avatar
+          <Link 
+            to="/profile"
+            className="w-12 h-12 rounded-2xl overflow-hidden ring-2 ring-white shadow-md mx-auto relative group"
+          >
+             {user?.imageUrl ? (
+                <img src={user.imageUrl} alt="User" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+              ) : (
+                <div className="w-full h-full bg-slate-200 flex items-center justify-center text-slate-400">
+                  <User size={24} />
+                </div>
+              )}
+          </Link>
+        )}
       </div>
     </aside>
   );
