@@ -11,23 +11,23 @@ export default function Footer() {
 
           {/* Brand Column */}
           <div className="flex flex-col gap-6">
-            <Link to="/" className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-                <Utensils className="w-5 h-5 text-white" />
+            <Link to="/" className="flex items-center gap-2 group">
+              <div className="w-10 h-10 rounded-xl bg-black flex items-center justify-center shadow-lg shadow-black/10 group-hover:bg-primary transition-colors">
+                <Utensils className="w-6 h-6 text-white" />
               </div>
-              <span className="font-bold text-xl tracking-tight text-gray-900">NutriAI</span>
+              <span className="font-black text-2xl tracking-tighter text-foreground group-hover:text-primary transition-colors">NutriAI</span>
             </Link>
-            <p className="text-gray-500 leading-relaxed text-sm">
+            <p className="text-muted-foreground leading-relaxed text-sm font-medium">
               The intelligent operating system for your kitchen. Manage inventory, optimize nutrition, and minimize waste—all in one place.
             </p>
-            <div className="flex gap-4">
-              <a href="#" className="w-10 h-10 rounded-full bg-white border border-gray-200 flex items-center justify-center text-gray-400 hover:text-primary hover:border-primary transition-all">
+            <div className="flex gap-3">
+              <a href="#" className="w-10 h-10 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center text-muted-foreground hover:text-black hover:bg-primary/20 hover:border-primary/30 transition-all">
                 <Twitter className="w-4 h-4" />
               </a>
-              <a href="#" className="w-10 h-10 rounded-full bg-white border border-gray-200 flex items-center justify-center text-gray-400 hover:text-primary hover:border-primary transition-all">
+              <a href="#" className="w-10 h-10 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center text-muted-foreground hover:text-black hover:bg-primary/20 hover:border-primary/30 transition-all">
                 <Instagram className="w-4 h-4" />
               </a>
-              <a href="#" className="w-10 h-10 rounded-full bg-white border border-gray-200 flex items-center justify-center text-gray-400 hover:text-primary hover:border-primary transition-all">
+              <a href="#" className="w-10 h-10 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center text-muted-foreground hover:text-black hover:bg-primary/20 hover:border-primary/30 transition-all">
                 <Facebook className="w-4 h-4" />
               </a>
             </div>
@@ -35,56 +35,56 @@ export default function Footer() {
 
           {/* Product Links */}
           <div>
-            <h3 className="font-bold text-gray-900 mb-6">Product</h3>
-            <ul className="space-y-4 text-sm text-gray-500">
-              <li><Link to="/features" className="hover:text-primary transition-colors">Features</Link></li>
-              <li><Link to="/pricing" className="hover:text-primary transition-colors">Pricing</Link></li>
-              <li><Link to="/integrations" className="hover:text-primary transition-colors">Integrations</Link></li>
-              <li><Link to="/enterprise" className="hover:text-primary transition-colors">Enterprise</Link></li>
-              <li><Link to="/roadmap" className="hover:text-primary transition-colors">Product Roadmap</Link></li>
+            <h3 className="font-black text-foreground text-xs uppercase tracking-widest mb-8">Product</h3>
+            <ul className="space-y-4 text-sm text-muted-foreground font-medium">
+              <li><Link to="/features" className="hover:text-black transition-colors">Features</Link></li>
+              <li><Link to="/pricing" className="hover:text-black transition-colors">Pricing</Link></li>
+              <li><Link to="/integrations" className="hover:text-black transition-colors">Integrations</Link></li>
+              <li><Link to="/enterprise" className="hover:text-black transition-colors">Enterprise</Link></li>
+              <li><Link to="/roadmap" className="hover:text-black transition-colors">Product Roadmap</Link></li>
             </ul>
           </div>
 
           {/* Resources Links */}
           <div>
-            <h3 className="font-bold text-gray-900 mb-6">Resources</h3>
-            <ul className="space-y-4 text-sm text-gray-500">
-              <li><Link to="/blog" className="hover:text-primary transition-colors">Blog</Link></li>
-              <li><Link to="/recipes" className="hover:text-primary transition-colors">Recipe Database</Link></li>
-              <li><Link to="/nutrition-guides" className="hover:text-primary transition-colors">Nutrition Guides</Link></li>
-              <li><Link to="/community" className="hover:text-primary transition-colors">Community Hub</Link></li>
-              <li><Link to="/help" className="hover:text-primary transition-colors">Help Center</Link></li>
+            <h3 className="font-black text-foreground text-xs uppercase tracking-widest mb-8">Resources</h3>
+            <ul className="space-y-4 text-sm text-muted-foreground font-medium">
+              <li><Link to="/blog" className="hover:text-black transition-colors">Blog</Link></li>
+              <li><Link to="/recipes" className="hover:text-black transition-colors">Recipe Database</Link></li>
+              <li><Link to="/nutrition-guides" className="hover:text-black transition-colors">Nutrition Guides</Link></li>
+              <li><Link to="/community" className="hover:text-black transition-colors">Community Hub</Link></li>
+              <li><Link to="/help" className="hover:text-black transition-colors">Help Center</Link></li>
             </ul>
           </div>
 
           {/* Contact Info */}
           <div>
-            <h3 className="font-bold text-gray-900 mb-6">Contact</h3>
-            <ul className="space-y-4 text-sm text-gray-500">
+            <h3 className="font-black text-foreground text-xs uppercase tracking-widest mb-8">Contact</h3>
+            <ul className="space-y-4 text-sm text-muted-foreground font-medium">
               <li className="flex items-start gap-3">
-                <MapPin className="w-4 h-4 text-primary mt-0.5" />
-                <span>123 Innovation Drive<br />Tech City, TC 90210</span>
+                <MapPin className="w-4 h-4 text-black mt-0.5" />
+                <span>House 45, Road 18<br />Uttara, Dhaka 1230</span>
               </li>
               <li className="flex items-center gap-3">
-                <Phone className="w-4 h-4 text-primary" />
-                <span>+1 (555) 123-4567</span>
+                <Phone className="w-4 h-4 text-black" />
+                <span>+880 1234 567890</span>
               </li>
               <li className="flex items-center gap-3">
-                <Mail className="w-4 h-4 text-primary" />
-                <span>support@locanutrismart.com</span>
+                <Mail className="w-4 h-4 text-black" />
+                <span>hello@nutriai.com</span>
               </li>
             </ul>
           </div>
         </div>
 
-        <div className="border-t border-gray-200 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-sm text-gray-400">
-            © {currentYear} NutriAI Inc. All rights reserved.
+        <div className="border-t border-gray-100 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+          <p className="text-sm text-muted-foreground font-medium">
+            © {currentYear} NutriAI. All rights reserved.
           </p>
-          <div className="flex gap-8 text-sm text-gray-500">
-            <Link to="/privacy" className="hover:text-gray-900">Privacy Policy</Link>
-            <Link to="/terms" className="hover:text-gray-900">Terms of Service</Link>
-            <Link to="/cookies" className="hover:text-gray-900">Cookie Settings</Link>
+          <div className="flex gap-8 text-sm text-muted-foreground font-medium">
+            <Link to="/privacy" className="hover:text-black transition-colors">Privacy Policy</Link>
+            <Link to="/terms" className="hover:text-black transition-colors">Terms of Service</Link>
+            <Link to="/cookies" className="hover:text-black transition-colors">Cookie Settings</Link>
           </div>
         </div>
       </div>

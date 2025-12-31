@@ -27,16 +27,18 @@ export default function FoodPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <nav className="bg-card border-b border-border px-4 py-4 flex items-center justify-between">
-        <Link to="/dashboard" className="flex items-center gap-2">
-          <Apple className="w-6 h-6 text-primary" />
-          <span className="font-bold text-lg text-foreground">Food Inventory</span>
+      <nav className="bg-white border-b border-gray-100 px-8 py-6 flex items-center justify-between shadow-soft">
+        <Link to="/dashboard" className="flex items-center gap-3 group">
+          <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center shadow-lg shadow-black/10 group-hover:bg-primary transition-colors">
+            <Apple className="w-6 h-6 text-white group-hover:text-black transition-colors" />
+          </div>
+          <span className="font-black text-2xl text-foreground tracking-tighter group-hover:text-primary transition-colors">Food Inventory</span>
         </Link>
         <button
-          className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-smooth font-medium flex items-center gap-2"
+          className="px-6 py-3 bg-black text-white rounded-2xl hover:bg-gray-900 transition-all font-bold flex items-center gap-2 shadow-xl shadow-black/10"
           onClick={() => setShowModal(true)}
         >
-          <Plus className="w-4 h-4" /> Add Item
+          <Plus className="w-5 h-5" /> Add Item
         </button>
       </nav>
 

@@ -3,8 +3,6 @@ import {
   MapPin,
   Clock,
   Package,
-  User,
-  Calendar,
   AlertCircle,
   CheckCircle,
   Star,
@@ -55,13 +53,13 @@ export default function ListingCard({
   const getStatusColor = (status: string) => {
     switch (status) {
       case ListingStatus.AVAILABLE:
-        return 'bg-green-100 text-green-800 border-green-200';
+        return 'bg-primary/20 text-black border-primary';
       case ListingStatus.CLAIMED:
-        return 'bg-blue-100 text-blue-800 border-blue-200';
+        return 'bg-black text-white border-black';
       case ListingStatus.COMPLETED:
         return 'bg-gray-100 text-gray-800 border-gray-200';
       case ListingStatus.CANCELLED:
-        return 'bg-red-100 text-red-800 border-red-200';
+        return 'bg-red-50 text-red-600 border-red-200';
       default:
         return 'bg-gray-100 text-gray-800 border-gray-200';
     }
@@ -157,18 +155,18 @@ export default function ListingCard({
 
   return (
     <>
-      <div className="bg-card rounded-xl border border-border p-6 shadow hover:shadow-lg transition-smooth">
+      <div className="bg-white rounded-3xl border border-gray-100 p-6 shadow-soft hover:shadow-xl transition-all hover:border-black/5 group">
         {/* Header */}
         <div className="flex items-start justify-between mb-4">
           <div className="flex-1">
-            <h3 className="font-semibold text-lg text-foreground mb-1">
+            <h3 className="font-black text-lg text-black mb-1 group-hover:text-primary transition-colors">
               {listing.title}
             </h3>
-            <p className="text-sm text-foreground/70">
+            <p className="text-xs text-muted-foreground font-black uppercase tracking-widest">
               {itemName} • {category}
             </p>
           </div>
-          <div className={`px-2 py-1 rounded-lg border text-xs font-medium flex items-center gap-1 ${getStatusColor(listing.status)}`}>
+          <div className={`px-3 py-1 rounded-full border text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5 ${getStatusColor(listing.status)}`}>
             {getStatusIcon(listing.status)}
             {getStatusText(listing.status)}
           </div>
@@ -176,23 +174,23 @@ export default function ListingCard({
 
         {/* Description */}
         {listing.description && (
-          <p className="text-foreground/80 text-sm mb-4 line-clamp-2">
+          <p className="text-muted-foreground text-sm mb-6 line-clamp-2 font-medium leading-relaxed">
             {listing.description}
           </p>
         )}
 
         {/* Quantity and Details */}
-        <div className="grid grid-cols-2 gap-4 mb-4">
-          <div className="flex items-center gap-2 text-sm">
-            <Package className="w-4 h-4 text-foreground/60" />
-            <span className="text-foreground/70">
+        <div className="grid grid-cols-2 gap-4 mb-6">
+          <div className="flex items-center gap-2 text-sm bg-gray-50 p-2.5 rounded-xl border border-gray-100/50">
+            <Package className="w-4 h-4 text-black" />
+            <span className="text-black font-bold">
               {listing.quantity} {listing.unit || 'units'}
             </span>
           </div>
           {listing.pickupLocation && (
-            <div className="flex items-center gap-2 text-sm">
-              <MapPin className="w-4 h-4 text-foreground/60" />
-              <span className="text-foreground/70 truncate">
+            <div className="flex items-center gap-2 text-sm bg-gray-50 p-2.5 rounded-xl border border-gray-100/50">
+              <MapPin className="w-4 h-4 text-black" />
+              <span className="text-black font-bold truncate">
                 {listing.pickupLocation}
               </span>
             </div>
@@ -212,20 +210,17 @@ export default function ListingCard({
         )}
 
         {/* Lister Info */}
-        <div className="flex items-center justify-between text-sm text-foreground/60 mb-4">
+        <div className="flex items-center justify-between text-[10px] text-muted-foreground font-black uppercase tracking-widest mb-6 pt-4 border-t border-gray-50">
           <div className="flex items-center gap-2">
-            <User className="w-4 h-4" />
+            <div className="w-5 h-5 bg-black rounded-full flex items-center justify-center text-[8px] text-white">
+              {listing.lister.profile?.fullName?.[0] || 'A'}
+            </div>
             <span>
               {listing.lister.profile?.fullName || 'Anonymous'}
-              {listing.lister.profile?.location && (
-                <span className="text-foreground/50">
-                  • {listing.lister.profile.location}
-                </span>
-              )}
             </span>
           </div>
           <div className="flex items-center gap-1">
-            <Calendar className="w-4 h-4" />
+            <Clock className="w-3 h-3" />
             <span>{formatDate(listing.createdAt)}</span>
           </div>
         </div>
@@ -297,10 +292,10 @@ export default function ListingCard({
               <button
                 onClick={() => setShowClaimModal(true)}
                 disabled={claimMutation.isPending}
-                className="flex-1 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 disabled:opacity-50 transition-smooth font-medium flex items-center justify-center gap-2"
+                className="flex-1 px-4 py-3 bg-primary text-black rounded-2xl hover:bg-black hover:text-white disabled:opacity-50 transition-all font-black flex items-center justify-center gap-2 shadow-xl shadow-primary/10"
               >
                 <Star className="w-4 h-4" />
-                {claimMutation.isPending ? 'Booking...' : 'Book'}
+                {claimMutation.isPending ? 'Booking...' : 'Book Now'}
               </button>
             )}
 

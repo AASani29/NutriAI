@@ -238,13 +238,13 @@ export default function Dashboard() {
   );
 
   return (
-    <div className="space-y-8">
+    <div className="container mx-auto px-4 py-8 max-w-7xl space-y-8">
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold text-foreground mb-2">
           Welcome back, {profile?.profile?.fullName || 'User'}! 👋
         </h1>
-        <p className="text-foreground/70">
+        <p className="text-muted-foreground">
           Here's your food tracking summary and insights
         </p>
       </div>
@@ -254,11 +254,11 @@ export default function Dashboard() {
         {/* Total Items */}
         <div className="bg-card rounded-xl border border-border p-6 hover:shadow-lg transition-smooth">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-blue-500/10 rounded-lg flex items-center justify-center">
-              <Package className="w-6 h-6 text-blue-600" />
+            <div className="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center">
+              <Package className="w-6 h-6 text-black" />
             </div>
             <div>
-              <p className="text-sm text-foreground/70">Items Tracked</p>
+              <p className="text-sm text-muted-foreground">Items Tracked</p>
               <div className="flex items-center gap-2">
                 <p className="text-2xl font-bold text-foreground">{dashboardStats.totalItems}</p>
                 {itemsLoading && <LoadingSpinner />}
@@ -270,13 +270,13 @@ export default function Dashboard() {
         {/* Expiring Soon */}
         <div className="bg-card rounded-xl border border-border p-6 hover:shadow-lg transition-smooth">
           <div className="flex items-center gap-4">
-            <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${dashboardStats.expiringItems > 0 ? 'bg-orange-500/10' : 'bg-green-500/10'
+            <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${dashboardStats.expiringItems > 0 ? 'bg-red-50' : 'bg-primary/20'
               }`}>
-              <Clock className={`w-6 h-6 ${dashboardStats.expiringItems > 0 ? 'text-orange-600' : 'text-green-600'
+              <Clock className={`w-6 h-6 ${dashboardStats.expiringItems > 0 ? 'text-red-600' : 'text-black'
                 }`} />
             </div>
             <div>
-              <p className="text-sm text-foreground/70">Expiring Soon</p>
+              <p className="text-sm text-muted-foreground">Expiring Soon</p>
               <div className="flex items-center gap-2">
                 <p className="text-2xl font-bold text-foreground">{dashboardStats.expiringItems}</p>
                 {itemsLoading && <LoadingSpinner />}
@@ -288,11 +288,11 @@ export default function Dashboard() {
         {/* Today's Activity */}
         <div className="bg-card rounded-xl border border-border p-6 hover:shadow-lg transition-smooth">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-green-500/10 rounded-lg flex items-center justify-center">
-              <ChefHat className="w-6 h-6 text-green-600" />
+            <div className="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center">
+              <ChefHat className="w-6 h-6 text-black" />
             </div>
             <div>
-              <p className="text-sm text-foreground/70">Today's Activity</p>
+              <p className="text-sm text-muted-foreground">Today's Activity</p>
               <div className="flex items-center gap-2">
                 <p className="text-2xl font-bold text-foreground">{dashboardStats.todayConsumption}</p>
                 {consumptionLoading && <LoadingSpinner />}
@@ -304,11 +304,11 @@ export default function Dashboard() {
         {/* Waste Prevented */}
         <div className="bg-card rounded-xl border border-border p-6 hover:shadow-lg transition-smooth">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-green-500/10 rounded-lg flex items-center justify-center">
-              <Leaf className="w-6 h-6 text-green-600" />
+            <div className="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center">
+              <Leaf className="w-6 h-6 text-black" />
             </div>
             <div>
-              <p className="text-sm text-foreground/70">Waste Prevented</p>
+              <p className="text-sm text-muted-foreground">Waste Prevented</p>
               <div className="flex items-center gap-2">
                 <p className="text-2xl font-bold text-foreground">{dashboardStats.wastePreventedKg} kg</p>
                 {patternsLoading && <LoadingSpinner />}
@@ -341,22 +341,22 @@ export default function Dashboard() {
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="text-center p-4 bg-background rounded-lg">
-              <p className="text-2xl font-bold text-primary">{dashboardStats.inventoryCount}</p>
-              <p className="text-sm text-foreground/70">Inventories</p>
+              <p className="text-2xl font-bold text-primary-dark">{dashboardStats.inventoryCount}</p>
+              <p className="text-sm text-muted-foreground">Inventories</p>
             </div>
             <div className="text-center p-4 bg-background rounded-lg">
-              <p className="text-2xl font-bold text-blue-600">{dashboardStats.totalConsumptionLogs}</p>
-              <p className="text-sm text-foreground/70">Total Logs</p>
+              <p className="text-2xl font-bold text-black">{dashboardStats.totalConsumptionLogs}</p>
+              <p className="text-sm text-muted-foreground">Total Logs</p>
             </div>
             <div className="text-center p-4 bg-background rounded-lg">
-              <p className="text-2xl font-bold text-green-600">{dashboardStats.topCategory}</p>
-              <p className="text-sm text-foreground/70">Top Category</p>
+              <p className="text-2xl font-bold text-black">{dashboardStats.topCategory}</p>
+              <p className="text-sm text-muted-foreground">Top Category</p>
             </div>
             <div className="text-center p-4 bg-background rounded-lg">
-              <p className="text-2xl font-bold text-orange-600">
+              <p className="text-2xl font-bold text-black">
                 {consumptionPatterns?.wasteReduction?.wasteReductionPercentage || 0}%
               </p>
-              <p className="text-sm text-foreground/70">Waste Reduced</p>
+              <p className="text-sm text-muted-foreground">Waste Reduced</p>
             </div>
           </div>
 
@@ -364,7 +364,7 @@ export default function Dashboard() {
             <div className="flex flex-wrap gap-2">
               <Link
                 to="/inventory"
-                className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-smooth font-medium text-sm"
+                className="px-4 py-2 bg-primary text-black rounded-lg hover:bg-primary-dark transition-smooth font-bold text-sm"
               >
                 Manage Inventory
               </Link>
@@ -386,15 +386,15 @@ export default function Dashboard() {
           </h2>
           <div className="space-y-3">
             {dashboardStats.expiringItems > 0 && (
-              <div className="flex items-center gap-3 p-3 bg-orange-50 border border-orange-200 rounded-lg">
-                <AlertTriangle className="w-5 h-5 text-orange-600 shrink-0" />
+              <div className="flex items-center gap-3 p-3 bg-red-50 border border-red-100 rounded-lg">
+                <AlertTriangle className="w-5 h-5 text-red-600 shrink-0" />
                 <div className="flex-1">
-                  <p className="text-sm font-medium text-orange-800">
+                  <p className="text-sm font-medium text-red-900">
                     {dashboardStats.expiringItems} items expiring soon!
                   </p>
                   <Link
                     to="/inventory"
-                    className="text-xs text-orange-600 hover:text-orange-800 underline"
+                    className="text-xs text-red-600 hover:text-red-800 underline font-bold"
                   >
                     Check inventory →
                   </Link>
@@ -403,15 +403,15 @@ export default function Dashboard() {
             )}
 
             {dashboardStats.todayConsumption === 0 && (
-              <div className="flex items-center gap-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                <ChefHat className="w-5 h-5 text-blue-600 shrink-0" />
+              <div className="flex items-center gap-3 p-3 bg-primary/10 border border-primary/20 rounded-lg">
+                <ChefHat className="w-5 h-5 text-black shrink-0" />
                 <div className="flex-1">
-                  <p className="text-sm font-medium text-blue-800">
+                  <p className="text-sm font-medium text-black/80">
                     No activity logged today
                   </p>
                   <Link
                     to="/daily-log"
-                    className="text-xs text-blue-600 hover:text-blue-800 underline"
+                    className="text-xs text-black hover:text-primary-dark underline font-bold"
                   >
                     Log consumption →
                   </Link>
@@ -420,15 +420,15 @@ export default function Dashboard() {
             )}
 
             {dashboardStats.totalItems === 0 && (
-              <div className="flex items-center gap-3 p-3 bg-primary/10 border border-primary/20 rounded-lg">
-                <Package className="w-5 h-5 text-primary shrink-0" />
+              <div className="flex items-center gap-3 p-3 bg-primary/20 border border-primary/30 rounded-lg">
+                <Package className="w-5 h-5 text-black shrink-0" />
                 <div className="flex-1">
                   <p className="text-sm font-medium text-foreground">
                     Start tracking your food
                   </p>
                   <Link
                     to="/inventory"
-                    className="text-xs text-primary hover:text-primary/80 underline"
+                    className="text-xs text-black hover:text-primary-dark underline font-bold"
                   >
                     Add your first item →
                   </Link>
@@ -493,15 +493,15 @@ export default function Dashboard() {
                   </div>
 
                   <div className="p-4 flex flex-col flex-1">
-                    <h3 className="font-medium text-foreground mb-1 line-clamp-2 leading-tight group-hover:text-primary transition-colors">
+                    <h3 className="font-bold text-foreground mb-1 line-clamp-2 leading-tight group-hover:text-primary-dark transition-colors">
                       {item.title}
                     </h3>
-                    <p className="text-sm text-foreground/70 mb-3 line-clamp-2 flex-1">
+                    <p className="text-sm text-muted-foreground mb-3 line-clamp-2 flex-1">
                       {item.description}
                     </p>
 
                     {item.recommendationReason && (
-                      <p className="text-xs text-green-600 mb-3 italic flex items-start gap-1">
+                      <p className="text-xs text-primary-dark mb-3 font-bold italic flex items-start gap-1">
                         <span className="shrink-0">💡</span>
                         <span className="line-clamp-2">{item.recommendationReason}</span>
                       </p>
@@ -515,7 +515,7 @@ export default function Dashboard() {
                         href={item.url || `https://www.youtube.com/watch?v=${item.videoId}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-xs font-semibold text-primary hover:text-primary/80 transition-colors flex items-center gap-1"
+                        className="text-xs font-bold text-black hover:text-primary-dark transition-colors flex items-center gap-1"
                       >
                         {isVideo ? 'Watch' : 'Read'} <ArrowRight className="w-3 h-3" />
                       </a>
@@ -530,23 +530,23 @@ export default function Dashboard() {
 
       {/* Welcome Section for New Users */}
       {dashboardStats.totalItems === 0 && (
-        <div className="bg-linear-to-br from-primary/10 to-accent/10 rounded-2xl border border-border p-8">
+        <div className="bg-primary/20 rounded-2xl border border-primary/30 p-8">
           <h2 className="text-2xl font-bold text-foreground mb-4">
             Welcome to NutriAI! 🌱
           </h2>
-          <p className="text-foreground/70 mb-6">
+          <p className="text-muted-foreground mb-6">
             Start tracking your food consumption and reduce waste. Here are some quick actions to get you started:
           </p>
           <div className="flex flex-col sm:flex-row gap-4">
             <Link
               to="/inventory"
-              className="px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-smooth font-medium"
+              className="px-6 py-3 bg-black text-white rounded-lg hover:bg-gray-900 transition-smooth font-bold"
             >
               Add Your First Item
             </Link>
             <Link
               to="/resources"
-              className="px-6 py-3 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/90 transition-smooth font-medium"
+              className="px-6 py-3 bg-white border border-gray-100 text-black rounded-lg hover:bg-gray-50 transition-smooth font-bold"
             >
               Learn Best Practices
             </Link>
