@@ -58,8 +58,8 @@ export default function ProfilePage() {
               type="text"
             />
           </div>
-          <button className="bg-black text-white px-8 py-4 rounded-full font-black flex items-center gap-2 hover:opacity-90 transition-all active:scale-95 whitespace-nowrap shadow-lg shadow-black/10">
-            <Crown className="w-5 h-5 text-primary font-black" />
+          <button className="bg-primary text-white px-8 py-4 rounded-full font-black flex items-center gap-2 hover:bg-primary-dark transition-all active:scale-95 whitespace-nowrap shadow-lg shadow-primary/20">
+            <Crown className="w-5 h-5 text-white font-black" />
             Upgrade
           </button>
         </div>
@@ -80,7 +80,7 @@ export default function ProfilePage() {
                     </div>
                   </div>
                 </div>
-                <button className="absolute bottom-2 right-2 bg-black text-white p-3 rounded-full shadow-xl hover:scale-110 transition-transform active:scale-95 border-4 border-white">
+                <button className="absolute bottom-2 right-2 bg-primary text-white p-3 rounded-full shadow-xl hover:scale-110 transition-transform active:scale-95 border-4 border-white">
                   <Edit className="w-4 h-4" />
                 </button>
               </div>
@@ -92,7 +92,7 @@ export default function ProfilePage() {
                 <Link to="/dashboard" className="flex-1 bg-gray-50 text-black py-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-gray-100 transition-colors border border-gray-100 text-center">
                   Dashboard
                 </Link>
-                <Link to="/profile/edit" className="flex-1 bg-black text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:opacity-90 transition-opacity shadow-lg shadow-black/10 text-center">
+                <Link to="/profile/edit" className="flex-1 bg-primary text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-primary-dark transition-all shadow-lg shadow-primary/20 text-center">
                   Edit Profile
                 </Link>
               </div>
@@ -181,7 +181,7 @@ export default function ProfilePage() {
                   <h3 className="text-2xl font-black text-black tracking-tight">Health Ecosystem</h3>
                   <p className="text-[10px] text-muted-foreground font-black uppercase tracking-widest mt-1">Comprehensive Vitals History</p>
                 </div>
-                <button className="px-6 py-2.5 bg-black text-white rounded-full text-xs font-black uppercase tracking-widest hover:bg-primary hover:text-black transition-all shadow-lg active:scale-95">Update Records</button>
+                <button className="px-6 py-2.5 bg-primary text-white rounded-full text-xs font-black uppercase tracking-widest hover:bg-primary-dark transition-all shadow-lg shadow-primary/10 active:scale-95">Update Records</button>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">

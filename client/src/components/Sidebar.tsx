@@ -27,7 +27,7 @@ const navItems = [
     icon: LayoutDashboard,
     color: 'text-sky-500',
     bgColor: 'bg-sky-50',
-    activeColor: 'bg-sky-500 text-white',
+    activeColor: 'bg-primary text-white',
   },
   {
     label: 'AI Intelligence',
@@ -35,7 +35,7 @@ const navItems = [
     icon: Brain,
     color: 'text-purple-500',
     bgColor: 'bg-purple-50',
-    activeColor: 'bg-purple-500 text-white',
+    activeColor: 'bg-primary text-white',
   },
   {
     label: 'Inventory',
@@ -43,7 +43,7 @@ const navItems = [
     icon: Package,
     color: 'text-emerald-500',
     bgColor: 'bg-emerald-50',
-    activeColor: 'bg-emerald-500 text-white',
+    activeColor: 'bg-primary text-white',
   },
   {
     label: 'Daily Log',
@@ -51,7 +51,7 @@ const navItems = [
     icon: NotebookPen,
     color: 'text-orange-500',
     bgColor: 'bg-orange-50',
-    activeColor: 'bg-orange-500 text-white',
+    activeColor: 'bg-primary text-white',
   },
   {
     label: 'Meal Planner',
@@ -59,7 +59,7 @@ const navItems = [
     icon: UtensilsCrossed,
     color: 'text-pink-500',
     bgColor: 'bg-pink-50',
-    activeColor: 'bg-pink-500 text-white',
+    activeColor: 'bg-primary text-white',
   },
   {
     label: 'Resources',
@@ -67,7 +67,7 @@ const navItems = [
     icon: Library,
     color: 'text-blue-500',
     bgColor: 'bg-blue-50',
-    activeColor: 'bg-blue-500 text-white',
+    activeColor: 'bg-primary text-white',
   },
   {
     label: 'Neighbourhood',
@@ -75,7 +75,7 @@ const navItems = [
     icon: MapPinHouse,
     color: 'text-indigo-500',
     bgColor: 'bg-indigo-50',
-    activeColor: 'bg-indigo-500 text-white',
+    activeColor: 'bg-primary text-white',
   },
 ];
 
@@ -98,23 +98,24 @@ export default function Sidebar({ isExpanded, setIsExpanded }: { isExpanded: boo
       <div className="flex flex-col items-center gap-6 w-full">
         {/* Logo / Toggle Button */}
         <div className="w-full flex items-center justify-between px-2 mb-2">
-          <div className={cn("flex items-center gap-3 transition-opacity duration-300", !isExpanded && "hidden")}>
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-green-400 to-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-500/20">
-              <span className="text-white font-bold text-xl">N</span>
-            </div>
-            <span className="text-xl font-black text-slate-800 tracking-tight">NutriAI</span>
+          <div className={cn("hidden transition-all duration-300", isExpanded && "block px-2")}>
+            <img src="/logo.png" alt="NutriAI Logo" className="h-13 w-auto object-contain" />
           </div>
           
           <button 
             onClick={() => setIsExpanded(!isExpanded)}
             className={cn(
-              "w-8 h-8 flex items-center justify-center rounded-full transition-all duration-300 hover:scale-110 active:scale-95",
+              "flex items-center justify-center rounded-2xl transition-all duration-300 hover:scale-105 active:scale-95 overflow-hidden",
               isExpanded 
-                ? "bg-slate-100 text-slate-500 hover:bg-slate-200" 
-                : "bg-gradient-to-tr from-green-400 to-emerald-600 text-white shadow-lg mx-auto"
+                ? "w-10 h-10 bg-slate-100 text-slate-500 hover:bg-slate-200" 
+                : "w-12 h-12 bg-primary shadow-lg mx-auto"
             )}
           >
-            {isExpanded ? <ChevronLeft size={16} /> : <span className="font-bold text-lg">N</span>}
+            {isExpanded ? (
+              <ChevronLeft size={18} />
+            ) : (
+              <img src="/gajor-white.png" alt="N" className="w-8 h-8 object-contain" />
+            )}
           </button>
         </div>
 
@@ -133,7 +134,7 @@ export default function Sidebar({ isExpanded, setIsExpanded }: { isExpanded: boo
                   "relative flex items-center gap-3 rounded-2xl transition-all duration-300 group overflow-hidden",
                   isExpanded ? 'px-4 py-3.5 w-full' : 'w-12 h-12 justify-center mx-auto',
                   isActive 
-                    ? cn(item.activeColor, "shadow-lg shadow-black/5 font-medium") 
+                    ? cn(item.activeColor, "shadow-lg shadow-primary/20 font-medium") 
                     : "text-slate-500 hover:bg-slate-50"
                 )}
               >
