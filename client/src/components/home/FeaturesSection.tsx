@@ -6,11 +6,11 @@ export default function FeaturesSection() {
       <div className="max-w-7xl mb-16 mx-auto px-4 sm:px-6 lg:px-8">
 
         <div className="text-center max-w-3xl mx-auto mb-16 mt-16">
-          <h2 className="text-4xl md:text-5xl font-operetta font-bold text-gray-900 mb-6 leading-tight">
+          <h2 className="text-4xl md:text-5xl text-gray-900 mb-6 leading-tight">
             Three powerful modules, <br />
-            <span className="text-primary-dark">One seamless platform.</span>
+            <span className="text-[#ffd045]">One seamless platform.</span>
           </h2>
-          <p className="text-xl text-gray-500 leading-relaxed font-operetta font-bold">
+          <p className="text-xl text-gray-500 leading-relaxed  font-bold">
             NutriAI bridges the gap between what you buy, what you eat, and how you impact the planet.
           </p>
         </div>

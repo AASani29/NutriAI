@@ -2,6 +2,10 @@ import { useAuth } from '@clerk/clerk-react';
 import { useQueryClient } from '@tanstack/react-query';
 import {
   AlertCircle,
+  Apple,
+  Droplet,
+  Flame,
+  Zap,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -229,14 +233,14 @@ export default function InventoryDetailPage() {
     // Calculate total nutrition for the consumed quantity
     const nutrition = selectedItem.foodItem?.nutritionPerUnit as
       | {
-          calories?: number;
-          protein?: number;
-          carbohydrates?: number;
-          fat?: number;
-          fiber?: number;
-          sugar?: number;
-          sodium?: number;
-        }
+        calories?: number;
+        protein?: number;
+        carbohydrates?: number;
+        fat?: number;
+        fiber?: number;
+        sugar?: number;
+        sodium?: number;
+      }
       | undefined;
 
     const unit = consumptionData.unit || selectedItem.unit;
@@ -356,7 +360,7 @@ export default function InventoryDetailPage() {
               className="pl-12 pr-4 py-3 w-64 rounded-full bg-white border-none shadow-soft focus:ring-2 focus:ring-primary/50 text-sm transition-all placeholder-muted-foreground text-foreground"
             />
           </div>
-          
+
           <button
             onClick={() => setShowImageUploadModal(true)}
             className="flex items-center gap-2 bg-primary text-gray-900 px-6 py-3 rounded-full hover:shadow-lg transition-all font-bold"
@@ -389,13 +393,13 @@ export default function InventoryDetailPage() {
 
         {/* Filter Bar */}
         <div className="flex flex-wrap items-center gap-3">
-          <button 
+          <button
             onClick={() => clearFilters()}
             className={`px-5 py-2 rounded-full font-medium text-sm transition-all ${!hasActiveFilters ? 'bg-black text-white' : 'bg-white text-muted-foreground hover:bg-gray-50 shadow-sm border border-transparent hover:border-gray-200'}`}
           >
             All Items
           </button>
-          
+
           <div className="flex gap-2">
             <select
               value={filters.category}
@@ -418,7 +422,7 @@ export default function InventoryDetailPage() {
             </select>
           </div>
 
-          <button 
+          <button
             onClick={() => setShowFilters(!showFilters)}
             className="ml-auto w-10 h-10 flex items-center justify-center rounded-full bg-white text-muted-foreground shadow-sm hover:bg-gray-50 transition-colors"
           >
@@ -468,12 +472,19 @@ export default function InventoryDetailPage() {
                 }
               }
 
+              // Nutrition Calculation
+              const nutrition = item.foodItem?.nutritionPerUnit || {};
+              const cal = nutrition.calories != null ? Math.round(nutrition.calories) : '-';
+              const protein = nutrition.protein != null ? Math.round(nutrition.protein) : '-';
+              const carbs = nutrition.carbohydrates != null ? Math.round(nutrition.carbohydrates) : '-';
+              const fat = nutrition.fat != null ? Math.round(nutrition.fat) : '-';
+
               return (
                 <div key={item.id} className="bg-white  rounded-3xl p-5 shadow-soft hover:shadow-lg transition-all group relative border border-transparent hover:border-primary/20">
                   <div className={`absolute top-4 right-4 text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wider ${statusColor}`}>
                     {statusLabel}
                   </div>
-                  
+
                   <div className="flex items-center justify-center h-32 mb-4 bg-gray-50 dark:bg-gray-800 rounded-2xl group-hover:scale-[1.02] transition-transform duration-300 text-6xl">
                     {category.toLowerCase().includes('fruit') ? '🍎' :
                       category.toLowerCase().includes('veg') ? '🥦' :
@@ -487,12 +498,44 @@ export default function InventoryDetailPage() {
                     {category} • {expDate ? `Expires in ${daysLeft} days` : 'No expiry'}
                   </p>
 
+                  <div className="grid grid-cols-4 gap-2 mb-5">
+                    <div className="bg-orange-50 rounded-xl p-2 text-center">
+                      <div className="flex items-center justify-center text-orange-400 mb-1"><Flame className="w-3 h-3" /></div>
+                      <p className="text-lg font-bold text-gray-900">{cal}</p>
+                      <p className="text-[10px] text-gray-500">kcal</p>
+                    </div>
+                    <div className="bg-blue-50 rounded-xl p-2 text-center">
+                      <div className="flex items-center justify-center text-blue-400 mb-1"><Zap className="w-3 h-3" /></div>
+                      <p className="text-lg font-bold text-gray-900">{protein}{protein !== '-' ? 'g' : ''}</p>
+                      <p className="text-[10px] text-gray-500">prot</p>
+                    </div>
+                    <div className="bg-green-50 rounded-xl p-2 text-center">
+                      <div className="flex items-center justify-center text-green-400 mb-1"><Apple className="w-3 h-3" /></div>
+                      <p className="text-lg font-bold text-gray-900">{carbs}{carbs !== '-' ? 'g' : ''}</p>
+                      <p className="text-[10px] text-gray-500">carb</p>
+                    </div>
+                    <div className="bg-yellow-50 rounded-xl p-2 text-center">
+                      <div className="flex items-center justify-center text-yellow-400 mb-1"><Droplet className="w-3 h-3" /></div>
+                      <p className="text-lg font-bold text-gray-900">{fat}{fat !== '-' ? 'g' : ''}</p>
+                      <p className="text-[10px] text-gray-500">fat</p>
+                    </div>
+                  </div>
+
                   <div className="flex items-center justify-between mt-auto">
                     <div>
-                      <span className="text-2xl font-bold text-foreground">{item.quantity}</span>
-                      <span className="text-xs text-muted-foreground ml-1">{item.unit || 'pcs'}</span>
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-2xl font-bold text-foreground">{item.quantity}</span>
+                        <span className="text-xs text-muted-foreground">{item.unit || 'pcs'}</span>
+                      </div>
+                      {item.foodItem?.basePrice ? (
+                        <div className="text-sm font-semibold text-foreground/80">
+                          ৳{((item.foodItem.basePrice * item.quantity) / (item.foodItem.nutritionBasis || 1)).toFixed(0)}
+                        </div>
+                      ) : (
+                        <div className="text-xs text-muted-foreground">No price</div>
+                      )}
                     </div>
-                    
+
                     <button
                       onClick={() => handleConsumption(item)}
                       disabled={item.quantity <= 0}
@@ -921,8 +964,8 @@ function AddItemModal({ onClose, onAdd, onScan }: {
                   onClick={handleUseLocation}
                   disabled={locating || locationMode === 'manual'}
                   className={`text-xs px-2 py-1 rounded-lg border flex items-center gap-1 transition-all ${locationMode === 'auto'
-                      ? 'bg-primary text-black border-primary/50 font-bold'
-                      : 'bg-white text-muted-foreground border-gray-200 hover:bg-gray-50 hover:text-black disabled:opacity-50'
+                    ? 'bg-primary text-black border-primary/50 font-bold'
+                    : 'bg-white text-muted-foreground border-gray-200 hover:bg-gray-50 hover:text-black disabled:opacity-50'
                     }`}
                 >
                   {locating ? (
@@ -939,8 +982,8 @@ function AddItemModal({ onClose, onAdd, onScan }: {
                   onClick={() => setLocationMode(prev => prev === 'manual' ? 'none' : 'manual')}
                   disabled={locating || locationMode === 'auto'}
                   className={`text-xs px-2 py-1 rounded-lg border flex items-center gap-1 transition-all ${locationMode === 'manual'
-                      ? 'bg-primary text-black border-primary/50 font-bold'
-                      : 'bg-white text-muted-foreground border-gray-200 hover:bg-gray-50 hover:text-black disabled:opacity-50'
+                    ? 'bg-primary text-black border-primary/50 font-bold'
+                    : 'bg-white text-muted-foreground border-gray-200 hover:bg-gray-50 hover:text-black disabled:opacity-50'
                     }`}
                 >
                   <div className="w-3 h-3">📝</div>

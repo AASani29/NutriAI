@@ -12,4 +12,15 @@ router.get('/me', userController.getCurrentUser.bind(userController));
 router.get('/profile', userController.getProfile.bind(userController));
 router.put('/profile', userController.updateProfile.bind(userController));
 
+// Hydration Routes
+import * as hydration from './hydration-controller';
+router.get('/:userId/hydration/history', hydration.getHydrationHistory);
+router.get('/:userId/hydration', hydration.getDailyHydration);
+router.post('/:userId/hydration', hydration.updateDailyHydration);
+
+// Fitness Routes
+import * as fitness from './fitness-controller';
+router.get('/:userId/fitness', fitness.getDailyFitness);
+router.post('/:userId/fitness', fitness.updateFitnessLog);
+
 export { router as usersRouter };

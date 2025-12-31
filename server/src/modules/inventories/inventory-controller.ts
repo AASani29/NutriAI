@@ -538,7 +538,7 @@ export class InventoryController {
   getConsumptionLogs = async (req: Request, res: Response): Promise<void> => {
     try {
       const userId = req.auth?.userId;
-      const { startDate, endDate, inventoryId } = req.query;
+      const { startDate, endDate, inventoryId, page, limit } = req.query as any;
 
       console.log('=== CONSUMPTION LOGS CONTROLLER ===');
       console.log('User ID:', userId);
@@ -563,14 +563,27 @@ export class InventoryController {
         filters.inventoryId = inventoryId as string;
       }
 
-      const consumptionLogs = await this.inventoryService.getConsumptionLogs(
+      if (page) {
+        filters.page = parseInt(page as string);
+      }
+      if (limit) {
+        filters.limit = parseInt(limit as string);
+      }
+      if (req.query.category) {
+        filters.category = req.query.category as string;
+      }
+      if (req.query.search) {
+        filters.search = req.query.search as string;
+      }
+
+      const result = await this.inventoryService.getConsumptionLogs(
         userId,
         filters,
       );
-      console.log('Returning', consumptionLogs.length, 'consumption logs');
+      console.log('Returning', (result as any).consumptionLogs?.length || 0, 'consumption logs');
       console.log('=== END CONTROLLER ===');
 
-      res.status(200).json({ consumptionLogs });
+      res.status(200).json(result);
     } catch (error) {
       console.error('ERROR in getConsumptionLogs controller:', error);
       res.status(500).json({ error: 'Internal server error' });

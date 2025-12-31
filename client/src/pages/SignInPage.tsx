@@ -7,7 +7,7 @@ export default function SignInPage() {
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(210,232,35,0.1),transparent_50%)]"></div>
       <div className="absolute top-6 left-6 relative z-10">
         <Link to="/" className="flex items-center gap-2">
-          <img src='/gajor.png' width={50} height={25} className='rounded-xl shadow-soft'/>
+          <img src='/gajor2.png' width={50} height={25} className='rounded-xl shadow-soft'/>
           <span className="font-bold text-lg text-foreground hidden sm:inline">NutriAI</span>
         </Link>
       </div>

@@ -62,6 +62,10 @@ export type ConsumptionLogFilters = {
   startDate?: Date;
   endDate?: Date;
   inventoryId?: string;
+  category?: string;
+  search?: string;
+  page?: number;
+  limit?: number;
 };
 
 export type InventoryFilters = {

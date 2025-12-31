@@ -46,8 +46,8 @@ export default function HowItWorksSection() {
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col md:flex-row items-center justify-between mb-16 gap-6">
           <div className="max-w-xl">
-            <h2 className="text-3xl font-bold text-white font-operetta mb-2">A Complete Food Lifecycle</h2>
-            <p className="text-white font-operetta">Stop managing specific parts of your kitchen in isolation. Connect them all.</p>
+            <h2 className="text-3xl font-bold text-white  mb-2">A Complete Food Lifecycle</h2>
+            <p className="text-white ">Stop managing specific parts of your kitchen in isolation. Connect them all.</p>
           </div>
         </div>
 

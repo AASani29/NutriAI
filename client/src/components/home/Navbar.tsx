@@ -37,16 +37,14 @@ export default function Navbar() {
   ];
 
   return (
-    <nav className=" fixed  w-full bg-background/10 backdrop-blur-md z-50 transition-smooth">
+    <nav className=" fixed  w-full bg-background/10 backdrop-blur-md  z-50 transition-smooth">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <Link to="/" className="flex items-center gap-0.5 group">
-            <div className='rounded-[50%]'>
-              <img src='/gajor.png' width={50} height={50} className='bg-white rounded-[50%]' />
+            <div className='rounded-[50%] pt-5'>
+              <img src='/gajor2.png' width={200} height={200} className='' />
             </div>
-            <span className=" text-lg text-white hidden sm:inline font-operetta">
-              NutriAI
-            </span>
+           
           </Link>
 
           <div className="hidden md:flex items-start gap-4">
@@ -54,7 +52,7 @@ export default function Navbar() {
               <a
                 key={link.href}
                 href={link.href}
-                className="text-white hover:text-primary  p-5 rounded-2xl transition-smooth text-lg font-operetta font-bold"
+                className="text-white hover:text-primary  p-5 rounded-2xl transition-smooth text-lg  font-bold"
               >
                 {link.label}
               </a>

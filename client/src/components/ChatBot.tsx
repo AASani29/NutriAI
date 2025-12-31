@@ -197,7 +197,7 @@ export const ChatBot: React.FC = () => {
                 onClick={() => setIsOpen(true)}
                 className="fixed bottom-6 right-6 p-0 w-16 h-16 rounded-full shadow-2xl hover:scale-110 transition-all z-50 overflow-hidden border-4 border-white ring-2 ring-green-100"
             >
-                <img src="/gajor.png" alt="Chat" className="w-full h-full object-cover" />
+                <img src="/gajor2.png" alt="Chat" className="w-full h-full object-cover" />
             </button>
         );
     }
@@ -210,7 +210,7 @@ export const ChatBot: React.FC = () => {
             >
                 <div className="flex items-center gap-3">
                     <div className="relative">
-                        <img src="/gajor.png" alt="Bot" className="w-10 h-10 rounded-full bg-green-50 p-1" />
+                        <img src="/gajor2.png" alt="Bot" className="w-10 h-10 rounded-full bg-green-50 p-1" />
                         <div className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-green-500 border-2 border-white animate-pulse"></div>
                     </div>
                     <div>
@@ -234,7 +234,7 @@ export const ChatBot: React.FC = () => {
             <div className="bg-white/50 backdrop-blur-sm p-4 border-b border-gray-100 flex justify-between items-center shrink-0 sticky top-0 z-10">
                 <div className="flex items-center gap-3">
                     <div className="relative">
-                        <img src="/gajor.png" alt="Bot" className="w-10 h-10 rounded-full bg-green-50 p-1 object-contain" />
+                        <img src="/gajor2.png" alt="Bot" className="w-10 h-10 rounded-full bg-green-50 p-1 object-contain" />
                         <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full"></span>
                     </div>
                     <div>
@@ -260,7 +260,7 @@ export const ChatBot: React.FC = () => {
                 {messages.length === 0 && (
                     <div className="text-center mt-20 px-6">
                         <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-4 relative">
-                            <img src="/gajor.png" alt="Logo" className="w-12 h-12 object-contain opacity-80" />
+                            <img src="/gajor2.png" alt="Logo" className="w-12 h-12 object-contain opacity-80" />
                             <div className="absolute inset-0 rounded-full border border-green-100 animate-[spin_10s_linear_infinite]"></div>
                         </div>
                         <h4 className="text-gray-900 font-semibold mb-2">Welcome to Gajor!</h4>
@@ -277,7 +277,7 @@ export const ChatBot: React.FC = () => {
                         {/* Avatar */}
                         <div className="shrink-0 mt-auto">
                             {msg.role === 'model' ? (
-                                <img src="/gajor.png" className="w-8 h-8 rounded-full bg-green-50 p-1 object-contain" alt="AI" />
+                                <img src="/gajor2.png" className="w-8 h-8 rounded-full bg-green-50 p-1 object-contain" alt="AI" />
                             ) : (
                                 <div className="w-8 h-8 rounded-full bg-gray-900 flex items-center justify-center text-white text-xs font-bold">
                                     {user?.firstName?.[0] || 'U'}
@@ -298,7 +298,7 @@ export const ChatBot: React.FC = () => {
                 ))}
                 {(isLoading || isProcessingMedia) && (
                     <div className="flex gap-3">
-                        <img src="/gajor.png" className="w-8 h-8 rounded-full bg-green-50 p-1 object-contain mt-auto" alt="AI" />
+                        <img src="/gajor2.png" className="w-8 h-8 rounded-full bg-green-50 p-1 object-contain mt-auto" alt="AI" />
                         <div className="bg-white rounded-2xl rounded-bl-none p-4 shadow-sm border border-gray-100 flex items-center gap-2">
                             <div className="flex gap-1">
                                 <span className="w-2 h-2 bg-green-500 rounded-full animate-bounce [animation-delay:-0.3s]"></span>

@@ -24,18 +24,18 @@ export default function HeroSection() {
 
 
                   <h1 >
-                     <motion.span transition={{duration:0.7, ease:'easeIn'}} whileInView={{opacity:1, x:0}} initial={{x:-80, opacity:0}}  viewport={{once:true}} className="block ml-4 text-5xl md:text-6xl lg:text-6xl font-operetta tracking-tight text-white leading-[1.1]">
+                     <motion.span transition={{duration:0.7, ease:'easeIn'}} whileInView={{opacity:1, x:0}} initial={{x:-80, opacity:0}}  viewport={{once:true}} className="block ml-4 text-5xl md:text-6xl lg:text-6xl  tracking-tight text-white leading-[1.1]">
                      Manage Food
                      </motion.span><br />
-                     <motion.span transition={{duration:0.7, ease:'easeIn', delay:0.5}} whileInView={{opacity:1, x:10}} initial={{x:-80, opacity:0}}  viewport={{once:true}} className="block ml-8 text-5xl md:text-6xl font-operetta lg:text-6xl  tracking-tight text-primary-dark leading-[1.1]">
+                     <motion.span transition={{duration:0.7, ease:'easeIn', delay:0.5}} whileInView={{opacity:1, x:10}} initial={{x:-80, opacity:0}}  viewport={{once:true}} className="block ml-8 text-5xl md:text-6xl  lg:text-6xl  tracking-tight text-primary-dark leading-[1.1]">
                         Master Nutrition
                      </motion.span> <br />
-                     <motion.span transition={{duration:0.9, ease:'easeIn', delay:0.7}} whileInView={{opacity:1, x:20}} initial={{x:-80, opacity:0}}  viewport={{once:true}} className="block ml-12 text-5xl font-operetta md:text-6xl lg:text-6xl tracking-tight text-white leading-[1.1]">
+                     <motion.span transition={{duration:0.9, ease:'easeIn', delay:0.7}} whileInView={{opacity:1, x:20}} initial={{x:-80, opacity:0}}  viewport={{once:true}} className="block ml-12 text-5xl  md:text-6xl lg:text-6xl tracking-tight text-white leading-[1.1]">
                      Minimize Waste
                      </motion.span>
                   </h1>
 
-                  <motion.p transition={{duration:0.7, ease:'easeIn', delay:0.7}} whileInView={{opacity:1, y:0}} initial={{y:80, opacity:0}}  viewport={{once:true}} className="text-xl font-operetta font-bold text-white leading-relaxed max-w-lg pt-10">
+                  <motion.p transition={{duration:0.7, ease:'easeIn', delay:0.7}} whileInView={{opacity:1, y:0}} initial={{y:80, opacity:0}}  viewport={{once:true}} className="text-xl  font-bold text-white leading-relaxed max-w-lg pt-10">
                      NutriAI connects your pantry inventory with personalized nutrition goals and sustainability tracking. Buying, cooking, and saving—simplified.
                   </motion.p>
 
@@ -102,7 +102,7 @@ export default function HeroSection() {
                   {/* Floating Cards */}
                   <div className="absolute top-1/2 -left-4 bg-white p-4 rounded-2xl shadow-xl border border-gray-100 flex items-center gap-3 animate-float delay-100 z-20">
                      <div className="w-10 h-10 bg-primary/20 rounded-lg flex items-center justify-center border border-primary/30">
-                        <img className="w-5 h-5" src='/gajor.png'/>
+                        <img className="w-5 h-5" src='/gajor2.png'/>
                      </div>
                      <div>
                         <div className="text-xs font-bold text-foreground uppercase tracking-tight">Waste Prevented</div>

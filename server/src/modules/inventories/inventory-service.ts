@@ -3,6 +3,7 @@ import { aiAnalyticsService } from '../../services/aiAnalyticsService';
 import { usdaFoodService } from '../../services/usda-food-service';
 import {
   ConsumptionLogRequest,
+  ConsumptionLogFilters,
   InventoryItemFilters,
   InventoryItemRequest,
   InventoryRequest,
@@ -621,11 +622,11 @@ export class InventoryService {
     // Handle Nutrition Logic
     // PRIORITY: Use client-provided nutrition values first (they represent what user saw in inventory)
     // Only recalculate if client didn't provide values
-    const hasClientNutrition = data.calories !== undefined || 
-                                data.protein !== undefined || 
-                                data.carbohydrates !== undefined || 
-                                data.fat !== undefined;
-    
+    const hasClientNutrition = data.calories !== undefined ||
+      data.protein !== undefined ||
+      data.carbohydrates !== undefined ||
+      data.fat !== undefined;
+
     let logNutrients = {
       calories: data.calories,
       protein: data.protein,
@@ -883,11 +884,7 @@ export class InventoryService {
    */
   async getConsumptionLogs(
     userId: string,
-    filters: {
-      startDate?: Date;
-      endDate?: Date;
-      inventoryId?: string;
-    } = {},
+    filters: ConsumptionLogFilters = {},
   ) {
     console.log(
       '🔍 [getConsumptionLogs] === STARTING CONSUMPTION LOGS FETCH ===',
@@ -1006,44 +1003,94 @@ export class InventoryService {
         };
       }
 
+      // Add category filter if specified
+      if (filters.category) {
+        console.log(
+          '🔍 [getConsumptionLogs] Adding category filter:',
+          filters.category,
+        );
+        whereClause.foodItem = {
+          category: filters.category,
+        };
+      }
+
+      // Add search filter if specified
+      if (filters.search) {
+        console.log(
+          '🔍 [getConsumptionLogs] Adding search filter:',
+          filters.search,
+        );
+        whereClause.itemName = {
+          contains: filters.search,
+          mode: 'insensitive',
+        };
+      }
+
       console.log(
         '🔍 [getConsumptionLogs] Final where clause:',
         JSON.stringify(whereClause, null, 2),
       );
 
       console.log('🔍 [getConsumptionLogs] Executing database query...');
-      const consumptionLogs = await prisma.consumptionLog.findMany({
-        where: whereClause,
-        include: {
-          foodItem: {
-            select: {
-              name: true,
-              category: true,
+      const page = filters.page || 1;
+      const limit = filters.limit || 10;
+      const skip = (page - 1) * limit;
+
+      const [consumptionLogs, totalCount, totalCaloriesResult] = await Promise.all([
+        prisma.consumptionLog.findMany({
+          where: whereClause,
+          include: {
+            foodItem: {
+              select: {
+                name: true,
+                category: true,
+              },
+            },
+            inventoryItem: {
+              select: {
+                customName: true,
+              },
+            },
+            inventory: {
+              select: {
+                name: true,
+              },
             },
           },
-          inventoryItem: {
-            select: {
-              customName: true,
-            },
+          orderBy: {
+            consumedAt: 'desc',
           },
-          inventory: {
-            select: {
-              name: true,
-            },
+          skip,
+          take: limit,
+        }),
+        prisma.consumptionLog.count({ where: whereClause }),
+        prisma.consumptionLog.aggregate({
+          where: whereClause,
+          _sum: {
+            calories: true,
           },
-        },
-        orderBy: {
-          consumedAt: 'desc',
-        },
-      });
+        }),
+      ]);
+
+      const totalCalories = totalCaloriesResult._sum.calories || 0;
 
       console.log(
         '🔍 [getConsumptionLogs] Found consumption logs count:',
         consumptionLogs.length,
+        'Total count:',
+        totalCount,
+        'Total Calories:',
+        totalCalories
       );
       console.log('🔍 [getConsumptionLogs] === END CONSUMPTION LOGS DEBUG ===');
 
-      return consumptionLogs;
+      return {
+        consumptionLogs,
+        totalCount,
+        totalCalories,
+        page,
+        totalPages: Math.ceil(totalCount / limit)
+      };
     } catch (error) {
       console.error(
         '❌ [getConsumptionLogs] Error in getConsumptionLogs:',

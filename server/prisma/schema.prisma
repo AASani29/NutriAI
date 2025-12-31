@@ -33,6 +33,31 @@ model User {
   auditLogs           AuditLog[]
   consumptions        ConsumptionLog[]  @relation("UserConsumptionLogs")
   resourcesCreated    Resource[]        @relation("CreatedResources")
+  hydrationLogs       HydrationLog[]
+  fitnessLogs         FitnessLog[]
+}
+
+model HydrationLog {
+  id        String   @id @default(uuid())
+  userId    String
+  date      DateTime
+  amount    Float    @default(0) // in Liters
+  goal      Float    @default(2.5) // Default goal
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id])
+  @@unique([userId, date])
+}
+
+model FitnessLog {
+  id             String   @id @default(uuid())
+  userId         String
+  date           DateTime
+  weight         Float?   // in kg
+  steps          Int      @default(0)
+  caloriesBurned Float    @default(0)
+  updatedAt      DateTime @updatedAt
+  user           User     @relation(fields: [userId], references: [id])
+  @@unique([userId, date])
 }
 
 model UserProfile {

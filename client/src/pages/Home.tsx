@@ -21,7 +21,7 @@ export default function Home() {
   }, [isSignedIn, navigate]);
 
   return (
-    <main className="w-full font-operetta font-bold">
+    <main className="w-full">
 
       <Navbar />
       <HeroSection />
