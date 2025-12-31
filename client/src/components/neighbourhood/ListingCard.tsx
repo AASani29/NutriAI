@@ -14,6 +14,9 @@ import type { FoodListing, ClaimListingRequest } from './types';
 import { ListingStatus } from './types';
 import { useClaimListing, useCompleteListing, useDeleteListing } from './sharing-service';
 import ReceiveListingModal from './ReceiveListingModal';
+import ClaimModal from './modal/ClaimModal';
+import CompleteModal from './modal/CompleteModal';
+import DeleteListingModal from './modal/DeleteListingModal';
 import { useAuth } from "@clerk/clerk-react";
 
 interface ListingCardProps {
@@ -341,203 +344,13 @@ export default function ListingCard({
 
       {/* Delete Confirmation Modal */}
       {showDeleteModal && (
-        <div className="fixed inset-0 bg-background/60 backdrop-blur-md flex items-center justify-center z-50 p-4">
-          <div className="bg-card rounded-2xl border border-border shadow-xl p-6 w-full max-w-md">
-            <div className="flex items-center gap-3 mb-4">
-              <Trash2 className="w-6 h-6 text-red-500" />
-              <h3 className="text-lg font-bold text-foreground">
-                Delete Listing
-              </h3>
-            </div>
-            <p className="text-foreground/70 mb-6">
-              Are you sure you want to delete "{listing.title}"? This action cannot be undone.
-            </p>
-            <div className="flex gap-3">
-              <button
-                onClick={() => setShowDeleteModal(false)}
-                disabled={deleteMutation.isPending}
-                className="flex-1 px-4 py-2 border border-border text-foreground rounded-lg hover:bg-secondary/10 transition-smooth disabled:opacity-50"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleDelete}
-                disabled={deleteMutation.isPending}
-                className="flex-1 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-smooth disabled:opacity-50"
-              >
-                {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
-              </button>
-            </div>
-          </div>
-        </div>
+        <DeleteListingModal
+          listing={listing}
+          onClose={() => setShowDeleteModal(false)}
+          onDelete={handleDelete}
+          isLoading={deleteMutation.isPending}
+        />
       )}
     </>
-  );
-}
-
-interface ClaimModalProps {
-  listing: FoodListing;
-  onClose: () => void;
-  onClaim: (data: ClaimListingRequest) => void;
-  isLoading: boolean;
-}
-
-function ClaimModal({ listing, onClose, onClaim, isLoading }: ClaimModalProps) {
-  const [form, setForm] = useState({
-    claimerName: '',
-    notes: '',
-    quantityClaimed: listing.quantity,
-  });
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onClaim({
-      claimerName: form.claimerName || undefined,
-      notes: form.notes || undefined,
-      quantityClaimed: form.quantityClaimed,
-    });
-  };
-
-  return (
-    <div className="fixed inset-0 bg-background/60 backdrop-blur-md flex items-center justify-center z-50 p-4">
-      <div className="bg-card rounded-2xl border border-border shadow-xl w-full max-w-md">
-        <div className="p-6 border-b border-border">
-          <h3 className="text-lg font-bold text-foreground mb-2">
-            Book "{listing.title}"
-          </h3>
-          <p className="text-foreground/70 text-sm">
-            Lock this item to pick it up.
-          </p>
-        </div>
-
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-1">
-              Your Name (Optional)
-            </label>
-            <input
-              type="text"
-              value={form.claimerName}
-              onChange={(e) => setForm(prev => ({ ...prev, claimerName: e.target.value }))}
-              placeholder="How should they contact you?"
-              className="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-1">
-              Quantity Needed
-            </label>
-            <input
-              type="number"
-              min="0.1"
-              max={listing.quantity}
-              step="0.1"
-              value={form.quantityClaimed}
-              onChange={(e) => setForm(prev => ({ ...prev, quantityClaimed: parseFloat(e.target.value) }))}
-              className="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground"
-            />
-            <p className="text-xs text-foreground/60 mt-1">
-              Available: {listing.quantity} {listing.unit}
-            </p>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-1">
-              Message (Optional)
-            </label>
-            <textarea
-              value={form.notes}
-              onChange={(e) => setForm(prev => ({ ...prev, notes: e.target.value }))}
-              placeholder="Any special requests or pickup preferences?"
-              rows={3}
-              className="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground resize-none"
-            />
-          </div>
-
-          <div className="flex gap-3 pt-4">
-            <button
-              type="button"
-              onClick={onClose}
-              disabled={isLoading}
-              className="flex-1 px-4 py-2 border border-border text-foreground rounded-lg hover:bg-secondary/10 disabled:opacity-50 transition-smooth"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="flex-1 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 disabled:opacity-50 transition-smooth font-medium"
-            >
-              {isLoading ? 'Booking...' : 'Book'}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-}
-
-interface CompleteModalProps {
-  listing: FoodListing;
-  onClose: () => void;
-  onComplete: (notes: string) => void;
-  isLoading: boolean;
-}
-
-function CompleteModal({ listing, onClose, onComplete, isLoading }: CompleteModalProps) {
-  const [notes, setNotes] = useState('');
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onComplete(notes);
-  };
-
-  return (
-    <div className="fixed inset-0 bg-background/60 backdrop-blur-md flex items-center justify-center z-50 p-4">
-      <div className="bg-card rounded-2xl border border-border shadow-xl w-full max-w-md">
-        <div className="p-6 border-b border-border">
-          <h3 className="text-lg font-bold text-foreground mb-2">
-            Complete Sharing
-          </h3>
-          <p className="text-foreground/70 text-sm">
-            Mark "{listing.title}" as successfully shared.
-          </p>
-        </div>
-
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-1">
-              Completion Notes (Optional)
-            </label>
-            <textarea
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder="How did the sharing go? Any feedback?"
-              rows={4}
-              className="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground resize-none"
-            />
-          </div>
-
-          <div className="flex gap-3 pt-4">
-            <button
-              type="button"
-              onClick={onClose}
-              disabled={isLoading}
-              className="flex-1 px-4 py-2 border border-border text-foreground rounded-lg hover:bg-secondary/10 disabled:opacity-50 transition-smooth"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 transition-smooth font-medium"
-            >
-              {isLoading ? 'Completing...' : 'Mark Complete'}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
   );
 }

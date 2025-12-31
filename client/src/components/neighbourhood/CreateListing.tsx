@@ -326,7 +326,7 @@ export default function CreateListing({ onSuccess }: CreateListingProps) {
           className="w-full px-6 py-4 bg-black text-white rounded-2xl hover:bg-primary hover:text-black disabled:opacity-50 transition-all font-black flex items-center justify-center gap-2 shadow-xl shadow-black/10 active:scale-95"
         >
           <Plus className="w-5 h-5" />
-          {createListingMutation.isPending ? 'Creating Listing...' : 'Broadcast to Neighbourhood'}
+          {createListingMutation.isPending ? 'Adding...' : 'Add'}
         </button>
       </form>
 
