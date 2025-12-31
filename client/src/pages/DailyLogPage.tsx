@@ -677,7 +677,7 @@ export default function DailyLogPage() {
 
                   {/* Monthly Navigation Arrows */}
                   {viewMode === 'monthly' && (
-                    <div className="flex bg-white/10 rounded-full p-1">
+                    <div className="flex bg-white/10 rounded-full p-1 mt-20 mr-180">
                       <button
                         onClick={() => handleMonthChange(-1)}
                         className="w-8 h-8 flex items-center justify-center hover:bg-white/20 rounded-full transition-colors"
@@ -798,7 +798,7 @@ export default function DailyLogPage() {
               )}
 
               {/* D / M Selection */}
-              <div className="absolute top-8 left-70 transform -translate-x-1/2 bg-white/10 backdrop-blur-xl border border-white/20 rounded-full p-1.5 flex shadow-2xl z-20">
+              <div className="absolute top-8 left-75 transform -translate-x-1/2 bg-white/10 backdrop-blur-xl border border-white/20 rounded-full p-1.5 flex shadow-2xl z-20">
                 <button
                   onClick={() => setViewMode('daily')}
                   className={`w-12 h-10 rounded-full font-black text-xs flex items-center justify-center shadow-lg transition-all scale-105 ${viewMode === 'daily' ? 'bg-white text-[#8EC5DB]' : 'text-white hover:bg-white/10'}`}
