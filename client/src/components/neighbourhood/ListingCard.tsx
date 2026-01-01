@@ -15,6 +15,7 @@ import { ListingStatus } from './types';
 import { useClaimListing, useCompleteListing, useDeleteListing } from './sharing-service';
 import ReceiveListingModal from './ReceiveListingModal';
 import { useAuth } from "@clerk/clerk-react";
+import { NeighborhoodMap } from './NeighborhoodMap';
 
 interface ListingCardProps {
   listing: FoodListing;
@@ -35,6 +36,7 @@ export default function ListingCard({
   const [showCompleteModal, setShowCompleteModal] = useState(false);
   const [showReceiveModal, setShowReceiveModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showMapModal, setShowMapModal] = useState(false);
 
   const claimMutation = useClaimListing();
   const completeMutation = useCompleteListing();
@@ -188,11 +190,22 @@ export default function ListingCard({
             </span>
           </div>
           {listing.pickupLocation && (
-            <div className="flex items-center gap-2 text-sm bg-gray-50 p-2.5 rounded-xl border border-gray-100/50">
-              <MapPin className="w-4 h-4 text-black" />
-              <span className="text-black font-bold truncate">
-                {listing.pickupLocation}
-              </span>
+            <div className="flex items-center justify-between text-sm bg-gray-50 p-2.5 rounded-xl border border-gray-100/50">
+              <div className="flex items-center gap-2 truncate flex-1 mr-2">
+                <MapPin className="w-4 h-4 text-black" />
+                <span className="text-black font-bold truncate">
+                  {listing.pickupLocation}
+                </span>
+              </div>
+              {listing.latitude && listing.longitude && (
+                <button
+                  onClick={() => setShowMapModal(true)}
+                  className="text-[10px] text-primary hover:text-black font-black uppercase tracking-widest bg-white border border-gray-100 px-2 py-1 rounded-lg shadow-sm transition-all active:scale-95"
+                  title="View on Map"
+                >
+                  Map
+                </button>
+              )}
             </div>
           )}
         </div>
@@ -366,6 +379,42 @@ export default function ListingCard({
                 className="flex-1 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-smooth disabled:opacity-50"
               >
                 {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Map Modal */}
+      {showMapModal && listing.latitude && listing.longitude && (
+        <div className="fixed inset-0 bg-background/60 backdrop-blur-md flex items-center justify-center z-[60] p-4">
+          <div className="bg-white rounded-[2rem] border border-gray-100 shadow-2xl p-6 w-full max-w-2xl relative overflow-hidden">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h3 className="text-lg font-black text-black">Pickup Location</h3>
+                <p className="text-xs text-muted-foreground font-medium">{listing.pickupLocation}</p>
+              </div>
+              <button
+                onClick={() => setShowMapModal(false)}
+                className="w-10 h-10 bg-gray-50 rounded-full flex items-center justify-center text-muted-foreground hover:text-black transition-colors"
+              >
+                ✕
+              </button>
+            </div>
+
+            <NeighborhoodMap
+              listings={[listing]}
+              userLat={listing.latitude}
+              userLng={listing.longitude}
+              height="400px"
+            />
+
+            <div className="mt-6 flex justify-center">
+              <button
+                onClick={() => setShowMapModal(false)}
+                className="px-8 py-3 bg-black text-white rounded-2xl hover:bg-primary hover:text-white transition-all font-black uppercase tracking-widest text-xs"
+              >
+                Close Map
               </button>
             </div>
           </div>

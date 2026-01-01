@@ -15,6 +15,8 @@ export type FoodListing = {
   quantity: number;
   unit: string | null;
   pickupLocation: string | null;
+  latitude: number | null;
+  longitude: number | null;
   availableUntil: Date | null;
   status: ListingStatus;
   createdAt: Date;
@@ -62,6 +64,8 @@ export type FoodListingWithDetails = FoodListing & {
     profile: {
       fullName: string | null;
       location: string | null;
+      latitude: number | null;
+      longitude: number | null;
     } | null;
   };
   sharingLogs: SharingLog[];
@@ -94,6 +98,8 @@ export type CreateListingRequest = {
   description?: string;
   quantity?: number;
   pickupLocation?: string;
+  latitude?: number;
+  longitude?: number;
   availableUntil?: Date;
 };
 
@@ -102,6 +108,8 @@ export type UpdateListingRequest = {
   description?: string;
   quantity?: number;
   pickupLocation?: string;
+  latitude?: number;
+  longitude?: number;
   availableUntil?: Date;
   status?: ListingStatus;
 };

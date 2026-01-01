@@ -17,6 +17,8 @@ export interface FoodListing {
   quantity: number;
   unit?: string;
   pickupLocation?: string;
+  latitude?: number;
+  longitude?: number;
   availableUntil?: string;
   status: ListingStatus;
   createdAt: string;
@@ -43,6 +45,8 @@ export interface FoodListing {
     profile?: {
       fullName?: string;
       location?: string;
+      latitude?: number;
+      longitude?: number;
     };
   };
   sharingLogs: SharingLog[];
@@ -67,6 +71,8 @@ export interface CreateListingRequest {
   description?: string;
   quantity?: number;
   pickupLocation?: string;
+  latitude?: number;
+  longitude?: number;
   availableUntil?: Date;
 }
 
@@ -75,6 +81,8 @@ export interface UpdateListingRequest {
   description?: string;
   quantity?: number;
   pickupLocation?: string;
+  latitude?: number;
+  longitude?: number;
   availableUntil?: Date;
   status?: ListingStatus;
 }

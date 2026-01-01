@@ -1,8 +1,10 @@
 import { useState } from 'react';
-import { Search, Filter, MapPin, Package, AlertCircle } from 'lucide-react';
 import { useListings } from './sharing-service';
 import { ListingStatus, type ListingFilters } from './types';
 import ListingCard from './ListingCard';
+import { NeighborhoodMap } from './NeighborhoodMap';
+import { Map, List, MapPin, Package, AlertCircle, Filter, Search } from 'lucide-react';
+import { useProfile } from '../../context/ProfileContext';
 
 interface AvailableListingsProps {
   externalSearch?: string;
@@ -15,14 +17,16 @@ export default function AvailableListings({ externalSearch }: AvailableListingsP
   });
   const [showFilters, setShowFilters] = useState(false);
   const [internalSearch, setInternalSearch] = useState('');
+  const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
+  const { profile } = useProfile();
 
   const effectiveSearch = externalSearch || internalSearch;
 
-  const { 
-    data: listings = [], 
-    isLoading, 
-    isError, 
-    refetch 
+  const {
+    data: listings = [],
+    isLoading,
+    isError,
+    refetch
   } = useListings({
     ...filters,
     search: effectiveSearch || undefined,
@@ -90,17 +94,34 @@ export default function AvailableListings({ externalSearch }: AvailableListingsP
             {listings.length} items available for sharing
           </p>
         </div>
-        <button
-          onClick={() => setShowFilters(!showFilters)}
-          className={`flex items-center gap-2 px-6 py-2.5 rounded-2xl border transition-all font-bold shadow-sm ${
-            showFilters 
-              ? 'bg-black text-white border-black' 
+        <div className="flex items-center gap-2">
+          <div className="flex bg-gray-100 p-1 rounded-2xl mr-2">
+            <button
+              onClick={() => setViewMode('list')}
+              className={`p-2 rounded-xl transition-all ${viewMode === 'list' ? 'bg-white shadow-sm text-black' : 'text-gray-500 hover:text-black'}`}
+              title="List View"
+            >
+              <List className="w-5 h-5" />
+            </button>
+            <button
+              onClick={() => setViewMode('map')}
+              className={`p-2 rounded-xl transition-all ${viewMode === 'map' ? 'bg-white shadow-sm text-black' : 'text-gray-500 hover:text-black'}`}
+              title="Map View"
+            >
+              <Map className="w-5 h-5" />
+            </button>
+          </div>
+          <button
+            onClick={() => setShowFilters(!showFilters)}
+            className={`flex items-center gap-2 px-6 py-2.5 rounded-2xl border transition-all font-bold shadow-sm ${showFilters
+              ? 'bg-black text-white border-black'
               : 'bg-white border-gray-100 text-muted-foreground hover:text-black hover:bg-gray-50'
-          }`}
-        >
-          <Filter className="w-4 h-4" />
-          Filters
-        </button>
+              }`}
+          >
+            <Filter className="w-4 h-4" />
+            Filters
+          </button>
+        </div>
       </div>
 
       {/* Search - only show if no external search */}
@@ -199,9 +220,9 @@ export default function AvailableListings({ externalSearch }: AvailableListingsP
               <input
                 type="checkbox"
                 checked={filters.excludeOwnListings || false}
-                onChange={(e) => setFilters(prev => ({ 
-                  ...prev, 
-                  excludeOwnListings: e.target.checked 
+                onChange={(e) => setFilters(prev => ({
+                  ...prev,
+                  excludeOwnListings: e.target.checked
                 }))}
                 className="sr-only peer"
               />
@@ -219,7 +240,7 @@ export default function AvailableListings({ externalSearch }: AvailableListingsP
             {hasActiveFilters ? 'No matching items found' : 'No items available'}
           </h3>
           <p className="text-foreground/60 mb-4">
-            {hasActiveFilters 
+            {hasActiveFilters
               ? 'Try adjusting your filters or search terms.'
               : 'Be the first to share food with your community!'
             }
@@ -233,7 +254,7 @@ export default function AvailableListings({ externalSearch }: AvailableListingsP
             </button>
           )}
         </div>
-      ) : (
+      ) : viewMode === 'list' ? (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
           {listings.map(listing => (
             <ListingCard
@@ -244,6 +265,21 @@ export default function AvailableListings({ externalSearch }: AvailableListingsP
               onUpdate={() => refetch()}
             />
           ))}
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {listings.some(l => !l.latitude || !l.longitude) && (
+            <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 flex items-center gap-2 text-amber-700 text-sm">
+              <AlertCircle className="w-4 h-4" />
+              <span>Some listings don't have coordinates and won't appear on the map.</span>
+            </div>
+          )}
+          <NeighborhoodMap
+            listings={listings}
+            userLat={profile?.profile?.latitude || undefined}
+            userLng={profile?.profile?.longitude || undefined}
+            height="600px"
+          />
         </div>
       )}
 
@@ -256,12 +292,12 @@ export default function AvailableListings({ externalSearch }: AvailableListingsP
             </span>
             <div className="flex items-center gap-4">
               <span className="text-foreground/60">
-                Categories: {new Set(listings.map(l => 
+                Categories: {new Set(listings.map(l =>
                   l.inventoryItem.foodItem?.category || 'Custom'
                 )).size}
               </span>
               <span className="text-foreground/60">
-                Locations: {new Set(listings.map(l => 
+                Locations: {new Set(listings.map(l =>
                   l.pickupLocation
                 ).filter(Boolean)).size}
               </span>

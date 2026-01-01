@@ -50,6 +50,8 @@ export class UserController {
         weightPreference,
         allergies,
         healthConditions,
+        latitude,
+        longitude,
       } = req.body;
 
       if (budgetRange !== undefined && (budgetRange < 0 || isNaN(budgetRange))) {
@@ -69,6 +71,8 @@ export class UserController {
         weightPreference,
         allergies,
         healthConditions,
+        latitude: latitude ? parseFloat(latitude) : undefined,
+        longitude: longitude ? parseFloat(longitude) : undefined,
       });
 
       res.json({

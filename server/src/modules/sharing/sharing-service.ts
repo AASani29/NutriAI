@@ -69,6 +69,8 @@ export class SharingService {
         quantity: data.quantity || inventoryItem.quantity,
         unit: inventoryItem.unit,
         pickupLocation: data.pickupLocation,
+        latitude: data.latitude,
+        longitude: data.longitude,
         availableUntil: data.availableUntil,
         status: ListingStatus.AVAILABLE,
       },
@@ -97,6 +99,8 @@ export class SharingService {
               select: {
                 fullName: true,
                 location: true,
+                latitude: true,
+                longitude: true,
               },
             },
           },
@@ -250,6 +254,8 @@ export class SharingService {
               select: {
                 fullName: true,
                 location: true,
+                latitude: true,
+                longitude: true,
               },
             },
           },
@@ -304,6 +310,8 @@ export class SharingService {
               select: {
                 fullName: true,
                 location: true,
+                latitude: true,
+                longitude: true,
               },
             },
           },
@@ -373,6 +381,8 @@ export class SharingService {
         description: data.description,
         quantity: data.quantity,
         pickupLocation: data.pickupLocation,
+        latitude: data.latitude,
+        longitude: data.longitude,
         availableUntil: data.availableUntil,
         status: data.status,
         updatedAt: new Date(),
@@ -401,6 +411,8 @@ export class SharingService {
               select: {
                 fullName: true,
                 location: true,
+                latitude: true,
+                longitude: true,
               },
             },
           },
@@ -729,6 +741,8 @@ export class SharingService {
               select: {
                 fullName: true,
                 location: true,
+                latitude: true,
+                longitude: true,
               },
             },
           },

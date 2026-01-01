@@ -72,6 +72,8 @@ model UserProfile {
   weightPreference  String?   // "lose", "gain", "maintain"
   allergies         String?
   healthConditions  String?   // e.g. "Diabetes", "Hypertension", etc.
+  latitude          Float?
+  longitude         Float?
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
   isDeleted         Boolean   @default(false)
@@ -357,6 +359,8 @@ model FoodListing {
   quantity        Float
   unit            String?
   pickupLocation  String?
+  latitude        Float?
+  longitude       Float?
   availableUntil  DateTime?
   status          ListingStatus  @default(AVAILABLE)
   createdAt       DateTime       @default(now())
