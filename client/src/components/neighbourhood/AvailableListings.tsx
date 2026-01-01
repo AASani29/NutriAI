@@ -18,6 +18,8 @@ export default function AvailableListings({ externalSearch }: AvailableListingsP
   const [showFilters, setShowFilters] = useState(false);
   const [internalSearch, setInternalSearch] = useState('');
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 5;
   const { profile } = useProfile();
 
   const effectiveSearch = externalSearch || internalSearch;
@@ -45,6 +47,7 @@ export default function AvailableListings({ externalSearch }: AvailableListingsP
       excludeOwnListings: true,
     });
     setInternalSearch('');
+    setCurrentPage(1);
   };
 
   const hasActiveFilters = filters.category || filters.location || effectiveSearch;
@@ -255,16 +258,54 @@ export default function AvailableListings({ externalSearch }: AvailableListingsP
           )}
         </div>
       ) : viewMode === 'list' ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-          {listings.map(listing => (
-            <ListingCard
-              key={listing.id}
-              listing={listing}
-              showActions={true}
-              isOwner={false}
-              onUpdate={() => refetch()}
-            />
-          ))}
+        <div className="space-y-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+            {listings
+              .slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
+              .map(listing => (
+                <ListingCard
+                  key={listing.id}
+                  listing={listing}
+                  showActions={true}
+                  isOwner={false}
+                  onUpdate={() => refetch()}
+                />
+              ))}
+          </div>
+
+          {/* Pagination Controls */}
+          {listings.length > ITEMS_PER_PAGE && (
+            <div className="flex items-center justify-center gap-4 pt-6 border-t border-gray-100">
+              <button
+                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                disabled={currentPage === 1}
+                className="px-6 py-2 rounded-full border border-gray-100 font-bold text-xs uppercase tracking-widest hover:bg-black hover:text-white transition-all disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-current"
+              >
+                Previous
+              </button>
+              <div className="flex items-center gap-2">
+                {Array.from({ length: Math.ceil(listings.length / ITEMS_PER_PAGE) }).map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setCurrentPage(i + 1)}
+                    className={`w-8 h-8 rounded-full font-black text-[10px] transition-all ${currentPage === i + 1
+                      ? 'bg-black text-white shadow-lg'
+                      : 'bg-gray-50 text-muted-foreground hover:bg-gray-100'
+                      }`}
+                  >
+                    {i + 1}
+                  </button>
+                )).slice(Math.max(0, currentPage - 3), Math.min(Math.ceil(listings.length / ITEMS_PER_PAGE), currentPage + 2))}
+              </div>
+              <button
+                onClick={() => setCurrentPage(prev => Math.min(Math.ceil(listings.length / ITEMS_PER_PAGE), prev + 1))}
+                disabled={currentPage === Math.ceil(listings.length / ITEMS_PER_PAGE)}
+                className="px-6 py-2 rounded-full border border-gray-100 font-bold text-xs uppercase tracking-widest hover:bg-black hover:text-white transition-all disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-current"
+              >
+                Next
+              </button>
+            </div>
+          )}
         </div>
       ) : (
         <div className="space-y-4">

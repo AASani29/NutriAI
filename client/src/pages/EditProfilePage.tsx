@@ -3,7 +3,6 @@ import { useNavigate, Link } from 'react-router-dom';
 import { User, Utensils, MapPin, Save, ArrowLeft, Ruler, Scale, Target, AlertCircle, Heart } from 'lucide-react';
 import { useProfile } from '../context/ProfileContext';
 import { useApi } from '../hooks/useApi';
-import { MapPicker } from '../components/neighbourhood/MapPicker';
 
 export default function EditProfilePage() {
   const navigate = useNavigate();
@@ -212,15 +211,6 @@ export default function EditProfilePage() {
                       placeholder="e.g., Dhaka, Bangladesh"
                     />
                   </div>
-                  <div className="mt-4">
-                    <MapPicker
-                      initialLat={formData.latitude}
-                      initialLng={formData.longitude}
-                      onLocationSelect={(lat, lng) => setFormData(prev => ({ ...prev, latitude: lat, longitude: lng }))}
-                      onAddressSelect={(address) => setFormData(prev => ({ ...prev, location: address }))}
-                      height="200px"
-                    />
-                  </div>
                 </div>
 
                 {/* Budget Range */}
@@ -410,7 +400,7 @@ export default function EditProfilePage() {
             </div>
           </div>
         </div>
-      </div>
-    </main>
+      </div >
+    </main >
   );
 }

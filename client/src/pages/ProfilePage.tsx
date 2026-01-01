@@ -6,10 +6,46 @@ import {
 } from 'lucide-react';
 import { useProfile } from '../context/ProfileContext';
 import { useUser } from '@clerk/clerk-react';
+import { useApi } from '../hooks/useApi';
+import { MapPicker } from '../components/neighbourhood/MapPicker';
+import { useState } from 'react';
 
 export default function ProfilePage() {
-  const { profile, loading, error } = useProfile();
-  const { user } = useUser()
+  const { profile, loading, error, refreshProfile } = useProfile();
+  const { user } = useUser();
+  const api = useApi();
+  const [updating, setUpdating] = useState(false);
+  const [localLocation, setLocalLocation] = useState<string | null>(null);
+
+  const handleLocationUpdate = async (lat: number, lng: number) => {
+    setUpdating(true);
+    try {
+      await api.updateProfile({
+        latitude: lat,
+        longitude: lng,
+      });
+      await refreshProfile(true);
+    } catch (err) {
+      console.error("Failed to update coordinates:", err);
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  const handleAddressUpdate = async (address: string) => {
+    // Optimistic update
+    setLocalLocation(address);
+    try {
+      await api.updateProfile({
+        location: address,
+      });
+      await refreshProfile(true);
+    } catch (err) {
+      console.error("Failed to update address:", err);
+      // Revert on error if needed
+      setLocalLocation(profile?.profile?.location || null);
+    }
+  };
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
@@ -79,7 +115,7 @@ export default function ProfilePage() {
                       <div className="w-full h-full rounded-full bg-gray-50 flex items-center justify-center">
                         {
                           user?.imageUrl ?
-                            <img src={user.imageUrl} className='rounded-full'/>
+                            <img src={user.imageUrl} className='rounded-full' />
                             :
                             <User className="w-16 h-16 text-gray-200" />
                         }
@@ -121,7 +157,21 @@ export default function ProfilePage() {
                     </div>
                     <div>
                       <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-2">Location</p>
-                      <p className="text-lg font-black text-black tracking-tight">{profile?.profile?.location || 'Earth'}</p>
+                      <p className="text-lg font-black text-black tracking-tight mb-4">{localLocation || profile?.profile?.location || 'Earth'}</p>
+                      <div className="mt-4 border border-gray-100 rounded-3xl overflow-hidden relative">
+                        {updating && (
+                          <div className="absolute inset-0 bg-white/50 backdrop-blur-sm z-20 flex items-center justify-center">
+                            <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+                          </div>
+                        )}
+                        <MapPicker
+                          initialLat={profile?.profile?.latitude || undefined}
+                          initialLng={profile?.profile?.longitude || undefined}
+                          onLocationSelect={handleLocationUpdate}
+                          onAddressSelect={handleAddressUpdate}
+                          height="250px"
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>

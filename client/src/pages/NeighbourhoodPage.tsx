@@ -32,7 +32,6 @@ export default function NeighbourhoodPage() {
   const { profile } = useProfile();
 
   const featuredListing = listings[0];
-  const recentListings = listings.slice(1, 4);
 
   // Calculate categories
   const categoryCounts = listings.reduce((acc: Record<string, number>, curr) => {
@@ -44,6 +43,32 @@ export default function NeighbourhoodPage() {
   const categories = Object.entries(categoryCounts)
     .map(([name, count]) => ({ name, count }))
     .sort((a, b) => b.count - a.count)
+    .slice(0, 3);
+
+  // Helper for distance calculation
+  const getDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+    const R = 6371;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const d = R * c;
+    return d; // km
+  };
+
+  const userLat = profile?.profile?.latitude;
+  const userLng = profile?.profile?.longitude;
+
+  const recommendedListings = listings
+    .filter(l => l.latitude && l.longitude && userLat && userLng)
+    .map(l => ({
+      ...l,
+      distance: getDistance(userLat!, userLng!, l.latitude!, l.longitude!)
+    }))
+    .sort((a, b) => a.distance - b.distance)
     .slice(0, 3);
 
   return (
@@ -239,34 +264,36 @@ export default function NeighbourhoodPage() {
                 </div>
               </div>
 
-              {/* Available Now Feed */}
+              {/* Recommended Near You Feed */}
               <div className="col-span-12 lg:col-span-4 bg-white rounded-[2.5rem] p-8 shadow-soft border border-gray-100 flex flex-col">
                 <div className="flex justify-between items-center mb-8">
-                  <h3 className="text-xl font-black text-black tracking-tight">Available Now</h3>
-                  <button
-                    onClick={() => setActiveTab('browse')} // In a real app this might open a modal or expand list
-                    className="text-xs font-black text-primary uppercase tracking-widest hover:text-black transition-colors"
-                  >
-                    View All
-                  </button>
+                  <div>
+                    <h3 className="text-xl font-black text-black tracking-tight">Recommended Near You</h3>
+                    <p className="text-[10px] text-primary font-black uppercase tracking-widest mt-1">Based on proximity</p>
+                  </div>
+                  <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center">
+                    <MapPin className="w-5 h-5 text-primary" />
+                  </div>
                 </div>
                 <div className="flex-1 space-y-5">
-                  {recentListings.length > 0 ? recentListings.map((listing) => (
-                    <div key={listing.id} className="flex items-center gap-5 group cursor-pointer p-2 hover:bg-gray-50 rounded-[1.5rem] transition-all">
-                      <div className="w-16 h-16 rounded-2xl overflow-hidden shadow-soft flex-shrink-0">
+                  {recommendedListings.length > 0 ? recommendedListings.map((listing) => (
+                    <div key={listing.id} className="flex items-center gap-5 group cursor-pointer p-2 hover:bg-gray-50 rounded-[1.5rem] transition-all border border-transparent hover:border-gray-100">
+                      <div className="w-16 h-16 rounded-2xl overflow-hidden shadow-soft flex-shrink-0 bg-gray-50">
                         <img
                           alt={listing.title}
                           className="w-full h-full object-cover transition-transform group-hover:scale-110"
-                          src={"https://images.unsplash.com/photo-1546767060-ee1592d38e65?auto=format&fit=crop&q=80&w=150"}
+                          src={listing.inventoryItem.foodItem?.category === 'fruit' ? "https://images.unsplash.com/photo-1619566636858-adf3ef46400b?auto=format&fit=crop&q=80&w=150" : "https://images.unsplash.com/photo-1546767060-ee1592d38e65?auto=format&fit=crop&q=80&w=150"}
                         />
                       </div>
                       <div className="flex-1 min-w-0">
                         <h4 className="font-bold text-black truncate group-hover:text-primary transition-colors">{listing.title}</h4>
-                        <p className="text-xs text-muted-foreground font-bold mb-1 truncate">{listing.quantity} {listing.unit || 'units'} remaining</p>
-                        <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-primary">
-                          <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                          Available
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <span className="text-[10px] bg-black text-white px-2 py-0.5 rounded-full font-black">
+                            {listing.distance < 1 ? `${(listing.distance * 1000).toFixed(0)}m` : `${listing.distance.toFixed(1)}km`}
+                          </span>
+                          <span className="text-xs text-muted-foreground font-bold truncate">away</span>
                         </div>
+                        <p className="text-[10px] text-muted-foreground font-bold mt-1 truncate">{listing.pickupLocation}</p>
                       </div>
                       <button className="w-10 h-10 rounded-xl border border-gray-100 flex items-center justify-center hover:bg-black hover:text-white text-muted-foreground transition-all flex-shrink-0">
                         <ArrowRight className="w-4 h-4" />
@@ -274,8 +301,12 @@ export default function NeighbourhoodPage() {
                     </div>
                   )) : (
                     <div className="flex flex-col items-center justify-center h-full text-center py-8">
-                      <Package className="w-12 h-12 text-gray-100 mb-4" />
-                      <p className="text-sm font-bold text-muted-foreground">No recent listings</p>
+                      <div className="w-16 h-16 bg-gray-50 rounded-3xl flex items-center justify-center mb-4">
+                        <MapPin className="w-8 h-8 text-gray-200" />
+                      </div>
+                      <p className="text-sm font-bold text-muted-foreground max-w-[180px]">
+                        {userLat ? "No listings found near your location yet." : "Please set your location in profile to see recommendations."}
+                      </p>
                     </div>
                   )}
                 </div>
