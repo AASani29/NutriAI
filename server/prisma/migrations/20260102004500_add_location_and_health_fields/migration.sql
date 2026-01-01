@@ -1,0 +1,7 @@
+-- AlterTable
+ALTER TABLE "UserProfile" ADD COLUMN "latitude" DOUBLE PRECISION,
+ADD COLUMN "longitude" DOUBLE PRECISION;
+
+-- AlterTable
+ALTER TABLE "FoodListing" ADD COLUMN "latitude" DOUBLE PRECISION,
+ADD COLUMN "longitude" DOUBLE PRECISION;
