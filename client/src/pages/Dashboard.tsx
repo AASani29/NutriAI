@@ -67,7 +67,9 @@ export default function Dashboard() {
     endDate: dateRange.endDate,
   }), [dateRange.startDate, dateRange.endDate]);
 
-  const { data: consumptionLogs = [], isLoading: consumptionLoading } = useGetConsumptionLogs(consumptionParams);
+  const { data: consumptionLogsData, isLoading: consumptionLoading } = useGetConsumptionLogs(consumptionParams);
+
+  const consumptionLogs = consumptionLogsData?.consumptionLogs || [];
 
   // Fetch personalized AI recommendations
   const { data: recommendations, isLoading: recommendationsLoading } = useQuery({
@@ -194,9 +196,9 @@ export default function Dashboard() {
       topCategory: topCategory?.category || 'N/A',
       recentTrend,
       inventoryCount: inventories.length,
-      totalConsumptionLogs: consumptionLogs.length,
+      totalConsumptionLogs: consumptionLogsData?.totalCount || consumptionLogs.length,
     };
-  }, [allInventoryItems, consumptionLogs, consumptionPatterns, inventories]);
+  }, [allInventoryItems, consumptionLogsData, consumptionPatterns, inventories]);
 
   // Check if core data is loading
   const isInitialLoading = profileLoading || inventoriesLoading;

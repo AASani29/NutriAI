@@ -27,6 +27,8 @@ export class SharingController {
         description,
         quantity,
         pickupLocation,
+        latitude,
+        longitude,
         availableUntil,
       }: CreateListingRequest = req.body;
 
@@ -48,6 +50,8 @@ export class SharingController {
         description,
         quantity,
         pickupLocation,
+        latitude,
+        longitude,
         availableUntil: availableUntil ? new Date(availableUntil) : undefined,
       });
 
@@ -142,6 +146,8 @@ export class SharingController {
         description,
         quantity,
         pickupLocation,
+        latitude,
+        longitude,
         availableUntil,
         status,
       }: UpdateListingRequest = req.body;
@@ -164,6 +170,8 @@ export class SharingController {
           description,
           quantity,
           pickupLocation,
+          latitude,
+          longitude,
           availableUntil: availableUntil ? new Date(availableUntil) : undefined,
           status,
         },

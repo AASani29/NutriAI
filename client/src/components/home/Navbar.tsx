@@ -3,7 +3,11 @@ import { LogOut, Menu, Settings, User, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 
-export default function Navbar() {
+interface NavbarProps {
+  theme?: 'light' | 'dark';
+}
+
+export default function Navbar({ theme = 'light' }: NavbarProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const { isSignedIn } = useAuth();
@@ -37,19 +41,20 @@ export default function Navbar() {
   ];
 
   return (
-    <nav className="fixed top-6 left-1/2 -translate-x-1/2 w-[95%] max-w-7xl bg-white border border-border/50 shadow-[0_20px_50px_rgba(0,0,0,0.1)] rounded-3xl z-50 transition-all duration-300">
-      <div className="px-6 sm:px-8">
-        <div className="flex justify-between items-center h-20">
-          <Link to="/" className="flex items-center group">
-            <img src="/logo.png" alt="NutriAI Logo" className="h-16 w-auto object-contain" />
-          </Link>
+<nav className="fixed top-6 left-1/2 -translate-x-1/2 w-[95%] max-w-7xl z-50 transition-all duration-300 bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl border border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.12)] rounded-3xl">
+  <div className="px-6 sm:px-8">
+    <div className="flex justify-between items-center h-20">
+      <Link to="/" className="flex items-center group">
+        <img src="/logo.png" alt="NutriAI Logo" className="h-16 w-auto object-contain" />
+      </Link>
 
-          <div className="hidden md:flex items-center gap-10">
+          <div className="hidden md:flex items-start gap-4">
             {navLinks.map(link => (
               <a
                 key={link.href}
                 href={link.href}
-                className="text-muted-foreground hover:text-foreground transition-all text-sm font-bold uppercase tracking-widest"
+                className={`p-5 rounded-2xl transition-smooth text-lg font-bold ${theme === 'dark' ? 'text-black' : 'text-black'
+                  }`}
               >
                 {link.label}
               </a>
@@ -61,10 +66,11 @@ export default function Navbar() {
               <div className="relative" ref={userMenuRef}>
                 <button
                   onClick={toggleUserMenu}
-                  className="flex items-center gap-2 px-4 py-2 rounded-xl hover:bg-accent transition-all border border-transparent hover:border-border"
+                  className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all border border-transparent ${theme === 'dark' ? 'hover:bg-gray-100 hover:border-gray-200' : 'hover:bg-accent hover:border-border'
+                    }`}
                 >
-                  <User className="w-4 h-4 text-foreground" />
-                  <span className="text-sm font-bold text-foreground">Account</span>
+                  <User className={`w-4 h-4 ${theme === 'dark' ? 'text-black' : 'text-foreground'}`} />
+                  <span className={`text-sm font-bold ${theme === 'dark' ? 'text-black' : 'text-foreground'}`}>Account</span>
                 </button>
 
                 {isUserMenuOpen && (
@@ -102,7 +108,8 @@ export default function Navbar() {
               <>
                 <Link
                   to="/sign-in"
-                  className="text-muted-foreground hover:text-foreground transition-all text-sm font-bold uppercase tracking-widest px-4"
+                  className={`transition-smooth text-sm font-medium pr-5 ${theme === 'dark' ? 'text-black/80 hover:text-primary' : 'text-white/80 hover:text-primary'
+                    }`}
                 >
                   Log In
                 </Link>
@@ -118,7 +125,7 @@ export default function Navbar() {
 
           <button
             onClick={toggleMenu}
-            className="md:hidden text-foreground hover:text-primary transition-smooth"
+            className={`md:hidden transition-smooth ${theme === 'dark' ? 'text-black hover:text-primary' : 'text-foreground hover:text-primary'}`}
           >
             {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>

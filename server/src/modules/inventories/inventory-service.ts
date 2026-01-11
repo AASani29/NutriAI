@@ -3,6 +3,7 @@ import { aiAnalyticsService } from '../../services/aiAnalyticsService';
 import { usdaFoodService } from '../../services/usda-food-service';
 import {
   ConsumptionLogRequest,
+  ConsumptionLogFilters,
   InventoryItemFilters,
   InventoryItemRequest,
   InventoryRequest,
@@ -621,11 +622,11 @@ export class InventoryService {
     // Handle Nutrition Logic
     // PRIORITY: Use client-provided nutrition values first (they represent what user saw in inventory)
     // Only recalculate if client didn't provide values
-    const hasClientNutrition = data.calories !== undefined || 
-                                data.protein !== undefined || 
-                                data.carbohydrates !== undefined || 
-                                data.fat !== undefined;
-    
+    const hasClientNutrition = data.calories !== undefined ||
+      data.protein !== undefined ||
+      data.carbohydrates !== undefined ||
+      data.fat !== undefined;
+
     let logNutrients = {
       calories: data.calories,
       protein: data.protein,
@@ -721,30 +722,89 @@ export class InventoryService {
     }
 
     // Only recalculate nutrition if client didn't provide values
-    // This ensures daily log shows exactly what was in inventory, not recalculated values
     if (!hasClientNutrition && foodItemAny && foodItemAny.nutritionPerUnit) {
       const base = foodItemAny.nutritionPerUnit;
 
-      // Parse unit to get effective quantity
-      const unitMatch = data.unit ? data.unit.match(/^(\d+)(.*)$/) : null;
-      const multiplier = unitMatch ? parseInt(unitMatch[1]) : 1;
-      const effectiveQuantity = data.quantity * multiplier;
+      // Determine Unit Compatibility
+      const storedUnit = foodItemAny.nutritionUnit || 'unit';
+      const inputUnit = data.unit || 'piece';
 
-      // Ratio Calculation:
-      // energy x effective_quantity / basis
-      const ratio = effectiveQuantity / storedBasis;
+      const massVolUnits = ['g', 'kg', 'mg', 'oz', 'lb', 'ml', 'l', 'cup', 'tsp', 'tbsp', 'gram', 'grams', 'milliliter', 'liter'];
+      const isStoredMassVol = massVolUnits.some(u => storedUnit.toLowerCase().includes(u));
+      const hasInputMassVolKeyword = massVolUnits.some(u => inputUnit.toLowerCase().includes(u));
 
-      console.log(`📊 calculating nutrition for ${data.itemName}: Unit ${data.unit}, Quantity ${data.quantity}, Multiplier ${multiplier}, Effective ${effectiveQuantity}, Basis ${storedBasis}, Ratio ${ratio}`);
+      // Mismatch if one is mass/vol and other is NOT (implies count/piece)
+      // Note: This is a heuristic. "cup" is volume, but often treated as unit.
+      const isMismatch = (isStoredMassVol && !hasInputMassVolKeyword) || (!isStoredMassVol && hasInputMassVolKeyword);
 
-      logNutrients = {
-        calories: (base.calories || 0) * ratio,
-        protein: (base.protein || 0) * ratio,
-        carbohydrates: (base.carbohydrates || 0) * ratio,
-        fat: (base.fat || 0) * ratio,
-        fiber: (base.fiber || 0) * ratio,
-        sugar: (base.sugar || 0) * ratio,
-        sodium: (base.sodium || 0) * ratio,
-      };
+      if (isMismatch) {
+        console.log(`⚠️ Unit Mismatch for ${data.itemName}: Stored ${storedUnit} vs Input ${inputUnit}. Requesting AI Estimation...`);
+        try {
+          const estimated = await aiAnalyticsService.estimateNutrition(
+            data.itemName || foodItemAny.name,
+            data.quantity,
+            inputUnit,
+            {
+              nutritionPerUnit: base,
+              nutritionUnit: storedUnit,
+              nutritionBasis: storedBasis
+            }
+          );
+
+          if (estimated && estimated.calories !== undefined) {
+            logNutrients = {
+              calories: estimated.calories,
+              protein: estimated.protein,
+              carbohydrates: estimated.carbohydrates,
+              fat: estimated.fat,
+              fiber: estimated.fiber,
+              sugar: estimated.sugar,
+              sodium: estimated.sodium
+            };
+            console.log(`✅ AI Resolved Mismatch: ${estimated.calories} kcal`);
+          } else {
+            throw new Error("AI returned empty estimation");
+          }
+        } catch (e) {
+          console.warn(`Failed to resolve unit mismatch with AI, falling back to ratio (may be inaccurate):`, e);
+          // Fallback to ratio logic
+          const unitMatch = data.unit ? data.unit.match(/^(\d+)(.*)$/) : null;
+          const multiplier = unitMatch ? parseInt(unitMatch[1]) : 1;
+          const effectiveQuantity = data.quantity * multiplier;
+          const ratio = effectiveQuantity / storedBasis;
+
+          logNutrients = {
+            calories: (base.calories || 0) * ratio,
+            protein: (base.protein || 0) * ratio,
+            carbohydrates: (base.carbohydrates || 0) * ratio,
+            fat: (base.fat || 0) * ratio,
+            fiber: (base.fiber || 0) * ratio,
+            sugar: (base.sugar || 0) * ratio,
+            sodium: (base.sodium || 0) * ratio,
+          };
+        }
+      } else {
+        // Compatible Units - Use Ratio Logic
+        const unitMatch = data.unit ? data.unit.match(/^(\d+)(.*)$/) : null;
+        const multiplier = unitMatch ? parseInt(unitMatch[1]) : 1;
+        const effectiveQuantity = data.quantity * multiplier; 
+
+        // Ratio Calculation:
+        // energy x effective_quantity / basis
+        const ratio = effectiveQuantity / storedBasis;
+
+        console.log(`📊 calculating nutrition for ${data.itemName}: Unit ${data.unit}, Quantity ${data.quantity}, Multiplier ${multiplier}, Effective ${effectiveQuantity}, Basis ${storedBasis}, Ratio ${ratio}`);
+
+        logNutrients = {
+          calories: (base.calories || 0) * ratio,
+          protein: (base.protein || 0) * ratio,
+          carbohydrates: (base.carbohydrates || 0) * ratio,
+          fat: (base.fat || 0) * ratio,
+          fiber: (base.fiber || 0) * ratio,
+          sugar: (base.sugar || 0) * ratio,
+          sodium: (base.sodium || 0) * ratio,
+        };
+      }
     } else if (hasClientNutrition) {
       console.log(`✅ Using client-provided nutrition values for ${data.itemName} (ensures consistency with inventory display)`);
     }
@@ -883,11 +943,7 @@ export class InventoryService {
    */
   async getConsumptionLogs(
     userId: string,
-    filters: {
-      startDate?: Date;
-      endDate?: Date;
-      inventoryId?: string;
-    } = {},
+    filters: ConsumptionLogFilters = {},
   ) {
     console.log(
       '🔍 [getConsumptionLogs] === STARTING CONSUMPTION LOGS FETCH ===',
@@ -1006,44 +1062,94 @@ export class InventoryService {
         };
       }
 
+      // Add category filter if specified
+      if (filters.category) {
+        console.log(
+          '🔍 [getConsumptionLogs] Adding category filter:',
+          filters.category,
+        );
+        whereClause.foodItem = {
+          category: filters.category,
+        };
+      }
+
+      // Add search filter if specified
+      if (filters.search) {
+        console.log(
+          '🔍 [getConsumptionLogs] Adding search filter:',
+          filters.search,
+        );
+        whereClause.itemName = {
+          contains: filters.search,
+          mode: 'insensitive',
+        };
+      }
+
       console.log(
         '🔍 [getConsumptionLogs] Final where clause:',
         JSON.stringify(whereClause, null, 2),
       );
 
       console.log('🔍 [getConsumptionLogs] Executing database query...');
-      const consumptionLogs = await prisma.consumptionLog.findMany({
-        where: whereClause,
-        include: {
-          foodItem: {
-            select: {
-              name: true,
-              category: true,
+      const page = filters.page || 1;
+      const limit = filters.limit || 10;
+      const skip = (page - 1) * limit;
+
+      const [consumptionLogs, totalCount, totalCaloriesResult] = await Promise.all([
+        prisma.consumptionLog.findMany({
+          where: whereClause,
+          include: {
+            foodItem: {
+              select: {
+                name: true,
+                category: true,
+              },
+            },
+            inventoryItem: {
+              select: {
+                customName: true,
+              },
+            },
+            inventory: {
+              select: {
+                name: true,
+              },
             },
           },
-          inventoryItem: {
-            select: {
-              customName: true,
-            },
+          orderBy: {
+            consumedAt: 'desc',
           },
-          inventory: {
-            select: {
-              name: true,
-            },
+          skip,
+          take: limit,
+        }),
+        prisma.consumptionLog.count({ where: whereClause }),
+        prisma.consumptionLog.aggregate({
+          where: whereClause,
+          _sum: {
+            calories: true,
           },
-        },
-        orderBy: {
-          consumedAt: 'desc',
-        },
-      });
+        }),
+      ]);
+
+      const totalCalories = totalCaloriesResult._sum.calories || 0;
 
       console.log(
         '🔍 [getConsumptionLogs] Found consumption logs count:',
         consumptionLogs.length,
+        'Total count:',
+        totalCount,
+        'Total Calories:',
+        totalCalories
       );
       console.log('🔍 [getConsumptionLogs] === END CONSUMPTION LOGS DEBUG ===');
 
-      return consumptionLogs;
+      return {
+        consumptionLogs,
+        totalCount,
+        totalCalories,
+        page,
+        totalPages: Math.ceil(totalCount / limit)
+      };
     } catch (error) {
       console.error(
         '❌ [getConsumptionLogs] Error in getConsumptionLogs:',

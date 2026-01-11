@@ -1,3 +1,4 @@
+/// <reference path="../declarations.d.ts" />
 import { Request, Response, NextFunction, RequestHandler } from 'express';
 import { ClerkExpressRequireAuth, clerkClient } from '@clerk/clerk-sdk-node';
 import { userService } from '../modules/users/users-service';

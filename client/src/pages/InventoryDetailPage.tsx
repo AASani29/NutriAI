@@ -3,9 +3,10 @@ import { useQueryClient } from '@tanstack/react-query';
 import {
   AlertCircle,
   ArrowRight,
-  Plus,
-  Search,
-  Package,
+  Apple,
+  Droplet,
+  Flame,
+  Zap,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -44,7 +45,6 @@ export default function InventoryDetailPage() {
   const [showConsumptionModal, setShowConsumptionModal] = useState(false);
   const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
   const [search, setSearch] = useState('');
-  // const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState({
     category: '',
     expiryStatus: '',
@@ -233,14 +233,14 @@ export default function InventoryDetailPage() {
     // Calculate total nutrition for the consumed quantity
     const nutrition = selectedItem.foodItem?.nutritionPerUnit as
       | {
-          calories?: number;
-          protein?: number;
-          carbohydrates?: number;
-          fat?: number;
-          fiber?: number;
-          sugar?: number;
-          sodium?: number;
-        }
+        calories?: number;
+        protein?: number;
+        carbohydrates?: number;
+        fat?: number;
+        fiber?: number;
+        sugar?: number;
+        sodium?: number;
+      }
       | undefined;
 
     const unit = consumptionData.unit || selectedItem.unit;
@@ -317,141 +317,116 @@ export default function InventoryDetailPage() {
   const totalValue = inventoryItems?.reduce((acc, item) => {
     const price = item.foodItem?.basePrice || 0;
     const basis = item.foodItem?.nutritionBasis || 1;
-    // Simple estimation: (quantity / basis) * price
-    // If basis is 100g and we have 500g, ratio is 5.
-    // If unit is 'pcs' basis is 1, quantity 5, ratio 5.
     const ratio = (item.quantity) / (basis > 0 ? basis : 1);
-
-    // Fallback if strict unit conversion logic isn't fully robust yet
-    // We assume incoming 'quantity' matches the stored 'nutritionPerUnit' scale roughly for MVP
     return acc + (price * ratio);
   }, 0) || 0;
 
   return (
-    <main className="flex-1 overflow-y-auto bg-white min-h-screen">
-      <div className="container mx-auto px-4 py-8 md:px-6 lg:px-8 max-w-7xl">
-        {/* Premium Header */}
-        <header className="flex flex-col gap-6 mb-10 px-4">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-            <div className="flex items-center gap-4">
-              <button
-                onClick={() => navigate('/inventory')}
-                className="w-12 h-12 flex items-center justify-center rounded-xl bg-slate-50 text-slate-400 hover:text-primary transition-all border border-slate-100"
-              >
-                <ArrowRight className="w-5 h-5 rotate-180" />
-              </button>
-              <div>
-                <h1 className="text-3xl md:text-4xl font-black tracking-tight text-slate-900 flex items-center gap-3">
-                  {inventory.name}
-                  {inventory.isPrivate && <span className="material-icons-outlined text-muted-foreground text-sm">lock</span>}
-                </h1>
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">
-                  ৳{totalValue.toFixed(2)} VALUATION • {totalItems} UNITS DETECTED
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3 w-full md:w-auto">
-              <button
-                onClick={() => setShowImageUploadModal(true)}
-                className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-slate-100 text-slate-800 px-6 py-4 rounded-xl hover:bg-slate-200 transition-all font-black text-[10px] uppercase tracking-widest"
-              >
-                <span className="material-icons-round text-lg">photo_camera</span>
-                <span>Scan Receipt</span>
-              </button>
-
-              <button
-                onClick={() => setShowAddModal(true)}
-                className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-black text-white px-6 py-4 rounded-xl hover:opacity-90 transition-all shadow-lg shadow-black/10 font-black text-[10px] uppercase tracking-widest"
-              >
-                <Plus className="w-5 h-5" />
-                <span>Add Item</span>
-              </button>
-            </div>
+    <main className="flex-1 flex flex-col h-[calc(100vh-2rem)] overflow-hidden rounded-3xl relative">
+      {/* Premium Header */}
+      <header className="flex flex-col md:flex-row justify-between items-center mb-6 px-4 pt-2 gap-4">
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => navigate('/inventory')}
+            className="w-10 h-10 flex items-center justify-center rounded-full bg-white  shadow-soft hover:text-primary transition-all"
+          >
+            <span className="material-icons-outlined">arrow_back</span>
+          </button>
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight text-foreground font-display flex items-center gap-2">
+              {inventory.name}
+              {inventory.isPrivate && <span className="material-icons-outlined text-muted-foreground text-sm">lock</span>}
+            </h1>
+            <p className="text-muted-foreground text-sm">‎৳{totalValue.toFixed(2)} total value • {totalItems} items</p>
           </div>
+        </div>
 
-          {/* Search Bar Mobile/Desktop */}
-          <div className="relative group w-full md:max-w-md">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors w-4 h-4" />
-            <input
-              type="text"
-              placeholder="Filter by name, category, or nutrients..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pl-12 pr-4 py-4 w-full rounded-xl bg-slate-50 border-none focus:ring-4 focus:ring-primary/10 text-sm transition-all font-medium text-slate-800 outline-none"
-            />
-          </div>
-        </header>
+        <div className="flex items-center gap-3 w-full md:w-auto">
+          <button
+            onClick={() => setShowImageUploadModal(true)}
+            className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-slate-100 text-slate-800 px-6 py-4 rounded-xl hover:bg-slate-200 transition-all font-black text-[10px] uppercase tracking-widest"
+          >
+            <span className="material-icons-round text-lg">photo_camera</span>
+            <span>Scan Receipt</span>
+          </button>
 
-        {/* Weather & Alerts Section */}
-        <div className="mb-12 space-y-8">
+          <button
+            onClick={() => setShowAddModal(true)}
+            className="flex items-center gap-2 bg-black text-white px-6 py-3 rounded-full hover:bg-gray-900 transition-all shadow-lg font-medium"
+          >
+            <span className="material-icons-round text-lg">add</span>
+            <span>Add Item</span>
+          </button>
+        </div>
+      </header>
+
+      {/* Main Scrollable Content */}
+      <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-6">
         {/* Weather Alerts / Widgets */}
         {!alertsLoading && weatherAlerts.length > 0 && (
           <div className="animate-slide-in">
             <WeatherAlertBanner alerts={weatherAlerts} />
           </div>
         )}
-          <div className="w-full">
-            <WeatherWidget className="shadow-sm rounded-[2rem] border border-slate-100" />
-          </div>
+        <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
+          <WeatherWidget className="min-w-[300px] shadow-soft rounded-3xl" />
         </div>
 
         {/* Header Controls */}
         <div className="flex flex-wrap items-center gap-4 px-4">
-          <button 
+          <button
             onClick={() => clearFilters()}
-            className={`px-6 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all ${!hasActiveFilters ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'bg-white text-slate-400 border border-slate-100'}`}
+            className={`px-5 py-2 rounded-full font-medium text-sm transition-all ${!hasActiveFilters ? 'bg-black text-white' : 'bg-white text-muted-foreground hover:bg-gray-50 shadow-sm border border-transparent hover:border-gray-200'}`}
           >
-            All Stock
+            All Items
           </button>
-          
+
           <div className="flex gap-2">
             <select
               value={filters.category}
               onChange={(e) => setFilters(prev => ({ ...prev, category: e.target.value }))}
-              className="px-4 py-2.5 rounded-xl bg-white border border-slate-100 text-[10px] font-black uppercase tracking-widest outline-none focus:ring-4 focus:ring-primary/10 transition-all"
+              className="px-4 py-2 rounded-full bg-white  border-none shadow-soft text-sm focus:ring-2 focus:ring-primary/50 outline-none"
             >
-              <option value="">Filter Category</option>
+              <option value="">Categories</option>
               {availableCategories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
             </select>
 
             <select
               value={filters.expiryStatus}
               onChange={(e) => setFilters(prev => ({ ...prev, expiryStatus: e.target.value }))}
-              className="px-4 py-2.5 rounded-xl bg-white border border-slate-100 text-[10px] font-black uppercase tracking-widest outline-none focus:ring-4 focus:ring-primary/10 transition-all"
+              className="px-4 py-2 rounded-full bg-white  border-none shadow-soft text-sm focus:ring-2 focus:ring-primary/50 outline-none"
             >
-              <option value="">Filter Freshness</option>
-              <option value="fresh">Fresh Status</option>
+              <option value="">Freshness</option>
+              <option value="fresh">Fresh</option>
               <option value="expiring-soon">Expiring Soon</option>
-              <option value="expired">Expired Hubs</option>
+              <option value="expired">Expired</option>
             </select>
           </div>
         </div>
 
         {/* Item Grid */}
-        <div className="px-4">
         {itemsLoading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {Array(8).fill(0).map((_, i) => (
-              <div key={i} className="h-72 bg-slate-50 rounded-[2rem] animate-pulse border border-slate-100"></div>
+              <div key={i} className="h-64 bg-white  rounded-3xl animate-pulse shadow-soft"></div>
             ))}
           </div>
         ) : filteredItems.length === 0 ? (
-          <div className="text-center py-20 bg-slate-50 rounded-[2.5rem] border border-slate-100 max-w-2xl mx-auto">
-            <div className="w-20 h-20 bg-white rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-sm">
-              <Package className="w-10 h-10 text-slate-200" />
+          <div className="text-center py-20 bg-white  rounded-3xl border-2 border-dashed border-gray-100 dark:border-gray-800">
+            <div className="w-20 h-20 bg-gray-50 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-6">
+              <span className="material-icons-outlined text-4xl text-gray-300">shopping_basket</span>
             </div>
-            <h3 className="text-2xl font-black text-slate-800 mb-2 tracking-tight">System Empty</h3>
-            <p className="text-slate-400 font-medium max-w-sm mx-auto mb-8 h-10 opacity-70 italic uppercase text-[10px] tracking-widest">Awaiting local registry synchronization</p>
+            <h3 className="text-xl font-bold text-foreground mb-2">Inventory is Empty</h3>
+            <p className="text-muted-foreground max-w-sm mx-auto mb-8">Start by adding items manually or scanning a grocery receipt.</p>
             <button
               onClick={() => setShowAddModal(true)}
-              className="px-10 py-4 bg-primary text-white font-black text-[10px] uppercase tracking-widest rounded-xl hover:shadow-lg transition-all active:scale-95 shadow-primary/20 shadow-md"
+              className="px-8 py-3 bg-primary text-gray-900 font-bold rounded-full hover:shadow-lg transition-all"
             >
-              Add First Record
+              Add First Item
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 pb-20">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {filteredItems.map(item => {
               const itemName = item.customName || item.foodItem?.name || 'Unknown Item';
               const category = item.foodItem?.category || 'General';
@@ -459,24 +434,31 @@ export default function InventoryDetailPage() {
               const today = new Date();
               const daysLeft = expDate ? Math.ceil((expDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)) : null;
 
-              let statusColor = 'bg-emerald-50 text-emerald-600 border-emerald-100';
-              let statusLabel = 'STABLE';
+              let statusColor = 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300';
+              let statusLabel = 'Fresh';
               if (daysLeft !== null) {
                 if (daysLeft < 0) {
-                  statusColor = 'bg-red-50 text-red-600 border-red-100';
-                  statusLabel = 'EXPIRED';
+                  statusColor = 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300';
+                  statusLabel = 'Expired';
                 } else if (daysLeft <= 3) {
-                  statusColor = 'bg-primary/10 text-primary border-primary/20';
-                  statusLabel = 'CRITICAL';
+                  statusColor = 'bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300';
+                  statusLabel = 'Low Freshness';
                 }
               }
 
+              // Nutrition Calculation
+              const nutrition = item.foodItem?.nutritionPerUnit || {};
+              const cal = nutrition.calories != null ? Math.round(nutrition.calories) : '-';
+              const protein = nutrition.protein != null ? Math.round(nutrition.protein) : '-';
+              const carbs = nutrition.carbohydrates != null ? Math.round(nutrition.carbohydrates) : '-';
+              const fat = nutrition.fat != null ? Math.round(nutrition.fat) : '-';
+
               return (
-                <div key={item.id} className="bg-white rounded-[2rem] p-6 border border-slate-100 hover:border-primary/30 hover:shadow-xl hover:shadow-primary/5 transition-all group relative flex flex-col h-full">
-                  <div className={`absolute top-6 right-6 text-[10px] font-black px-3 py-1 rounded-lg uppercase tracking-widest border ${statusColor} z-10`}>
+                <div key={item.id} className="bg-white  rounded-3xl p-5 shadow-soft hover:shadow-lg transition-all group relative border border-transparent hover:border-primary/20">
+                  <div className={`absolute top-4 right-4 text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wider ${statusColor}`}>
                     {statusLabel}
                   </div>
-                  
+
                   <div className="flex items-center justify-center h-40 mb-6 bg-slate-50 rounded-[1.5rem] group-hover:bg-primary/5 transition-all duration-500 text-7xl select-none">
                     <span className="group-hover:scale-110 group-hover:rotate-6 transition-all duration-700 block">
                       {category.toLowerCase().includes('fruit') ? '🍎' :
@@ -493,17 +475,49 @@ export default function InventoryDetailPage() {
                       <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest opacity-60">
                         {category} HUB • {expDate ? `${daysLeft}d REMAINING` : 'PERPETUAL'}
                       </p>
+
+                      <div className="grid grid-cols-4 gap-2 mb-5 mt-4">
+                        <div className="bg-orange-50 rounded-xl p-2 text-center">
+                          <div className="flex items-center justify-center text-orange-400 mb-1"><Flame className="w-3 h-3" /></div>
+                          <p className="text-lg font-bold text-gray-900">{cal}</p>
+                          <p className="text-[10px] text-gray-500">kcal</p>
+                        </div>
+                        <div className="bg-blue-50 rounded-xl p-2 text-center">
+                          <div className="flex items-center justify-center text-blue-400 mb-1"><Zap className="w-3 h-3" /></div>
+                          <p className="text-lg font-bold text-gray-900">{protein}{protein !== '-' ? 'g' : ''}</p>
+                          <p className="text-[10px] text-gray-500">prot</p>
+                        </div>
+                        <div className="bg-green-50 rounded-xl p-2 text-center">
+                          <div className="flex items-center justify-center text-green-400 mb-1"><Apple className="w-3 h-3" /></div>
+                          <p className="text-lg font-bold text-gray-900">{carbs}{carbs !== '-' ? 'g' : ''}</p>
+                          <p className="text-[10px] text-gray-500">carb</p>
+                        </div>
+                        <div className="bg-yellow-50 rounded-xl p-2 text-center">
+                          <div className="flex items-center justify-center text-yellow-400 mb-1"><Droplet className="w-3 h-3" /></div>
+                          <p className="text-lg font-bold text-gray-900">{fat}{fat !== '-' ? 'g' : ''}</p>
+                          <p className="text-[10px] text-gray-500">fat</p>
+                        </div>
+                      </div>
                     </div>
 
                     <div className="mt-auto pt-6 border-t border-slate-50 flex items-center justify-between">
                       <div className="flex flex-col">
                         <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest mb-1">Stock Load</span>
                         <div>
-                          <span className="text-2xl font-black text-slate-800">{item.quantity}</span>
-                          <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{item.unit || 'pcs'}</span>
+                          <div className="flex items-baseline gap-1">
+                            <span className="text-2xl font-black text-slate-800">{item.quantity}</span>
+                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{item.unit || 'pcs'}</span>
+                          </div>
                         </div>
+                        {item.foodItem?.basePrice ? (
+                          <div className="text-sm font-semibold text-foreground/80">
+                            ৳{((item.foodItem.basePrice * item.quantity) / (item.foodItem.nutritionBasis || 1)).toFixed(0)}
+                          </div>
+                        ) : (
+                          <div className="text-xs text-muted-foreground">No price</div>
+                        )}
                       </div>
-                      
+
                       <button
                         onClick={() => handleConsumption(item)}
                         disabled={item.quantity <= 0}
@@ -519,7 +533,6 @@ export default function InventoryDetailPage() {
             })}
           </div>
         )}
-        </div>
       </div>
 
       {/* --- MODALS & OVERLAYS --- */}
@@ -582,7 +595,6 @@ function ConsumptionModal({ item, onClose, onConsume }: ConsumptionModalProps) {
 
   const itemName = item.customName || item.foodItem?.name || 'Unknown Item';
   const maxQuantity = item.quantity;
-  // const remainingAfterConsumption = Math.max(0, maxQuantity - form.quantity);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -935,8 +947,8 @@ function AddItemModal({ onClose, onAdd, onScan }: {
                   onClick={handleUseLocation}
                   disabled={locating || locationMode === 'manual'}
                   className={`text-xs px-2 py-1 rounded-lg border flex items-center gap-1 transition-all ${locationMode === 'auto'
-                      ? 'bg-primary text-black border-primary/50 font-bold'
-                      : 'bg-white text-muted-foreground border-gray-200 hover:bg-gray-50 hover:text-black disabled:opacity-50'
+                    ? 'bg-primary text-black border-primary/50 font-bold'
+                    : 'bg-white text-muted-foreground border-gray-200 hover:bg-gray-50 hover:text-black disabled:opacity-50'
                     }`}
                 >
                   {locating ? (
@@ -953,8 +965,8 @@ function AddItemModal({ onClose, onAdd, onScan }: {
                   onClick={() => setLocationMode(prev => prev === 'manual' ? 'none' : 'manual')}
                   disabled={locating || locationMode === 'auto'}
                   className={`text-xs px-2 py-1 rounded-lg border flex items-center gap-1 transition-all ${locationMode === 'manual'
-                      ? 'bg-primary text-black border-primary/50 font-bold'
-                      : 'bg-white text-muted-foreground border-gray-200 hover:bg-gray-50 hover:text-black disabled:opacity-50'
+                    ? 'bg-primary text-black border-primary/50 font-bold'
+                    : 'bg-white text-muted-foreground border-gray-200 hover:bg-gray-50 hover:text-black disabled:opacity-50'
                     }`}
                 >
                   <div className="w-3 h-3">📝</div>

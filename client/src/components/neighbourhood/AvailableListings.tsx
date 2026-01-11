@@ -50,6 +50,7 @@ export default function AvailableListings({ externalSearch }: AvailableListingsP
       excludeOwnListings: true,
     });
     setInternalSearch('');
+    setCurrentPage(1);
   };
 
   const hasActiveFilters = filters.category || filters.location || effectiveSearch;

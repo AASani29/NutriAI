@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Plus, Package, MapPin, Calendar, AlertCircle, CheckCircle } from 'lucide-react';
+import { Plus, Package, MapPin, Calendar, AlertCircle, CheckCircle, Search } from 'lucide-react';
 import { useInventory } from '../../hooks/useInventory';
 import { useCreateListing } from './sharing-service';
+import { MapPicker } from './MapPicker';
 
 interface InventoryItem {
   id: string;
@@ -35,9 +36,12 @@ export default function CreateListing({ onSuccess }: CreateListingProps) {
     description: '',
     quantity: 0,
     pickupLocation: '',
+    latitude: undefined as number | undefined,
+    longitude: undefined as number | undefined,
     availableUntil: '',
   });
   const [error, setError] = useState('');
+  const [isSearching, setIsSearching] = useState(false);
 
   const { useGetInventories, useGetMultipleInventoryItems } = useInventory();
   const { data: inventories = [] } = useGetInventories();
@@ -89,6 +93,36 @@ export default function CreateListing({ onSuccess }: CreateListingProps) {
     setError('');
   };
 
+  const handleAddressSearch = async () => {
+    if (!form.pickupLocation.trim()) return;
+
+    setIsSearching(true);
+    try {
+      const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(form.pickupLocation)}&limit=1`, {
+        headers: {
+          'User-Agent': 'LocaNutri-Smart-App'
+        }
+      });
+      const data = await response.json();
+
+      if (data && data.length > 0) {
+        const { lat, lon } = data[0];
+        setForm(prev => ({
+          ...prev,
+          latitude: parseFloat(lat),
+          longitude: parseFloat(lon)
+        }));
+      } else {
+        setError("Location not found. Please try a more specific address.");
+      }
+    } catch (err) {
+      console.error("Search error:", err);
+      setError("Failed to search for location.");
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -115,6 +149,8 @@ export default function CreateListing({ onSuccess }: CreateListingProps) {
         description: form.description.trim() || undefined,
         quantity: form.quantity,
         pickupLocation: form.pickupLocation.trim() || undefined,
+        latitude: form.latitude,
+        longitude: form.longitude,
         availableUntil: form.availableUntil ? new Date(form.availableUntil) : undefined,
       });
 
@@ -125,6 +161,8 @@ export default function CreateListing({ onSuccess }: CreateListingProps) {
         description: '',
         quantity: 0,
         pickupLocation: '',
+        latitude: undefined,
+        longitude: undefined,
         availableUntil: '',
       });
 
@@ -254,7 +292,7 @@ export default function CreateListing({ onSuccess }: CreateListingProps) {
         </div>
 
         {/* Quantity and Pickup */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label className="block text-sm font-medium text-foreground mb-2">
               Quantity to Share *
@@ -279,19 +317,50 @@ export default function CreateListing({ onSuccess }: CreateListingProps) {
 
           <div>
             <label className="block text-sm font-medium text-foreground mb-2">
-              Pickup Location
+              Pickup Location Detail
             </label>
-            <div className="relative">
+            <div className="relative group">
               <MapPin className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-foreground/60" />
               <input
                 type="text"
                 value={form.pickupLocation}
                 onChange={(e) => setForm(prev => ({ ...prev, pickupLocation: e.target.value }))}
+                onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddressSearch())}
                 placeholder="e.g., Main Street, Building A"
-                className="w-full pl-10 pr-3 py-2 border border-border rounded-lg bg-background text-foreground"
+                className="w-full pl-10 pr-24 py-2 border border-border rounded-lg bg-background text-foreground focus:ring-2 focus:ring-primary outline-none transition-all"
               />
+              <button
+                type="button"
+                onClick={handleAddressSearch}
+                disabled={isSearching || !form.pickupLocation.trim()}
+                className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black text-white px-3 py-1 rounded-md text-[10px] font-bold hover:bg-primary hover:text-black transition-all disabled:opacity-50 flex items-center gap-1"
+              >
+                {isSearching ? '...' : (
+                  <>
+                    <Search className="w-3 h-3" />
+                    <span>Search</span>
+                  </>
+                )}
+              </button>
             </div>
+            <p className="text-[10px] text-muted-foreground mt-1">
+              You can also select the precise location on the map below.
+            </p>
           </div>
+        </div>
+
+        {/* Map Selection Area */}
+        <div className="pt-2">
+          <label className="block text-xs font-black text-muted-foreground uppercase tracking-widest mb-4">
+            Specify Precise Location
+          </label>
+          <MapPicker
+            initialLat={form.latitude}
+            initialLng={form.longitude}
+            onLocationSelect={(lat, lng) => setForm(prev => ({ ...prev, latitude: lat, longitude: lng }))}
+            onAddressSelect={(address) => setForm(prev => ({ ...prev, pickupLocation: address }))}
+            height="300px"
+          />
         </div>
 
         {/* Available Until */}

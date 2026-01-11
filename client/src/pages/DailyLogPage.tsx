@@ -14,7 +14,7 @@ import {
   Clock,
   TrendingUp
 } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useRef, useEffect } from 'react';
 import { useInventory, type ConsumptionLog } from '../hooks/useInventory';
 
 export default function DailyLogPage() {
@@ -36,39 +36,201 @@ export default function DailyLogPage() {
     category: '',
   });
   const [searchQuery, setSearchQuery] = useState('');
-  const [hydration, setHydration] = useState(1.5);
+  const [viewMode, setViewMode] = useState<'daily' | 'weekly' | 'monthly'>('daily');
 
-  const { useGetConsumptionLogs, useGetInventories } = useInventory();
+
+
+  /* --- HYDRATION LOGIC --- */
+  const {
+    useGetConsumptionLogs,
+    useGetInventories,
+    useUpdateHydration,
+    useGetHydrationHistory,
+    useGetFitness,
+    useGetHydration,
+    useUpdateFitness
+  } = useInventory();
+
+  // New Date States
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [selectedMonth, setSelectedMonth] = useState(new Date()); // For monthly view navigation
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 10;
+
+  // Reset page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filters.inventoryId, filters.category, searchQuery, selectedDate, dateRange.startDate, dateRange.endDate]);
+
+  const handleStartDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const date = new Date(e.target.value);
+    if (!isNaN(date.getTime())) {
+      setDateRange(prev => ({ ...prev, startDate: date }));
+    }
+  };
+
+  const handleEndDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const date = new Date(e.target.value);
+    if (!isNaN(date.getTime())) {
+      setDateRange(prev => ({ ...prev, endDate: date }));
+    }
+  };
+
+  const clearFilters = () => {
+    setFilters({ inventoryId: '', category: '' });
+    setSearchQuery('');
+    setDateRange(defaultDateRange);
+  };
+
+  const hasActiveFilters = filters.inventoryId || filters.category || searchQuery ||
+    dateRange.startDate.toDateString() !== defaultDateRange.startDate.toDateString() ||
+    dateRange.endDate.toDateString() !== defaultDateRange.endDate.toDateString();
+
+  // Fitness Modal State
+  const [isFitnessModalOpen, setIsFitnessModalOpen] = useState(false);
+  const [tempWeight, setTempWeight] = useState('');
+  const [tempSteps, setTempSteps] = useState('');
+
+  // Fetch Hydration for Selected Date (Main Display)
+  const { data: hydrationData, isLoading: hydrationLoading } = useGetHydration(selectedDate);
+  const { data: fitnessData } = useGetFitness(selectedDate);
+  const updateFitnessMutation = useUpdateFitness();
+
+  // Fetch History for Monthly View OR Daily Strip (last 30 days)
+  // Determine range based on viewMode
+  const historyStart = useMemo(() => {
+    if (viewMode === 'monthly') {
+      const d = new Date(selectedMonth);
+      d.setDate(1); // Start of month
+      return d;
+    } else {
+      const d = new Date();
+      d.setDate(d.getDate() - 30); // Last 30 days
+      return d;
+    }
+  }, [viewMode, selectedMonth]);
+
+  const historyEnd = useMemo(() => {
+    if (viewMode === 'monthly') {
+      const d = new Date(selectedMonth);
+      d.setMonth(d.getMonth() + 1);
+      d.setDate(0); // End of month
+      return d;
+    } else {
+      return new Date(); // Today
+    }
+  }, [viewMode, selectedMonth]);
+
+  const { data: hydrationHistory } = useGetHydrationHistory(historyStart, historyEnd);
+
+  // Prepare Daily History Strip Data (ensuring all days exist)
+  const dailyHistory = useMemo(() => {
+    if (!hydrationHistory) return [];
+    // For 'Daily' view, we want a list of last 30 days. 
+    // We'll trust the API returns existing logs, but for the UI strip we might want to fill gaps
+    // For now, let's just map what we have, or generate a full list if needed.
+    // To keep it simple and robust, let's generate the last 30 days array and fill with data.
+    const days = [];
+    for (let i = 29; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      d.setHours(0, 0, 0, 0);
+
+      const log = hydrationHistory.find((h: any) => new Date(h.date).toDateString() === d.toDateString());
+      days.push({
+        date: d,
+        amount: log?.amount || 0,
+        goal: log?.goal || 2.5
+      });
+    }
+    return days;
+  }, [hydrationHistory]);
+
+  // Prepare Monthly Stats
+  const monthlyStats = useMemo(() => {
+    if (!hydrationHistory) return { total: 0, avg: 0, daysMetGoal: 0 };
+
+    const total = hydrationHistory.reduce((sum: number, log: any) => sum + (log.amount || 0), 0);
+    const avg = hydrationHistory.length > 0 ? total / hydrationHistory.length : 0;
+    const daysMetGoal = hydrationHistory.filter((log: any) => (log.amount || 0) >= (log.goal || 2.5)).length;
+
+    return { total, avg, daysMetGoal };
+  }, [hydrationHistory]);
+
+
+  const updateHydrationMutation = useUpdateHydration();
+
+  const handleAddWater = async () => {
+    // Optimistic update logic handles valid data check
+    const current = hydrationData?.amount || 0;
+    const newAmount = Math.min(current + 0.25, 5); // Cap at 5L reasonable max
+    try {
+      await updateHydrationMutation.mutateAsync({ amount: newAmount, date: selectedDate });
+    } catch (err) {
+      console.error("Failed to update hydration", err);
+    }
+  };
+
+  const handleMonthChange = (delta: number) => {
+    const newMonth = new Date(selectedMonth);
+    newMonth.setMonth(newMonth.getMonth() + delta);
+    setSelectedMonth(newMonth);
+  };
+
+  const hydrationAmount = hydrationData?.amount || 0;
+  const hydrationGoal = hydrationData?.goal || 2.5;
+
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const handleScrollStats = (direction: 'left' | 'right') => {
+    if (scrollContainerRef.current) {
+      const scrollAmount = 200;
+      scrollContainerRef.current.scrollBy({
+        left: direction === 'left' ? -scrollAmount : scrollAmount,
+        behavior: 'smooth'
+      });
+    }
+  };
+
+
+  // ... (Keep existing inventories query) ...
   const { data: inventories, isLoading: inventoriesLoading } =
     useGetInventories();
 
-  // Memoize the consumption logs query parameters to prevent unnecessary refetches
-  const consumptionParams = useMemo(() => ({
-    startDate: dateRange.startDate,
-    endDate: dateRange.endDate,
-    inventoryId: filters.inventoryId || undefined,
-  }), [dateRange.startDate, dateRange.endDate, filters.inventoryId]);
+  // ... (Keep existing consumptionLogs query) ...
+
+  // ... (Inside the usage in JSX) ...
+
+
+  const consumptionParams = useMemo(() => {
+    const start = new Date(selectedDate);
+    start.setHours(0, 0, 0, 0);
+    const end = new Date(selectedDate);
+    end.setHours(23, 59, 59, 999);
+
+    return {
+      startDate: showFilters ? dateRange.startDate : start,
+      endDate: showFilters ? dateRange.endDate : end,
+      inventoryId: filters.inventoryId || undefined,
+      category: filters.category || undefined,
+      search: searchQuery || undefined,
+      page: currentPage,
+      limit: ITEMS_PER_PAGE,
+    };
+  }, [selectedDate, dateRange, filters.inventoryId, filters.category, searchQuery, viewMode, currentPage, showFilters]);
 
   const {
-    data: consumptionLogs,
+    data: consumptionResult,
     isLoading: consumptionLoading,
     error: consumptionError,
   } = useGetConsumptionLogs(consumptionParams);
 
+  const consumptionLogs = consumptionResult?.consumptionLogs || [];
+  const totalPages = consumptionResult?.totalPages || 1;
+  const totalCalories = consumptionResult?.totalCalories || 0;
 
-  // Filter logs based on selected filters
-  const filteredLogs = useMemo(() => {
-    if (!consumptionLogs) return [];
 
-    return consumptionLogs.filter(log => {
-      const matchesCategory =
-        !filters.category || log.foodItem?.category === filters.category;
-      const matchesSearch = !searchQuery || 
-        log.itemName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        log.foodItem?.category?.toLowerCase().includes(searchQuery.toLowerCase());
-      return matchesCategory && matchesSearch;
-    });
-  }, [consumptionLogs, filters.category]);
+  // No local filtering needed anymore, results are filtered by the backend
+  const filteredLogs = consumptionLogs;
 
   // Group logs by date
   const logsByDate = useMemo(() => {
@@ -82,21 +244,6 @@ export default function DailyLogPage() {
     });
     return grouped;
   }, [filteredLogs]);
-
-  // Calculate daily stats
-  const dailyStats = useMemo(() => {
-    const today = new Date().toDateString();
-    const todayLogs = logsByDate[today] || [];
-
-    const totalItems = todayLogs.length;
-    const totalQuantity = todayLogs.reduce((sum, log) => sum + log.quantity, 0);
-    const totalCalories = todayLogs.reduce((sum, log) => sum + (log.calories || 0), 0);
-    const uniqueCategories = new Set(
-      todayLogs.map(log => log.foodItem?.category).filter(Boolean),
-    ).size;
-
-    return { totalItems, totalQuantity, uniqueCategories, totalCalories };
-  }, [logsByDate]);
 
   // Get category icon
   const getCategoryIcon = (category?: string) => {
@@ -129,38 +276,6 @@ export default function DailyLogPage() {
     }
   };
 
-  // Clear filters
-  const clearFilters = () => {
-    setFilters({
-      inventoryId: '',
-      category: '',
-    });
-  };
-
-  const hasActiveFilters = filters.inventoryId || filters.category;
-
-  // Optimized date change handlers to prevent unnecessary cache invalidation
-  const handleStartDateChange = useMemo(() =>
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const newDate = new Date(e.target.value);
-      newDate.setHours(0, 0, 0, 0); // Start of day
-      setDateRange(prev => ({
-        ...prev,
-        startDate: newDate,
-      }));
-    }, []
-  );
-
-  const handleEndDateChange = useMemo(() =>
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const newDate = new Date(e.target.value);
-      newDate.setHours(23, 59, 59, 999); // End of day
-      setDateRange(prev => ({
-        ...prev,
-        endDate: newDate,
-      }));
-    }, []
-  );
 
   // Get unique categories from logs
   const availableCategories = Array.from(
@@ -208,249 +323,251 @@ export default function DailyLogPage() {
   }, [filteredLogs]);
 
   const goalCalories = 2500;
-  const consumedCalories = dailyStats.totalCalories;
+  const consumedCalories = totalCalories;
   const caloriesLeft = Math.max(0, goalCalories - consumedCalories);
   const caloriePercentage = Math.min(100, (consumedCalories / goalCalories) * 100);
   const strokeDasharray = 552;
   const strokeDashoffset = strokeDasharray - (strokeDasharray * caloriePercentage) / 100;
 
-  if (consumptionLoading) {
-    return (
-      <div className="flex-1 flex items-center justify-center min-h-screen">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-          <p className="text-black font-black uppercase tracking-widest text-xs">Loading logs...</p>
-        </div>
-      </div>
-    );
-  }
 
-  if (consumptionError) {
-    return (
-      <div className="flex-1 flex items-center justify-center min-h-screen">
-        <div className="bg-white p-10 rounded-[2.5rem] shadow-soft border border-red-50 text-center max-w-md">
-          <div className="w-20 h-20 bg-red-50 text-red-500 rounded-3xl flex items-center justify-center mx-auto mb-6">
-            <X className="w-10 h-10" />
-          </div>
-          <h2 className="text-2xl font-black text-black mb-2">Something went wrong</h2>
-          <p className="text-muted-foreground font-medium mb-8">We couldn't load your consumption logs. Please try again later.</p>
-          <button 
-            onClick={() => window.location.reload()}
-            className="bg-black text-white px-8 py-3 rounded-full font-black hover:opacity-90 transition-all active:scale-95"
-          >
-            Retry Now
-          </button>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <main className="flex-1 overflow-y-auto">
       <div className="container mx-auto px-4 py-8 max-w-7xl space-y-8">
-      <header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
-        <div>
-          <h1 className="text-4xl font-black text-black tracking-tight">Consumption Log</h1>
-          <p className="text-muted-foreground font-medium mt-1">Track your daily intake and maintain a healthy balance.</p>
-        </div>
-        <div className="flex items-center gap-4 w-full md:w-auto">
-          <div className="relative flex-1 md:flex-none">
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
-            <input 
-              className="pl-12 pr-4 py-3 rounded-full border-none bg-white text-gray-700 placeholder-gray-400 shadow-soft focus:ring-2 focus:ring-black w-full md:w-80 font-bold" 
-              placeholder="Search food..." 
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
+        <header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
+          <div>
+            <h1 className="text-4xl font-black text-black tracking-tight">Consumption Log</h1>
+            <p className="text-muted-foreground font-medium mt-1">Track your daily intake and maintain a healthy balance.</p>
           </div>
-          <button className="bg-black text-white px-8 py-3 rounded-full font-black flex items-center gap-2 hover:opacity-90 transition-all active:scale-95 whitespace-nowrap shadow-lg shadow-black/10">
-            <Plus className="w-5 h-5 text-primary font-black" />
-            Log Meal
-          </button>
-        </div>
-      </header>
-
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-        {/* Left Column */}
-        <div className="xl:col-span-2 flex flex-col gap-8">
-          {/* Banner Card */}
-          <div className="bg-white rounded-[2.5rem] p-10 relative overflow-hidden shadow-soft flex flex-col md:flex-row items-center justify-between min-h-[320px] border border-gray-50/50">
-            <div className="absolute inset-0 z-0 opacity-10">
-              <img alt="Healthy Food" className="w-full h-full object-cover" src="https://images.unsplash.com/photo-1490645935967-10de6ba17061?q=80&w=2053&auto=format&fit=crop" />
-              <div className="absolute inset-0 bg-gradient-to-r from-white via-white/90 to-transparent"></div>
+          <div className="flex items-center gap-4 w-full md:w-auto">
+            <div className="relative flex-1 md:flex-none">
+              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
+              <input
+                className="pl-12 pr-4 py-3 rounded-full border-none bg-white text-gray-700 placeholder-gray-400 shadow-soft focus:ring-2 focus:ring-black w-full md:w-80 font-bold"
+                placeholder="Search food..."
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
             </div>
-            
-            <div className="relative z-10 w-full md:w-1/2">
-              <h2 className="text-5xl font-black text-black mb-4 leading-tight">Eat Smarter,<br/><span className="text-primary-dark">Live Better!</span></h2>
-              <p className="text-muted-foreground font-medium mb-8 max-w-sm leading-relaxed">
-                You've consumed <span className="text-black font-black">{Math.round(consumedCalories)} kcal</span> today. 
-                That's <span className="text-black font-black flex items-center gap-1 inline-flex">
-                  <TrendingUp className="w-4 h-4 text-primary" />
-                  {Math.round(caloriePercentage)}%
-                </span> of your daily goal.
-              </p>
-              <div className="flex items-center gap-6">
-                <button className="bg-black text-white px-8 py-4 rounded-full font-black hover:bg-primary hover:text-black transition-all flex items-center gap-3 group shadow-xl shadow-black/10 active:scale-95">
-                  View Analytics
-                  <div className="bg-white rounded-full p-1.5 w-7 h-7 flex items-center justify-center transition-transform group-hover:translate-x-1">
-                    <ArrowRight className="w-4 h-4 text-black" />
+            <button className="bg-black text-white px-8 py-3 rounded-full font-black flex items-center gap-2 hover:opacity-90 transition-all active:scale-95 whitespace-nowrap shadow-lg shadow-black/10">
+              <Plus className="w-5 h-5 text-primary font-black" />
+              Log Meal
+            </button>
+          </div>
+        </header>
+
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 items-start">
+          {/* Left Column */}
+          <div className="xl:col-span-2 flex flex-col gap-8">
+            {/* Banner Card */}
+            <div className="bg-white rounded-[2.5rem] p-10 relative overflow-hidden shadow-soft flex flex-col md:flex-row items-center justify-between min-h-[320px] border border-gray-50/50">
+              <div className="absolute inset-0 z-0 opacity-10">
+                <img alt="Healthy Food" className="w-full h-full object-cover" src="https://images.unsplash.com/photo-1490645935967-10de6ba17061?q=80&w=2053&auto=format&fit=crop" />
+                <div className="absolute inset-0 bg-gradient-to-r from-white via-white/90 to-transparent"></div>
+              </div>
+
+              <div className="relative z-10 w-full md:w-1/2">
+                <h2 className="text-5xl font-black text-black mb-4 leading-tight">Eat Smarter,<br /><span className="text-primary-dark">Live Better!</span></h2>
+                <p className="text-muted-foreground font-medium mb-8 max-w-sm leading-relaxed">
+                  You've consumed <span className="text-black font-black">{Math.round(consumedCalories)} kcal</span> today.
+                  That's <span className="text-black font-black flex items-center gap-1 inline-flex">
+                    <TrendingUp className="w-4 h-4 text-primary" />
+                    {Math.round(caloriePercentage)}%
+                  </span> of your daily goal.
+                </p>
+                <div className="flex items-center gap-6">
+                  <button className="bg-black text-white px-8 py-4 rounded-full font-black hover:bg-primary hover:text-black transition-all flex items-center gap-3 group shadow-xl shadow-black/10 active:scale-95">
+                    View Analytics
+                    <div className="bg-white rounded-full p-1.5 w-7 h-7 flex items-center justify-center transition-transform group-hover:translate-x-1">
+                      <ArrowRight className="w-4 h-4 text-black" />
+                    </div>
+                  </button>
+                </div>
+              </div>
+
+              <div className="relative z-10 w-full md:w-2/5 flex justify-center mt-12 md:mt-0">
+                <div className="relative w-56 h-56">
+                  <svg className="w-full h-full transform -rotate-90">
+                    <circle className="text-gray-100" cx="112" cy="112" fill="transparent" r="98" stroke="currentColor" strokeWidth="16"></circle>
+                    <circle className="text-black transition-all duration-1000 ease-out" cx="112" cy="112" fill="transparent" r="98" stroke="currentColor" strokeDasharray={strokeDasharray} strokeDashoffset={strokeDashoffset} strokeLinecap="round" strokeWidth="16"></circle>
+                  </svg>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center">
+                    <span className="text-4xl font-black text-black tracking-tighter">{Math.round(caloriesLeft)}</span>
+                    <span className="text-[10px] uppercase font-black tracking-[0.2em] text-muted-foreground mt-1">kcal Left</span>
                   </div>
+                  <div className="absolute -top-2 -right-2 bg-primary/20 backdrop-blur-md border border-primary/50 text-black px-4 py-2 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg">Carbs {Math.round((totalMacros.carbs * 4 / (consumedCalories || 1)) * 100)}%</div>
+                  <div className="absolute bottom-4 -left-6 bg-black text-white px-4 py-2 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl">Protein {Math.round((totalMacros.protein * 4 / (consumedCalories || 1)) * 100)}%</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Today's Meals Section */}
+            <div className="bg-white rounded-[2.5rem] p-10 shadow-soft border border-gray-50/50 flex-1 relative overflow-hidden">
+              {/* Subtle Refetching Indicator */}
+              {consumptionLoading && consumptionLogs.length > 0 && (
+                <div className="absolute top-0 left-0 right-0 h-1 bg-gray-50 overflow-hidden z-20">
+                  <div className="h-full bg-primary animate-progress origin-left"></div>
+                </div>
+              )}
+              <div className="flex justify-between items-center mb-10">
+                <div>
+                  <h3 className="text-2xl font-black text-black tracking-tight">Today's Meals</h3>
+                  <p className="text-muted-foreground text-xs font-bold uppercase tracking-widest mt-1">Daily Log Feed</p>
+                </div>
+                <button
+                  onClick={() => setShowFilters(!showFilters)}
+                  className={`px-6 py-2.5 rounded-2xl font-black text-sm transition-all active:scale-95 border flex items-center gap-2 ${showFilters || hasActiveFilters
+                    ? 'bg-black text-white border-black'
+                    : 'bg-gray-50 text-black border-gray-100'
+                    }`}
+                >
+                  <Filter className="w-4 h-4" />
+                  Filters
                 </button>
               </div>
-            </div>
 
-            <div className="relative z-10 w-full md:w-2/5 flex justify-center mt-12 md:mt-0">
-              <div className="relative w-56 h-56">
-                <svg className="w-full h-full transform -rotate-90">
-                  <circle className="text-gray-100" cx="112" cy="112" fill="transparent" r="98" stroke="currentColor" strokeWidth="16"></circle>
-                  <circle className="text-black transition-all duration-1000 ease-out" cx="112" cy="112" fill="transparent" r="98" stroke="currentColor" strokeDasharray={strokeDasharray} strokeDashoffset={strokeDashoffset} strokeLinecap="round" strokeWidth="16"></circle>
-                </svg>
-                <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <span className="text-4xl font-black text-black tracking-tighter">{Math.round(caloriesLeft)}</span>
-                  <span className="text-[10px] uppercase font-black tracking-[0.2em] text-muted-foreground mt-1">kcal Left</span>
-                </div>
-                <div className="absolute -top-2 -right-2 bg-primary/20 backdrop-blur-md border border-primary/50 text-black px-4 py-2 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg">Carbs {Math.round((totalMacros.carbs * 4 / (consumedCalories || 1)) * 100)}%</div>
-                <div className="absolute bottom-4 -left-6 bg-black text-white px-4 py-2 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl">Protein {Math.round((totalMacros.protein * 4 / (consumedCalories || 1)) * 100)}%</div>
-              </div>
-            </div>
-          </div>
+              {showFilters && (
+                <div className="mb-10 p-10 bg-gray-50/50 rounded-[3rem] border border-gray-100 space-y-10 animate-in fade-in slide-in-from-top-4 duration-300 shadow-inner">
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+                    {/* Date Range Selector */}
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Calendar className="w-4 h-4 text-primary" />
+                        <label className="text-[10px] font-black uppercase tracking-widest text-black">Date Range</label>
+                      </div>
+                      <div className="grid grid-cols-[1fr,auto,1fr] items-center gap-3 bg-white p-4 rounded-2xl border border-gray-100 shadow-sm focus-within:ring-2 focus-within:ring-black transition-all">
+                        <input
+                          type="date"
+                          value={dateRange.startDate.toISOString().split('T')[0]}
+                          onChange={handleStartDateChange}
+                          className="bg-transparent text-xs font-bold focus:outline-none w-full cursor-pointer hover:text-primary transition-colors"
+                        />
+                        <span className="text-muted-foreground font-black opacity-30">—</span>
+                        <input
+                          type="date"
+                          value={dateRange.endDate.toISOString().split('T')[0]}
+                          onChange={handleEndDateChange}
+                          className="bg-transparent text-xs font-bold focus:outline-none w-full cursor-pointer hover:text-primary transition-colors text-right"
+                        />
+                      </div>
+                    </div>
 
-          {/* Today's Meals Section */}
-          <div className="bg-white rounded-[2.5rem] p-10 shadow-soft border border-gray-50/50 flex-1">
-            <div className="flex justify-between items-center mb-10">
-              <div>
-                <h3 className="text-2xl font-black text-black tracking-tight">Today's Meals</h3>
-                <p className="text-muted-foreground text-xs font-bold uppercase tracking-widest mt-1">Daily Log Feed</p>
-              </div>
-              <button 
-                onClick={() => setShowFilters(!showFilters)}
-                className={`px-6 py-2.5 rounded-2xl font-black text-sm transition-all active:scale-95 border flex items-center gap-2 ${
-                  showFilters || hasActiveFilters 
-                    ? 'bg-black text-white border-black' 
-                    : 'bg-gray-50 text-black border-gray-100'
-                }`}
-              >
-                <Filter className="w-4 h-4" />
-                Filters
-              </button>
-            </div>
+                    {/* Inventory Filter */}
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Package className="w-4 h-4 text-primary" />
+                        <label className="text-[10px] font-black uppercase tracking-widest text-black">Source Inventory</label>
+                      </div>
+                      <select
+                        value={filters.inventoryId}
+                        onChange={e => setFilters(prev => ({ ...prev, inventoryId: e.target.value }))}
+                        className="w-full p-4 bg-white border border-gray-100 rounded-2xl text-xs font-bold focus:ring-2 focus:ring-black outline-none shadow-sm cursor-pointer hover:border-primary transition-all appearance-none"
+                        disabled={inventoriesLoading}
+                        style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'currentColor\'%3E%3Cpath stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'org/9 5l7 7-7 7\' /%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 1rem center', backgroundSize: '1rem' }}
+                      >
+                        <option value="">All Inventories</option>
+                        {(inventories || []).map(inventory => (
+                          <option key={inventory.id} value={inventory.id}>{inventory.name}</option>
+                        ))}
+                      </select>
+                    </div>
 
-            {showFilters && (
-              <div className="mb-10 p-8 bg-gray-50/50 rounded-[2rem] border border-gray-100 space-y-8 animate-in fade-in slide-in-from-top-4 duration-300">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                  {/* Date Range Selector */}
-                  <div className="space-y-3">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Date Range</label>
-                    <div className="flex items-center gap-3 bg-white p-3 rounded-2xl border border-gray-100 shadow-sm">
-                      <Calendar className="w-4 h-4 text-black" />
-                      <input
-                        type="date"
-                        value={dateRange.startDate.toISOString().split('T')[0]}
-                        onChange={handleStartDateChange}
-                        className="bg-transparent text-xs font-bold focus:outline-none w-full"
-                      />
-                      <span className="text-muted-foreground font-black">—</span>
-                      <input
-                        type="date"
-                        value={dateRange.endDate.toISOString().split('T')[0]}
-                        onChange={handleEndDateChange}
-                        className="bg-transparent text-xs font-bold focus:outline-none w-full"
-                      />
+                    {/* Category Filter */}
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Filter className="w-4 h-4 text-primary" />
+                        <label className="text-[10px] font-black uppercase tracking-widest text-black">Food Category</label>
+                      </div>
+                      <select
+                        value={filters.category}
+                        onChange={e => setFilters(prev => ({ ...prev, category: e.target.value }))}
+                        className="w-full p-4 bg-white border border-gray-100 rounded-2xl text-xs font-bold focus:ring-2 focus:ring-black outline-none shadow-sm cursor-pointer hover:border-primary transition-all appearance-none"
+                        style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'currentColor\'%3E%3Cpath stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'org/9 5l7 7-7 7\' /%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 1rem center', backgroundSize: '1rem' }}
+                      >
+                        <option value="">All Categories</option>
+                        {availableCategories.map(category => (
+                          <option key={category} value={category}>
+                            {category ? category.charAt(0).toUpperCase() + category.slice(1) : 'Unknown'}
+                          </option>
+                        ))}
+                      </select>
                     </div>
                   </div>
 
-                  {/* Inventory Filter */}
-                  <div className="space-y-3">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Inventory</label>
-                    <select
-                      value={filters.inventoryId}
-                      onChange={e => setFilters(prev => ({ ...prev, inventoryId: e.target.value }))}
-                      className="w-full p-3 bg-white border border-gray-100 rounded-2xl text-xs font-bold focus:ring-2 focus:ring-black outline-none shadow-sm"
-                      disabled={inventoriesLoading}
-                    >
-                      <option value="">All Inventories</option>
-                      {(inventories || []).map(inventory => (
-                        <option key={inventory.id} value={inventory.id}>{inventory.name}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* Category Filter */}
-                  <div className="space-y-3">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Category</label>
-                    <select
-                      value={filters.category}
-                      onChange={e => setFilters(prev => ({ ...prev, category: e.target.value }))}
-                      className="w-full p-3 bg-white border border-gray-100 rounded-2xl text-xs font-bold focus:ring-2 focus:ring-black outline-none shadow-sm"
-                    >
-                      <option value="">All Categories</option>
-                      {availableCategories.map(category => (
-                        <option key={category} value={category}>
-                          {category ? category.charAt(0).toUpperCase() + category.slice(1) : 'Unknown'}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                {hasActiveFilters && (
-                  <div className="flex items-center justify-between pt-6 border-t border-gray-100">
-                    <div className="flex flex-wrap gap-2">
-                      {filters.inventoryId && (
-                        <span className="px-3 py-1 bg-black text-white rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
-                          {inventories?.find(i => i.id === filters.inventoryId)?.name}
-                          <button onClick={() => setFilters(prev => ({ ...prev, inventoryId: '' }))}>
-                            <X className="w-3 h-3 text-primary" />
-                          </button>
-                        </span>
-                      )}
-                      {filters.category && (
-                        <span className="px-3 py-1 bg-primary text-black rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
-                          {filters.category}
-                          <button onClick={() => setFilters(prev => ({ ...prev, category: '' }))}>
-                            <X className="w-3 h-3" />
-                          </button>
-                        </span>
-                      )}
+                  {hasActiveFilters && (
+                    <div className="flex items-center justify-between pt-6 border-t border-gray-100">
+                      <div className="flex flex-wrap gap-2">
+                        {filters.inventoryId && (
+                          <span className="px-3 py-1 bg-black text-white rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
+                            {inventories?.find(i => i.id === filters.inventoryId)?.name}
+                            <button onClick={() => setFilters(prev => ({ ...prev, inventoryId: '' }))}>
+                              <X className="w-3 h-3 text-primary" />
+                            </button>
+                          </span>
+                        )}
+                        {filters.category && (
+                          <span className="px-3 py-1 bg-primary text-black rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
+                            {filters.category}
+                            <button onClick={() => setFilters(prev => ({ ...prev, category: '' }))}>
+                              <X className="w-3 h-3" />
+                            </button>
+                          </span>
+                        )}
+                      </div>
+                      <button
+                        onClick={clearFilters}
+                        className="text-[10px] font-black uppercase tracking-[0.2em] text-black hover:text-primary transition-colors underline underline-offset-4"
+                      >
+                        Clear All
+                      </button>
                     </div>
-                    <button 
-                      onClick={clearFilters}
-                      className="text-[10px] font-black uppercase tracking-[0.2em] text-black hover:text-primary transition-colors underline underline-offset-4"
+                  )}
+                </div>
+              )}
+
+              <div className="space-y-12">
+                {consumptionLoading && consumptionLogs.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-20 gap-4">
+                    <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+                    <p className="text-black font-black uppercase tracking-widest text-[10px]">Updating Log Feed...</p>
+                  </div>
+                ) : consumptionError ? (
+                  <div className="text-center py-16 bg-red-50/30 rounded-[2rem] border-2 border-dashed border-red-100">
+                    <X className="w-16 h-16 text-red-200 mx-auto mb-4" />
+                    <p className="text-red-700 font-black uppercase tracking-widest text-xs">Failed to load meals</p>
+                    <button
+                      onClick={() => window.location.reload()}
+                      className="mt-4 text-black font-black hover:text-primary underline underline-offset-8 transition-all"
                     >
-                      Clear All
+                      Retry Connection
                     </button>
                   </div>
-                )}
-              </div>
-            )}
+                ) : Object.keys(logsByDate).length === 0 ? (
+                  <div className="text-center py-16 bg-gray-50/50 rounded-[2rem] border-2 border-dashed border-gray-100">
+                    <Utensils className="w-16 h-16 text-gray-200 mx-auto mb-4" />
+                    <p className="text-muted-foreground font-black uppercase tracking-widest text-xs">No meals logged for this period</p>
+                    <button className="mt-4 text-black font-black hover:text-primary underline underline-offset-8 transition-all">Log your first meal</button>
+                  </div>
+                ) : (
+                  Object.entries(logsByDate)
+                    .sort(([a], [b]) => new Date(b).getTime() - new Date(a).getTime())
+                    .map(([date, logs]) => (
+                      <div key={date} className="space-y-6 animate-in fade-in duration-500">
+                        <div className="flex items-center gap-4">
+                          <h4 className="text-sm font-black text-black uppercase tracking-[0.3em] whitespace-nowrap">{formatDate(date)}</h4>
+                          <div className="h-px bg-gray-100 w-full" />
+                        </div>
 
-            <div className="space-y-12">
-              {Object.keys(logsByDate).length === 0 ? (
-                <div className="text-center py-16 bg-gray-50/50 rounded-[2rem] border-2 border-dashed border-gray-100">
-                  <Utensils className="w-16 h-16 text-gray-200 mx-auto mb-4" />
-                  <p className="text-muted-foreground font-black uppercase tracking-widest text-xs">No meals logged for this period</p>
-                  <button className="mt-4 text-black font-black hover:text-primary underline underline-offset-8 transition-all">Log your first meal</button>
-                </div>
-              ) : (
-                Object.entries(logsByDate)
-                  .sort(([a], [b]) => new Date(b).getTime() - new Date(a).getTime())
-                  .map(([date, logs]) => (
-                    <div key={date} className="space-y-6">
-                      <div className="flex items-center gap-4">
-                        <h4 className="text-sm font-black text-black uppercase tracking-[0.3em] whitespace-nowrap">{formatDate(date)}</h4>
-                        <div className="h-px bg-gray-100 w-full" />
-                      </div>
-                      
-                      <div className="space-y-4">
-                        {logs.sort((a, b) => new Date(b.consumedAt).getTime() - new Date(a.consumedAt).getTime()).map(log => (
-                          <div key={log.id} className="flex items-center p-5 rounded-3xl hover:bg-gray-50 transition-all border border-gray-100/50 group bg-white shadow-sm hover:shadow-md">
-                            <div className="w-16 h-16 rounded-2xl overflow-hidden mr-5 flex-shrink-0 group-hover:scale-105 transition-transform bg-gray-50 flex items-center justify-center">
-                              <div className={`w-full h-full flex items-center justify-center ${getCategoryColor(log.foodItem?.category)}`}>
-                                {getCategoryIcon(log.foodItem?.category)}
+                        <div className="space-y-4">
+                          {logs.sort((a, b) => new Date(b.consumedAt).getTime() - new Date(a.consumedAt).getTime()).map(log => (
+                            <div key={log.id} className="flex items-center p-5 rounded-3xl hover:bg-gray-50 transition-all border border-gray-100/50 group bg-white shadow-sm hover:shadow-md">
+                              <div className="w-16 h-16 rounded-2xl overflow-hidden mr-5 flex-shrink-0 group-hover:scale-105 transition-transform bg-gray-50 flex items-center justify-center">
+                                <div className={`w-full h-full flex items-center justify-center ${getCategoryColor(log.foodItem?.category)}`}>
+                                  {getCategoryIcon(log.foodItem?.category)}
+                                </div>
                               </div>
-                            </div>
-                            <div className="flex-1 min-w-0">
+                              <div className="flex-1 min-w-0">
                                 <div className="flex justify-between items-start mb-2">
                                   <div>
                                     <h4 className="font-black text-lg text-black leading-none mb-1 group-hover:text-primary transition-colors">{log.itemName}</h4>
@@ -477,167 +594,433 @@ export default function DailyLogPage() {
                                     {log.fat?.toFixed(1) || 0}g Fat
                                   </div>
                                 </div>
+                              </div>
                             </div>
-                          </div>
-                        ))}
+                          ))}
+                        </div>
+                      </div>
+                    ))
+                )}
+
+                {/* Pagination Controls */}
+                {totalPages > 1 && (
+                  <div className="flex items-center justify-center gap-2 mt-8 pb-4">
+                    <button
+                      onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                      disabled={currentPage === 1}
+                      className="w-10 h-10 rounded-xl bg-white border border-gray-100 flex items-center justify-center disabled:opacity-30 hover:bg-gray-50 transition-all font-black text-xs"
+                    >
+                      ←
+                    </button>
+                    {[...Array(totalPages)].map((_, i) => (
+                      <button
+                        key={i}
+                        onClick={() => setCurrentPage(i + 1)}
+                        className={`w-10 h-10 rounded-xl border transition-all font-black text-xs ${currentPage === i + 1
+                          ? 'bg-black text-primary border-black'
+                          : 'bg-white border-gray-100 text-gray-400 hover:border-black hover:text-black'
+                          }`}
+                      >
+                        {i + 1}
+                      </button>
+                    ))}
+                    <button
+                      onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                      disabled={currentPage === totalPages}
+                      className="w-10 h-10 rounded-xl bg-white border border-gray-100 flex items-center justify-center disabled:opacity-30 hover:bg-gray-50 transition-all font-black text-xs"
+                    >
+                      →
+                    </button>
+                  </div>
+                )}
+
+                {/* Add Snack Card */}
+                <div className="flex items-center p-6 rounded-[2rem] bg-gray-50 border-2 border-dashed border-gray-100 group cursor-pointer hover:border-black transition-all mt-8">
+                  <div className="w-16 h-16 rounded-2xl flex items-center justify-center bg-white text-gray-300 group-hover:scale-110 group-hover:bg-black group-hover:text-primary transition-all shadow-sm">
+                    <Utensils className="w-8 h-8" />
+                  </div>
+                  <div className="flex-1 flex items-center justify-between ml-6">
+                    <div>
+                      <h4 className="font-black text-lg text-black">Feeling peckish?</h4>
+                      <p className="text-xs font-black text-muted-foreground uppercase tracking-widest">Log a quick snack to stay precise</p>
+                    </div>
+                    <button className="w-12 h-12 rounded-2xl bg-black text-primary flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-xl shadow-black/20">
+                      <Plus className="w-6 h-6" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Column */}
+          <div className="xl:sticky xl:top-8 flex flex-col gap-8 h-fit">
+            {/* Hydration Card */}
+            <div className="bg-gradient-to-br from-[#8EC5DB] to-[#7FB0C8] rounded-[2.5rem] p-8 text-white relative overflow-hidden shadow-xl min-h-[380px] flex flex-col group">
+              <div className="absolute -right-10 -top-10 w-44 h-104 bg-white opacity-10 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-1000"></div>
+
+              {/* Header / Date Selector */}
+              <div className="relative z-10 mb-6 h-26">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h3 className="text-xl font-black mb-1 flex items-center gap-2">
+                      Hydration <Droplets className="w-5 h-5 text-white/80" />
+                      {hydrationLoading && <span className="text-[10px] opacity-70">Syncing...</span>}
+                    </h3>
+                    <p className="text-xs font-medium opacity-80 max-w-[80%] leading-relaxed">
+                      {viewMode === 'daily'
+                        ? selectedDate.toDateString() === new Date().toDateString() ? "Today's Intake" : selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })
+                        : selectedMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+                      }
+                    </p>
+                  </div>
+
+                  {/* Monthly Navigation Arrows */}
+                  {viewMode === 'monthly' && (
+                    <div className="flex bg-white/10 rounded-full p-1 mt-20 mr-180">
+                      <button
+                        onClick={() => handleMonthChange(-1)}
+                        className="w-8 h-8 flex items-center justify-center hover:bg-white/20 rounded-full transition-colors"
+                      >
+                        ←
+                      </button>
+                      <button
+                        onClick={() => handleMonthChange(1)}
+                        className="w-8 h-8 flex items-center justify-center hover:bg-white/20 rounded-full transition-colors"
+                      >
+                        →
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {viewMode === 'daily' ? (
+                <>
+                  {/* Daily View: History Strip */}
+                  <div className="relative z-10 mb-8 group/strip">
+                    {/* Left Scroll Button */}
+                    <button
+                      onClick={() => handleScrollStats('left')}
+                      className="absolute -left-4 top-1/2 -translate-y-1/2 z-20 w-8 h-8 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center opacity-0 group-hover/strip:opacity-100 transition-opacity hover:bg-white/40"
+                    >
+                      <ArrowRight className="w-4 h-4 rotate-180" />
+                    </button>
+
+                    <div
+                      ref={scrollContainerRef}
+                      className="overflow-x-auto pb-4 scrollbar-hide"
+                    >
+                      <div className="flex gap-3 w-max px-1">
+                        {dailyHistory?.map((day: any) => {
+                          const d = new Date(day.date);
+                          const isSelected = d.toDateString() === selectedDate.toDateString();
+                          const isToday = d.toDateString() === new Date().toDateString();
+                          const percent = Math.min(100, (day.amount / (day.goal || 2.5)) * 100);
+
+                          return (
+                            <button
+                              key={day.date}
+                              onClick={() => setSelectedDate(d)}
+                              className={`group/day flex flex-col items-center gap-2 transition-all ${isSelected ? 'opacity-100 scale-110' : 'opacity-60 hover:opacity-100'}`}
+                            >
+                              <div className={`w-2 h-8 rounded-full bg-white/20 overflow-hidden relative ${isSelected ? 'shadow-[0_0_10px_rgba(255,255,255,0.5)]' : ''}`}>
+                                <div className="absolute bottom-0 left-0 w-full bg-white transition-all duration-500" style={{ height: `${percent}%` }} />
+                              </div>
+                              <span className={`text-[10px] font-black uppercase tracking-wider ${isToday ? 'text-white' : ''}`}>
+                                {d.getDate()}
+                              </span>
+                            </button>
+                          );
+                        })}
                       </div>
                     </div>
-                  ))
+
+                    {/* Right Scroll Button */}
+                    <button
+                      onClick={() => handleScrollStats('right')}
+                      className="absolute -right-4 top-1/2 -translate-y-1/2 z-20 w-8 h-8 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center opacity-0 group-hover/strip:opacity-100 transition-opacity hover:bg-white/40"
+                    >
+                      <ArrowRight className="w-4 h-4" />
+                    </button>
+                  </div>
+
+                  {/* Daily View: Cups Visualization */}
+                  <div className="relative z-10 mb-8">
+                    <div className="grid grid-cols-6 gap-2">
+                      {[...Array(12)].map((_, i) => (
+                        <div
+                          key={i}
+                          className={`h-10 rounded-lg transition-all duration-500 ${i < Math.floor(hydrationAmount / 0.2) ? 'bg-white opacity-100 shadow-lg scale-105' : 'bg-white/10 scale-95'}`}
+                        />
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="flex justify-between items-end mt-auto relative z-10">
+                    <button
+                      onClick={handleAddWater}
+                      disabled={updateHydrationMutation.isPending}
+                      className="bg-white text-[#8EC5DB] px-6 py-3 rounded-2xl text-xs font-black uppercase tracking-widest shadow-xl hover:bg-black hover:text-white transition-all active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed"
+                    >
+                      {updateHydrationMutation.isPending ? 'Saving...' : '+ 250ml'}
+                    </button>
+                    <div className="text-right">
+                      <span className="text-5xl font-black block leading-none tracking-tighter">{hydrationAmount.toFixed(1)}L</span>
+                      <span className="text-[10px] font-black uppercase tracking-widest opacity-70">/ {hydrationGoal}L Goal</span>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <>
+                  {/* Monthly View: Stats */}
+                  <div className="relative z-10 grid grid-cols-2 gap-4 mt-4">
+                    <div className="bg-white/10 rounded-2xl p-4 backdrop-blur-sm">
+                      <p className="text-[10px] uppercase tracking-widest opacity-70 mb-1">Total Intake</p>
+                      <p className="text-3xl font-black">{monthlyStats.total.toFixed(0)}L</p>
+                    </div>
+                    <div className="bg-white/10 rounded-2xl p-4 backdrop-blur-sm">
+                      <p className="text-[10px] uppercase tracking-widest opacity-70 mb-1">Daily Avg</p>
+                      <p className="text-3xl font-black">{monthlyStats.avg.toFixed(1)}L</p>
+                    </div>
+                  </div>
+
+                  <div className="relative z-10 mt-6 bg-white/10 rounded-2xl p-6 backdrop-blur-sm flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-full bg-white text-[#8EC5DB] flex items-center justify-center font-black text-lg">
+                      {monthlyStats.daysMetGoal}
+                    </div>
+                    <div>
+                      <p className="text-sm font-black">Goal Days</p>
+                      <p className="text-[10px] opacity-70 uppercase tracking-widest">Days you hit your target</p>
+                    </div>
+                  </div>
+                </>
               )}
 
-              {/* Add Snack Card */}
-              <div className="flex items-center p-6 rounded-[2rem] bg-gray-50 border-2 border-dashed border-gray-100 group cursor-pointer hover:border-black transition-all mt-8">
-                <div className="w-16 h-16 rounded-2xl flex items-center justify-center bg-white text-gray-300 group-hover:scale-110 group-hover:bg-black group-hover:text-primary transition-all shadow-sm">
-                  <Utensils className="w-8 h-8" />
-                </div>
-                <div className="flex-1 flex items-center justify-between ml-6">
-                  <div>
-                    <h4 className="font-black text-lg text-black">Feeling peckish?</h4>
-                    <p className="text-xs font-black text-muted-foreground uppercase tracking-widest">Log a quick snack to stay precise</p>
-                  </div>
-                  <button className="w-12 h-12 rounded-2xl bg-black text-primary flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-xl shadow-black/20">
-                    <Plus className="w-6 h-6" />
-                  </button>
-                </div>
+              {/* D / M Selection */}
+              <div className="absolute top-8 left-75 transform -translate-x-1/2 bg-white/10 backdrop-blur-xl border border-white/20 rounded-full p-1.5 flex shadow-2xl z-20">
+                <button
+                  onClick={() => setViewMode('daily')}
+                  className={`w-12 h-10 rounded-full font-black text-xs flex items-center justify-center shadow-lg transition-all scale-105 ${viewMode === 'daily' ? 'bg-white text-[#8EC5DB]' : 'text-white hover:bg-white/10'}`}
+                >
+                  Daily
+                </button>
+                <button
+                  onClick={() => setViewMode('monthly')}
+                  className={`w-16 h-10 rounded-full font-black text-xs flex items-center justify-center shadow-lg transition-all scale-105 ${viewMode === 'monthly' ? 'bg-white text-[#8EC5DB]' : 'text-white hover:bg-white/10'}`}
+                >
+                  Monthly
+                </button>
               </div>
             </div>
-          </div>
-        </div>
 
-        {/* Right Column */}
-        <div className="flex flex-col gap-8">
-          {/* Hydration Card */}
-          <div className="bg-gradient-to-br from-[#8EC5DB] to-[#7FB0C8] rounded-[2.5rem] p-8 text-white relative overflow-hidden shadow-xl min-h-[340px] flex flex-col group">
-            <div className="absolute -right-10 -top-10 w-44 h-44 bg-white opacity-10 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-1000"></div>
-            <div className="relative z-10">
-              <h3 className="text-xl font-black mb-1 flex items-center gap-2">
-                Hydration <Droplets className="w-5 h-5 text-white/80" />
-              </h3>
-              <p className="text-xs font-medium opacity-80 mb-8 max-w-[80%] leading-relaxed">Boost your energy and focus with optimal water intake throughout the day.</p>
-              
-              <div className="grid grid-cols-6 gap-2 mb-10">
-                {[...Array(12)].map((_, i) => (
-                  <div 
-                    key={i} 
-                    className={`h-12 rounded-xl transition-all duration-500 ${i < Math.floor(hydration / 0.2) ? 'bg-white opacity-100 shadow-lg' : 'bg-white/20'}`} 
-                  />
+            {/* Macros Card */}
+            <div className="bg-white rounded-[2.5rem] p-8 shadow-soft border border-gray-50/50">
+              <div className="flex justify-between items-center mb-10">
+                <div>
+                  <h3 className="font-black text-xl text-black flex items-center gap-2 tracking-tight">
+                    <PieChart className="w-6 h-6 text-primary" />
+                    Macros
+                  </h3>
+                  <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mt-1">Daily Balance</p>
+                </div>
+                <div className="text-right">
+                  <span className="text-2xl font-black text-black tracking-tighter">{Math.round(consumedCalories)}</span>
+                  <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest ml-1">kcal</span>
+                </div>
+              </div>
+
+              <div className="space-y-8">
+                {[
+                  { label: 'Carbohydrates', value: totalMacros.carbs, goal: 300, color: 'bg-primary', unit: 'g' },
+                  { label: 'Proteins', value: totalMacros.protein, goal: 180, color: 'bg-blue-400', unit: 'g' },
+                  { label: 'Fats', value: totalMacros.fat, goal: 70, color: 'bg-orange-400', unit: 'g' }
+                ].map((macro) => (
+                  <div key={macro.label}>
+                    <div className="flex justify-between items-end mb-3">
+                      <span className="text-xs font-black text-black uppercase tracking-widest">{macro.label}</span>
+                      <span className="text-sm font-black text-black tracking-tighter">
+                        {Math.round(macro.value)}{macro.unit}
+                        <span className="text-muted-foreground text-[10px] font-bold ml-1">/ {macro.goal}{macro.unit}</span>
+                      </span>
+                    </div>
+                    <div className="h-4 w-full bg-gray-50 rounded-full overflow-hidden border border-gray-100 p-0.5">
+                      <div
+                        className={`h-full ${macro.color} rounded-full transition-all duration-1000 ease-out`}
+                        style={{ width: `${Math.min(100, (macro.value / macro.goal) * 100)}%` }}
+                      />
+                    </div>
+                  </div>
                 ))}
               </div>
-            </div>
-            
-            <div className="flex justify-between items-end mt-auto relative z-10">
-              <button 
-                onClick={() => setHydration(prev => Math.min(prev + 0.25, 3))}
-                className="bg-white text-[#8EC5DB] px-6 py-3 rounded-2xl text-xs font-black uppercase tracking-widest shadow-xl hover:bg-black hover:text-white transition-all active:scale-95"
-              >
-                Add 250ml
-              </button>
-              <div className="text-right">
-                <span className="text-5xl font-black block leading-none tracking-tighter">{hydration.toFixed(1)}L</span>
-                <span className="text-[10px] font-black uppercase tracking-widest opacity-70">/ 2.5L Goal</span>
+
+              <div className="mt-12 pt-8 border-t border-gray-50">
+                <div className="flex justify-between items-end h-20 gap-1.5 px-2">
+                  {[40, 60, 45, 70, 90, 100, 80, 65, 50, 30, 25, 35, 40, 30, 45].map((h, i) => (
+                    <div
+                      key={i}
+                      className={`w-2.5 rounded-full transition-all duration-500 hover:scale-y-110 cursor-pointer ${i >= 10 ? 'bg-gray-100' : 'bg-primary'}`}
+                      style={{ height: `${h}%`, opacity: i === 5 ? 0.3 : 1 }}
+                    />
+                  ))}
+                </div>
+                <div className="flex justify-between mt-4 text-[10px] font-black text-muted-foreground uppercase tracking-widest">
+                  <span>Morning</span>
+                  <span>Midnight</span>
+                </div>
               </div>
             </div>
 
-            <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 bg-white/10 backdrop-blur-xl border border-white/20 rounded-full p-1.5 flex shadow-2xl">
-              <button className="w-10 h-10 rounded-full bg-white text-[#8EC5DB] font-black text-xs flex items-center justify-center shadow-lg transition-all scale-105">D</button>
-              <button className="w-10 h-10 rounded-full text-white hover:bg-white/10 font-bold text-xs flex items-center justify-center transition-all">W</button>
-              <button className="w-10 h-10 rounded-full text-white hover:bg-white/10 font-bold text-xs flex items-center justify-center transition-all">M</button>
-            </div>
-          </div>
-
-          {/* Macros Card */}
-          <div className="bg-white rounded-[2.5rem] p-8 shadow-soft border border-gray-50/50">
-            <div className="flex justify-between items-center mb-10">
-              <div>
-                <h3 className="font-black text-xl text-black flex items-center gap-2 tracking-tight">
-                  <PieChart className="w-6 h-6 text-primary" />
-                  Macros
-                </h3>
-                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mt-1">Daily Balance</p>
+            {/* Fitness Card */}
+            <div className="bg-white rounded-[2.5rem] p-8 shadow-soft border border-gray-50/50 flex flex-col group">
+              <div className="flex justify-between items-start mb-6">
+                <div>
+                  <h3 className="font-black text-xl text-black flex items-center gap-2">
+                    <Dumbbell className="w-6 h-6 text-muted-foreground group-hover:text-black transition-colors" />
+                    Fitness
+                  </h3>
+                  <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mt-1">
+                    {fitnessData?.weight ? `Last weigh-in: ${fitnessData.weight}kg` : 'No weight logged'}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <span className="block text-2xl font-black text-black tracking-tighter">
+                    {fitnessData?.steps || 0} <span className="text-xs text-muted-foreground font-medium uppercase tracking-widest">Steps</span>
+                  </span>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-[#8EC5DB]">
+                    {fitnessData?.caloriesBurned || 0} kcal burned
+                  </span>
+                </div>
               </div>
-              <div className="text-right">
-                <span className="text-2xl font-black text-black tracking-tighter">{Math.round(consumedCalories)}</span>
-                <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest ml-1">kcal</span>
-              </div>
-            </div>
 
-            <div className="space-y-8">
-              {[
-                { label: 'Carbohydrates', value: totalMacros.carbs, goal: 300, color: 'bg-primary', unit: 'g' },
-                { label: 'Proteins', value: totalMacros.protein, goal: 180, color: 'bg-blue-400', unit: 'g' },
-                { label: 'Fats', value: totalMacros.fat, goal: 70, color: 'bg-orange-400', unit: 'g' }
-              ].map((macro) => (
-                <div key={macro.label}>
-                  <div className="flex justify-between items-end mb-3">
-                    <span className="text-xs font-black text-black uppercase tracking-widest">{macro.label}</span>
-                    <span className="text-sm font-black text-black tracking-tighter">
-                      {Math.round(macro.value)}{macro.unit} 
-                      <span className="text-muted-foreground text-[10px] font-bold ml-1">/ {macro.goal}{macro.unit}</span>
+              <div className="relative h-20 w-full my-6 group-hover:scale-105 transition-transform duration-500">
+                <svg className="w-full h-full text-[#8EC5DB] drop-shadow-xl" preserveAspectRatio="none" viewBox="0 0 100 30">
+                  <path d="M0,15 Q25,5 50,15 T100,15" fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="3" />
+                  <circle
+                    cx={Math.min(100, (fitnessData?.steps || 0) / 100)}
+                    cy="11"
+                    fill="white"
+                    r="3"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  />
+                </svg>
+              </div>
+
+              <div className="flex items-end justify-between mt-auto">
+                <div className="flex items-center gap-4">
+                  <div>
+                    <span className="text-5xl font-black text-black tracking-tighter">
+                      {fitnessData?.weight || '--'}
+                      <span className="text-2xl text-muted-foreground font-medium tracking-tight">kg</span>
                     </span>
                   </div>
-                  <div className="h-4 w-full bg-gray-50 rounded-full overflow-hidden border border-gray-100 p-0.5">
-                    <div 
-                      className={`h-full ${macro.color} rounded-full transition-all duration-1000 ease-out`} 
-                      style={{ width: `${Math.min(100, (macro.value / macro.goal) * 100)}%` }}
-                    />
-                  </div>
+                  <button
+                    onClick={() => {
+                      setTempWeight(fitnessData?.weight?.toString() || '');
+                      setTempSteps(fitnessData?.steps?.toString() || '');
+                      setIsFitnessModalOpen(true);
+                    }}
+                    className="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center hover:bg-black hover:text-white transition-all shadow-sm group-hover:shadow-md"
+                  >
+                    <Plus className="w-5 h-5" />
+                  </button>
                 </div>
-              ))}
-            </div>
-
-            <div className="mt-12 pt-8 border-t border-gray-50">
-              <div className="flex justify-between items-end h-20 gap-1.5 px-2">
-                {[40, 60, 45, 70, 90, 100, 80, 65, 50, 30, 25, 35, 40, 30, 45].map((h, i) => (
-                  <div 
-                    key={i} 
-                    className={`w-2.5 rounded-full transition-all duration-500 hover:scale-y-110 cursor-pointer ${i >= 10 ? 'bg-gray-100' : 'bg-primary'}`} 
-                    style={{ height: `${h}%`, opacity: i === 5 ? 0.3 : 1 }} 
-                  />
-                ))}
-              </div>
-              <div className="flex justify-between mt-4 text-[10px] font-black text-muted-foreground uppercase tracking-widest">
-                <span>Morning</span>
-                <span>Midnight</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Weight Card */}
-          <div className="bg-white rounded-[2.5rem] p-8 shadow-soft border border-gray-50/50 flex-1 flex flex-col justify-between group">
-            <div className="flex justify-between items-start mb-6">
-              <div>
-                <h3 className="font-black text-xl text-black flex items-center gap-2">
-                  <Dumbbell className="w-6 h-6 text-muted-foreground group-hover:text-black transition-colors" />
-                  Fitness
-                </h3>
-                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mt-1">Target range: 68kg - 84kg</p>
-              </div>
-              <div className="text-right">
-                <span className="block text-2xl font-black text-black tracking-tighter">188 <span className="text-xs text-muted-foreground font-medium">cm</span></span>
-                <span className="text-[10px] font-black uppercase tracking-widest text-[#8EC5DB]">Hero Build</span>
-              </div>
-            </div>
-
-            <div className="relative h-20 w-full my-6 group-hover:scale-105 transition-transform duration-500">
-              <svg className="w-full h-full text-[#8EC5DB] drop-shadow-xl" preserveAspectRatio="none" viewBox="0 0 100 30">
-                <path d="M0,15 Q25,5 50,15 T100,15" fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="3" />
-                <circle cx="20" cy="11" fill="white" r="3" stroke="currentColor" strokeWidth="2" />
-              </svg>
-            </div>
-
-            <div className="flex items-end justify-between mt-auto">
-              <div>
-                <span className="text-5xl font-black text-black tracking-tighter">82<span className="text-2xl text-muted-foreground font-medium tracking-tight">kg</span></span>
-              </div>
-              <div className="text-right">
-                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] w-32 leading-relaxed">Weekly Progress Goal</p>
-                <p className="text-xs font-black text-black mt-1 uppercase tracking-widest group-hover:translate-x-1 transition-transform">Keep Pushing →</p>
+                <div className="text-right">
+                  <button
+                    onClick={() => {
+                      setTempWeight(fitnessData?.weight?.toString() || '');
+                      setTempSteps(fitnessData?.steps?.toString() || '');
+                      setIsFitnessModalOpen(true);
+                    }}
+                    className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] w-32 leading-relaxed hover:text-black transition-colors"
+                  >
+                    Log Activity →
+                  </button>
+                  <p className="text-xs font-black text-black mt-1 uppercase tracking-widest group-hover:translate-x-1 transition-transform">Keep Pushing</p>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-      </div>
+      {/* Fitness Update Modal */}
+      {isFitnessModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="bg-white rounded-[3rem] w-full max-w-sm p-10 shadow-2xl animate-in zoom-in-95 duration-300 border border-white/20">
+            <div className="flex justify-between items-center mb-8">
+              <h3 className="text-2xl font-black text-black flex items-center gap-3">
+                <Dumbbell className="w-7 h-7 text-primary" />
+                Daily Fitness
+              </h3>
+              <button
+                onClick={() => setIsFitnessModalOpen(false)}
+                className="w-10 h-10 rounded-2xl bg-gray-50 flex items-center justify-center hover:bg-gray-100 transition-colors"
+              >
+                <X className="w-5 h-5 text-gray-500" />
+              </button>
+            </div>
+
+            <div className="space-y-6">
+              <div className="bg-gray-50 p-6 rounded-[2rem] border border-gray-100 group transition-all focus-within:border-black focus-within:bg-white focus-within:shadow-xl">
+                <label className="block text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-2 group-focus-within:text-black transition-colors">Current Weight (kg)</label>
+                <div className="flex items-baseline gap-2">
+                  <input
+                    type="number"
+                    step="0.1"
+                    autoFocus
+                    value={tempWeight}
+                    onChange={(e) => setTempWeight(e.target.value)}
+                    placeholder="00.0"
+                    className="bg-transparent border-none p-0 text-5xl font-black tracking-tighter w-full focus:ring-0 placeholder:text-gray-200"
+                  />
+                  <span className="text-2xl font-black text-muted-foreground">kg</span>
+                </div>
+              </div>
+
+              <div className="bg-gray-50 p-6 rounded-[2rem] border border-gray-100 group transition-all focus-within:border-black focus-within:bg-white focus-within:shadow-xl">
+                <label className="block text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-2 group-focus-within:text-black transition-colors">Daily Steps</label>
+                <div className="flex items-baseline gap-2">
+                  <input
+                    type="number"
+                    value={tempSteps}
+                    onChange={(e) => setTempSteps(e.target.value)}
+                    placeholder="0"
+                    className="bg-transparent border-none p-0 text-5xl font-black tracking-tighter w-full focus:ring-0 placeholder:text-gray-200"
+                  />
+                  <TrendingUp className="w-6 h-6 text-primary animate-pulse" />
+                </div>
+              </div>
+
+              <button
+                onClick={() => {
+                  const pWeight = tempWeight && !isNaN(parseFloat(tempWeight)) ? parseFloat(tempWeight) : undefined;
+                  const pSteps = tempSteps && !isNaN(parseInt(tempSteps)) ? parseInt(tempSteps) : undefined;
+
+                  updateFitnessMutation.mutate({
+                    weight: pWeight,
+                    steps: pSteps,
+                    date: selectedDate
+                  }, {
+                    onSuccess: () => {
+                      setIsFitnessModalOpen(false);
+                    },
+                    onError: (err) => {
+                      console.error("Failed to save fitness stats", err);
+                      alert("Failed to save fitness stats. Please try again.");
+                    }
+                  });
+                }}
+                disabled={updateFitnessMutation.isPending}
+                className="w-full bg-black text-primary py-6 rounded-[2rem] font-black uppercase tracking-widest text-sm hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl shadow-black/20 mt-4 flex items-center justify-center gap-2 group disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {updateFitnessMutation.isPending ? 'Syncing...' : 'Save Daily Stats'}
+                {!updateFitnessMutation.isPending && <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }

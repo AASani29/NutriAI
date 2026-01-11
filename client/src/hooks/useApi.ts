@@ -20,6 +20,8 @@ export interface UserProfile {
     weightPreference: string | null;
     allergies: string | null;
     healthConditions: string | null;
+    latitude: number | null;
+    longitude: number | null;
   } | null;
   isNewUser?: boolean;
 }
@@ -34,6 +36,8 @@ export interface UpdateProfileData {
   weightPreference?: string;
   allergies?: string;
   healthConditions?: string;
+  latitude?: number;
+  longitude?: number;
 }
 
 // Custom hook for authenticated API calls

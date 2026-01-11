@@ -9,7 +9,7 @@ interface ProfileContextType {
   error: string | null;
   isOnboarded: boolean;
   isNewUser: boolean;
-  refreshProfile: () => Promise<void>;
+  refreshProfile: (silent?: boolean) => Promise<void>;
 }
 
 const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
@@ -21,7 +21,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const refreshProfile = async () => {
+  const refreshProfile = async (silent = false) => {
     if (!isSignedIn) {
       setProfile(null);
       setLoading(false);
@@ -29,7 +29,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     }
 
     try {
-      setLoading(true);
+      if (!silent) setLoading(true);
       setError(null);
       const response = await api.getCurrentUser();
       setProfile(response.data);
@@ -37,7 +37,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
       setError(err.message || 'Failed to load profile');
       console.error('Error loading profile:', err);
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   };
 

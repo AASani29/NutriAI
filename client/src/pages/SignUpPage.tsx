@@ -8,7 +8,7 @@ export default function SignUpPage() {
       
       <div className="absolute top-8 left-8 relative z-10">
         <Link to="/" className="flex items-center gap-2 group">
-          <img src='/gajor.png' width={50} height={25} className='rounded-xl shadow-soft group-hover:scale-105 transition-transform'/>
+          <img src='/gajor2.png' width={50} height={25} className='rounded-xl shadow-soft group-hover:scale-105 transition-transform'/>
           <span className="font-bold text-xl tracking-tighter text-foreground">NutriAI</span>
         </Link>
       </div>

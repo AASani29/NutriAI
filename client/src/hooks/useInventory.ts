@@ -1,5 +1,5 @@
 import { useAuth } from '@clerk/clerk-react';
-import { useMutation, useQuery, useQueries, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueries, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 
 export interface Inventory {
   id: string;
@@ -408,6 +408,10 @@ export function useInventory() {
     startDate?: Date;
     endDate?: Date;
     inventoryId?: string;
+    category?: string;
+    search?: string;
+    page?: number;
+    limit?: number;
   }) => {
     // Create stable query key by serializing dates to ISO strings
     const queryKey = [
@@ -416,10 +420,20 @@ export function useInventory() {
         startDate: filters?.startDate?.toISOString() || null,
         endDate: filters?.endDate?.toISOString() || null,
         inventoryId: filters?.inventoryId || null,
+        category: filters?.category || null,
+        search: filters?.search || null,
+        page: filters?.page || 1,
+        limit: filters?.limit || 10,
       }
     ];
 
-    return useQuery<ConsumptionLog[]>({
+    return useQuery<{
+      consumptionLogs: ConsumptionLog[];
+      totalCount: number;
+      totalCalories: number;
+      page: number;
+      totalPages: number;
+    }>({
       queryKey,
       queryFn: async () => {
         try {
@@ -437,34 +451,36 @@ export function useInventory() {
             params.append('inventoryId', filters.inventoryId);
             console.log('Adding inventoryId:', filters.inventoryId);
           }
+          if (filters?.page) {
+            params.append('page', filters.page.toString());
+          }
+          if (filters?.limit) {
+            params.append('limit', filters.limit.toString());
+          }
+          if (filters?.category) {
+            params.append('category', filters.category);
+          }
+          if (filters?.search) {
+            params.append('search', filters.search);
+          }
 
           const url = `/inventories/consumption?${params.toString()}`;
           console.log('Making request to:', url);
-          console.log(
-            'Full URL with base:',
-            `${import.meta.env.VITE_API_URL || 'http://localhost:3000/api'
-            }${url}`,
-          );
 
           const response = await fetchWithAuth(url);
           console.log('Response received:', response);
           console.log('=== END FRONTEND REQUEST ===');
 
-          return response.consumptionLogs || [];
+          return response;
         } catch (error) {
           console.error('Error fetching consumption logs:', error);
-          if (error instanceof Error) {
-            console.error('Error details:', {
-              message: error.message,
-              stack: error.stack,
-            });
-          }
-          // Return empty array on error to prevent UI crashes
-          return [];
+          // Return empty structure on error
+          return { consumptionLogs: [], totalCount: 0, page: 1, totalPages: 1 };
         }
       },
       retry: 2,
       staleTime: 5 * 60 * 1000, // 5 minutes
+      placeholderData: keepPreviousData,
     });
   };
 
@@ -500,6 +516,91 @@ export function useInventory() {
     }
   };
 
+  // Get hydration
+  const useGetHydration = (date?: Date) => {
+    const { userId } = useAuth();
+    return useQuery({
+      queryKey: ['hydration', userId, date?.toDateString()],
+      queryFn: async () => {
+        if (!userId) return { amount: 0, goal: 2.5 };
+        const dateStr = date ? date.toISOString() : new Date().toISOString();
+        const response = await fetchWithAuth(`/users/${userId}/hydration?date=${dateStr}`);
+        return response;
+      },
+      enabled: !!userId,
+    });
+  };
+
+  // Update hydration
+  const useUpdateHydration = () => {
+    const { userId } = useAuth();
+    return useMutation({
+      mutationFn: async ({ amount, date }: { amount: number; date?: Date }) => {
+        if (!userId) throw new Error('User not authenticated');
+        const response = await fetchWithAuth(`/users/${userId}/hydration`, {
+          method: 'POST',
+          body: JSON.stringify({ amount, date }),
+        });
+        return response;
+      },
+      onSuccess: (_, variables) => {
+        const dateStr = variables.date ? variables.date.toDateString() : new Date().toDateString();
+        queryClient.invalidateQueries({ queryKey: ['hydration', userId, dateStr] });
+      },
+    });
+  };
+
+
+  // Get hydration history
+  const useGetHydrationHistory = (startDate: Date, endDate: Date) => {
+    const { userId } = useAuth();
+    return useQuery({
+      queryKey: ['hydration-history', userId, startDate.toISOString(), endDate.toISOString()],
+      queryFn: async () => {
+        if (!userId) return [];
+        const response = await fetchWithAuth(
+          `/users/${userId}/hydration/history?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}`
+        );
+        return response || [];
+      },
+      enabled: !!userId,
+    });
+  };
+
+  // Get fitness
+  const useGetFitness = (date?: Date) => {
+    const { userId } = useAuth();
+    return useQuery({
+      queryKey: ['fitness', userId, date?.toDateString()],
+      queryFn: async () => {
+        if (!userId) return { weight: null, steps: 0, caloriesBurned: 0 };
+        const dateStr = date ? date.toISOString() : new Date().toISOString();
+        const response = await fetchWithAuth(`/users/${userId}/fitness?date=${dateStr}`);
+        return response;
+      },
+      enabled: !!userId,
+    });
+  };
+
+  // Update fitness
+  const useUpdateFitness = () => {
+    const { userId } = useAuth();
+    return useMutation({
+      mutationFn: async (data: { date?: Date; weight?: number; steps?: number; caloriesBurned?: number }) => {
+        if (!userId) throw new Error('User not authenticated');
+        const response = await fetchWithAuth(`/users/${userId}/fitness`, {
+          method: 'POST',
+          body: JSON.stringify(data),
+        });
+        return response;
+      },
+      onSuccess: (_, variables) => {
+        const dateStr = variables.date ? variables.date.toDateString() : new Date().toDateString();
+        queryClient.invalidateQueries({ queryKey: ['fitness', userId, dateStr] });
+      },
+    });
+  };
+
   return {
     useGetInventories,
     useGetInventoryItems,
@@ -514,5 +615,10 @@ export function useInventory() {
     useGetConsumptionLogs,
     searchFood,
     estimatePrice,
+    useGetHydration,
+    useUpdateHydration,
+    useGetHydrationHistory,
+    useGetFitness,
+    useUpdateFitness,
   };
 }
