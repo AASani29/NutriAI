@@ -861,9 +861,10 @@ class AIAnalyticsService {
       let systemContent = `You are a grocery pricing expert. Estimate the market price for the given food item.
             
             CRITICAL INSTRUCTION:
-            1. First, estimate the price in the LOCAL CURRENCY of the region detected or provided.
-            2. THEN, CONVERT that price to BDT (Bangladeshi Taka) using current approximate exchange rates.
-            3. The "estimatedPrice" field MUST BE in BDT.
+            1. First, estimate the price in the LOCAL CURRENCY of the region detected or provided (or USD if international).
+            2. THEN, CONVERT that price to BDT (Bangladeshi Taka).
+            3. MANDATORY EXCHANGE RATE: Use exactly 1 USD = 122 BDT.
+            4. The "estimatedPrice" field MUST BE in BDT.
 
             Return ONLY a JSON object with this exact schema (all values are numbers except strings):
             {
@@ -937,7 +938,7 @@ class AIAnalyticsService {
             1. Identify if the item is typically measured by weight/volume (e.g. Rice, Milk, Chicken) or count (e.g. Egg, Apple, Burger).
             2. If Weight/Volume: Standardize to 100 GRAMS or 100 ML. Set nutritionBasis = 100. Set nutritionUnit = 'g' or 'ml'.
             3. If Count: Standardize to 1 PIECE/UNIT. Set nutritionBasis = 1. Set nutritionUnit = 'piece'.
-            4. Estimate the "basePrice" in BDT (Bangladeshi Taka) for that specific nutritionBasis amount (e.g. Price for 100g, or Price for 1 piece).
+            4. Estimate the "basePrice" in BDT (Bangladeshi Taka) for that specific nutritionBasis amount. Use exchange rate: 1 USD = 122 BDT.
             5. Provide nutrition values for that specific nutritionBasis.
             6. Assign a high-level "category" (e.g. Vegetables, Fruits, Meat, Dairy, Grains, Snacks, Beverages, Spices, Other).
 
