@@ -311,7 +311,7 @@ export default function Dashboard() {
       transition-all duration-300 cursor-pointer group
       hover:shadow-lg hover:bg-muted/40
       ${expandedCard === "total-items" ? "max-h-80" : "max-h-36"}
-      overflow-hidden`}
+      `}
         >
           <p
             className="flex absolute top-3 right-4 text-xs text-primary opacity-80 
@@ -351,18 +351,37 @@ export default function Dashboard() {
 
           {expandedCard === "total-items" && (
             <div className="pt-6">
-              {" "}
+              {/* {" "}
               <p className="text-sm">
                 {" "}
                 Keeps track of total items currently present in your inventory{" "}
                 <br /> not yet consumed{" "}
-              </p>{" "}
+              </p>{" "} */}
               <button
                 onClick={() => navigate("/inventory")}
                 className="text-blue-500 underline flex cursor-pointer mt-5"
               >
                 Go to Inventory{" "}
               </button>{" "}
+            </div>
+          )}
+          {expandedCard !== `total-items` && (
+            <div
+              className="absolute top-50 left-80 transform -translate-x-1/2 -translate-y-full
+                  w-64 bg-white border border-gray-200 rounded-xl shadow-lg p-4
+                  opacity-0 invisible group-hover:opacity-100 group-hover:visible
+                  transition-opacity duration-300 z-50"
+            >
+              <p className="text-sm text-gray-700">
+                Keeps track of total items currently present in your inventory
+                and not yet consumed.
+              </p>
+              {/* <button
+              onClick={() => navigate("/inventory")}
+              className="mt-2 text-blue-500 underline text-sm cursor-pointer"
+            >
+              Go to Inventory
+            </button> */}
             </div>
           )}
         </div>
@@ -372,8 +391,7 @@ export default function Dashboard() {
           className={`relative bg-card rounded-xl border border-border p-6 
       transition-all duration-300 cursor-pointer group
       hover:shadow-lg hover:bg-muted/40
-      ${expandedCard === "expiring" ? "max-h-80" : "max-h-36"}
-      overflow-hidden`}
+      ${expandedCard === "expiring" ? "max-h-80" : "max-h-36"}`}
         >
           <p
             className="flex absolute top-3 right-4 text-xs text-primary opacity-80 
@@ -420,9 +438,21 @@ export default function Dashboard() {
           </div>
 
           {expandedCard === "expiring" && (
-            <div className="pt-6 text-sm">
-              Items nearing expiration that should be consumed soon to avoid
-              waste.
+            <div className="pt-6 text-sm text-gray-500">
+              No details available.
+            </div>
+          )}
+          {expandedCard !== `expiring` && (
+            <div
+              className="absolute top-50 left-80 transform -translate-x-1/2 -translate-y-full
+                  w-64 bg-white border border-gray-200 rounded-xl shadow-lg p-4
+                  opacity-0 invisible group-hover:opacity-100 group-hover:visible
+                  transition-opacity duration-300 z-50"
+            >
+              <p className="text-sm text-gray-700">
+                Items nearing expiration that should be consumed soon to avoid
+                waste.
+              </p>
             </div>
           )}
         </div>
@@ -433,7 +463,7 @@ export default function Dashboard() {
       transition-all duration-300 cursor-pointer group
       hover:shadow-lg hover:bg-muted/40
       ${expandedCard === "today" ? "max-h-80" : "max-h-36"}
-      overflow-hidden`}
+      `}
         >
           <p
             className="flex absolute top-3 right-4 text-xs text-primary opacity-80 
@@ -471,15 +501,26 @@ export default function Dashboard() {
 
           {expandedCard === "today" && (
             <div className="pt-6">
-              <p className="text-sm">
-                Items consumed or updated today.
-              </p>
+              {/* <p className="text-sm">Items consumed or updated today.</p> */}
               <button
                 onClick={() => navigate("/daily-log")}
                 className="text-blue-500 underline flex cursor-pointer mt-5"
               >
                 Go to Daily Logs
               </button>
+            </div>
+          )}
+
+          {expandedCard !== `today` && (
+            <div
+              className="absolute top-40 left-80 transform -translate-x-1/2 -translate-y-full
+                  w-64 bg-white border border-gray-200 rounded-xl shadow-lg p-4
+                  opacity-0 invisible group-hover:opacity-100 group-hover:visible
+                  transition-opacity duration-300 z-50"
+            >
+              <p className="text-sm text-gray-700">
+                Items consumed or updated today.
+              </p>
             </div>
           )}
         </div>
@@ -490,7 +531,7 @@ export default function Dashboard() {
       transition-all duration-300 cursor-pointer group
       hover:shadow-lg hover:bg-muted/40
       ${expandedCard === "waste" ? "max-h-80" : "max-h-36"}
-      overflow-hidden`}
+      `}
         >
           <p
             className="flex absolute top-3 right-4 text-xs text-primary opacity-80 
@@ -527,8 +568,21 @@ export default function Dashboard() {
           </div>
 
           {expandedCard === "waste" && (
-            <div className="pt-6 text-sm">
+            <div className="pt-6 text-sm text-gray-500">
+              No details available.
+            </div>
+          )}
+
+          {expandedCard !== `waste` && (
+            <div
+              className="absolute top-44 left-40 transform -translate-x-1/2 -translate-y-full
+                  w-64 bg-white border border-gray-200 rounded-xl shadow-lg p-4
+                  opacity-0 invisible group-hover:opacity-100 group-hover:visible
+                  transition-opacity duration-300 z-50"
+            >
+              <p className="text-sm text-gray-700">
               Estimated food waste prevented by tracking consumption patterns.
+              </p>
             </div>
           )}
         </div>
