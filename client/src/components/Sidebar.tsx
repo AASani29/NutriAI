@@ -30,7 +30,7 @@ const navItems = [
     bgColor: "bg-sky-50",
     activeColor: "bg-primary text-secondary",
 
-    info: "Overview of your food tracking stats and trends: track inventory items, note about expiring foods, see todays activities and get top recommendations all for you",
+    info: "Your food tracking stats and trends: track inventory items,expiring foods,todays activities and top recommendations all for you",
   },
   {
     label: "AI Intelligence",
@@ -39,7 +39,7 @@ const navItems = [
     color: "text-purple-500",
     bgColor: "bg-purple-50",
     activeColor: "bg-primary text-secondary",
-    info:'Get consumption insights, waste predictions, nutrition gap analysis, environmental impact reports, and personalized recommendations'
+    info:'Consumption insights, waste predictions, nutrition gap analysis, environmental impact reports, and personalized recommendations'
   },
   {
     label: "Inventory",
@@ -193,7 +193,7 @@ export default function Sidebar({
                       />
 
                       {/* Tooltip only appears when icon is hovered */}
-                      <div className="absolute left-8 top-1/2 -translate-y-1/2 w-64 bg-white border border-gray-200 rounded-xl shadow-lg p-3 text-sm text-gray-700 opacity-0 invisible group-hover/icon:opacity-100 group-hover/icon:visible transition-opacity duration-300 z-50 pointer-events-none">
+                      <div className="absolute left-8 top-1/2 -translate-y-1/2 w-84 bg-white border border-gray-200 rounded-xl shadow-lg p-3 text-sm text-gray-700 opacity-0 invisible group-hover/icon:opacity-100 group-hover/icon:visible transition-opacity duration-300 z-50 pointer-events-none">
                         {item.info}
                       </div>
                     </div>
