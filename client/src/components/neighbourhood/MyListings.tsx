@@ -4,14 +4,24 @@ import { useUserListings } from './sharing-service';
 import { ListingStatus } from './types';
 import type { FoodListing } from './types';
 import ListingCard from './ListingCard';
+import Pagination from './Pagination';
 
 export default function MyListings() {
   const [statusFilter, setStatusFilter] = useState<'all' | ListingStatus>('all');
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 9;
 
   const { data: listings = [], isLoading, error } = useUserListings();
 
+
   const filteredListings = listings.filter((listing: FoodListing) =>
     statusFilter === 'all' || listing.status === statusFilter
+  );
+
+  const totalPages = Math.ceil(filteredListings.length / ITEMS_PER_PAGE);
+  const paginatedListings = filteredListings.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
   );
 
   if (isLoading) {
@@ -64,7 +74,10 @@ export default function MyListings() {
         <div className="flex gap-2">
           <select
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value as 'all' | ListingStatus)}
+            onChange={(e) => {
+              setStatusFilter(e.target.value as 'all' | ListingStatus);
+              setCurrentPage(1);
+            }}
             className="px-3 py-2 border border-border rounded-lg bg-background text-foreground text-sm"
           >
             <option value="all">All Status</option>
@@ -114,16 +127,23 @@ export default function MyListings() {
         </div>
       ) : (
         <div className="space-y-4">
-          {filteredListings.map((listing: FoodListing) => (
-            <ListingCard
-              key={listing.id}
-              listing={listing}
-              isOwner={true}
-              onUpdate={() => {
-                // Invalidate queries or refetch handled by React Query cache
-              }}
-            />
-          ))}
+          <div className="space-y-4">
+            {paginatedListings.map((listing: FoodListing) => (
+              <ListingCard
+                key={listing.id}
+                listing={listing}
+                isOwner={true}
+                onUpdate={() => {
+                  // Invalidate queries or refetch handled by React Query cache
+                }}
+              />
+            ))}
+          </div>
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+          />
         </div>
       )}
     </div>
