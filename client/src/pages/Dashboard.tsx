@@ -498,18 +498,9 @@ export default function Dashboard() {
         <div className="lg:col-span-2 bg-card rounded-xl border border-border p-6">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
-              <BarChart className="w-5 h-5" />
               Activity Overview
               {isDataLoading && <LoadingSpinner />}
             </h2>
-            <div className="flex items-center gap-2">
-              {!consumptionLoading &&
-                (dashboardStats.recentTrend > 0 ? (
-                  <TrendingUp className="w-4 h-4 text-green-600" />
-                ) : dashboardStats.recentTrend < 0 ? (
-                  <TrendingDown className="w-4 h-4 text-red-600" />
-                ) : null)}
-            </div>
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -545,13 +536,13 @@ export default function Dashboard() {
             <div className="flex flex-wrap gap-2">
               <Link
                 to="/inventory"
-                className="px-4 py-2 bg-black text-white rounded-lg hover:bg-primary-dark transition-smooth font-bold text-sm"
+                className="px-4 py-2 bg-secondary hover:bg-primary text-white hover:text-secondary rounded-lg  transition-smooth font-bold text-sm"
               >
                 Manage Inventory
               </Link>
               <Link
                 to="/daily-log"
-                className="px-4 py-2 bg-gray-100 text-black rounded-lg hover:bg-secondary/90 transition-smooth font-medium text-sm"
+                className="px-4 py-2 transition-all duration-300 bg-primary hover:bg-secondary text-secondary hover:text-primary rounded-lg transition-smooth font-medium text-sm"
               >
                 View Daily Log
               </Link>
