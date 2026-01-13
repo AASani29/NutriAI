@@ -27,7 +27,7 @@ const navItems = [
     icon: LayoutDashboard,
     color: 'text-sky-500',
     bgColor: 'bg-sky-50',
-    activeColor: 'bg-primary text-white',
+    activeColor: 'bg-primary text-secondary',
   },
   {
     label: 'AI Intelligence',
@@ -35,7 +35,7 @@ const navItems = [
     icon: Brain,
     color: 'text-purple-500',
     bgColor: 'bg-purple-50',
-    activeColor: 'bg-primary text-white',
+    activeColor: 'bg-primary text-secondary',
   },
   {
     label: 'Inventory',
@@ -43,7 +43,7 @@ const navItems = [
     icon: Package,
     color: 'text-emerald-500',
     bgColor: 'bg-emerald-50',
-    activeColor: 'bg-primary text-white',
+    activeColor: 'bg-primary text-secondary',
   },
   {
     label: 'Daily Log',
@@ -51,7 +51,7 @@ const navItems = [
     icon: NotebookPen,
     color: 'text-orange-500',
     bgColor: 'bg-orange-50',
-    activeColor: 'bg-primary text-white',
+    activeColor: 'bg-primary text-secondary',
   },
   {
     label: 'Meal Planner',
@@ -59,7 +59,7 @@ const navItems = [
     icon: UtensilsCrossed,
     color: 'text-pink-500',
     bgColor: 'bg-pink-50',
-    activeColor: 'bg-primary text-white',
+    activeColor: 'bg-primary text-secondary',
   },
   {
     label: 'Resources',
@@ -67,7 +67,7 @@ const navItems = [
     icon: Library,
     color: 'text-blue-500',
     bgColor: 'bg-blue-50',
-    activeColor: 'bg-primary text-white',
+    activeColor: 'bg-primary text-secondary',
   },
   {
     label: 'Neighbourhood',
@@ -75,7 +75,7 @@ const navItems = [
     icon: MapPinHouse,
     color: 'text-indigo-500',
     bgColor: 'bg-indigo-50',
-    activeColor: 'bg-primary text-white',
+    activeColor: 'bg-primary text-secondary',
   },
 ];
 
@@ -98,7 +98,7 @@ export default function Sidebar({ isExpanded, setIsExpanded }: { isExpanded: boo
       <div className="flex flex-col items-center gap-6 w-full">
         {/* Logo / Toggle Button */}
         <div className="w-full flex items-center justify-between px-2 mb-2">
-          <div className={cn("hidden transition-all duration-300", isExpanded && "block px-2")}>
+          <div className={cn("hidden transition-all duration-300 ", isExpanded && "block px-2")}>
             <img src="/logo.png" alt="NutriAI Logo" className="h-13 w-auto object-contain" />
           </div>
           

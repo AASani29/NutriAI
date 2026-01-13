@@ -18,6 +18,7 @@ import {
   ArrowBigDownIcon,
   ArrowDown01,
   ChevronDown,
+  Info,
 } from "lucide-react";
 import { useProfile } from "../context/ProfileContext";
 import { useInventory } from "../hooks/useInventory";
@@ -296,7 +297,8 @@ export default function Dashboard() {
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold text-foreground mb-2">
-          Welcome back, {profile?.profile?.fullName || "User"}! 👋
+          Welcome {profile?.profile?.fullName ? `back` : ``},{" "}
+          {profile?.profile?.fullName || "User"}
         </h1>
         <p className="text-muted-foreground">
           Here's your food tracking summary and insights
@@ -308,33 +310,43 @@ export default function Dashboard() {
         {/* Total Items */}
         <div
           className={`relative bg-card rounded-xl border border-border p-6 
-      transition-all duration-300 cursor-pointer group
-      hover:shadow-lg hover:bg-muted/40
-      ${expandedCard === "total-items" ? "max-h-80" : "max-h-36"}
-      `}
+  transition-all duration-300 hover:shadow-lg
+  ${expandedCard === "total-items" ? "max-h-80" : "max-h-36"}`}
         >
-          <p
-            className="flex absolute top-3 right-4 text-xs text-primary opacity-80 
-                 group-hover:opacity-100 transition cursor-pointer"
-            onClick={(e) => {
-              e.stopPropagation();
-              setExpandedCard(
-                expandedCard === "total-items" ? null : "total-items"
-              );
-            }}
-          >
-            <ChevronDown
-              height={15}
-              width={15}
-              className={`transition-transform ${
-                expandedCard === "total-items" ? "rotate-180" : ""
-              }`}
-            />
-            View details
-          </p>
+          {/* Info Icon */}
+          <div className="absolute bottom-0 right-4">
+            <div className="relative group cursor-pointer">
+              <Info
+                height={16}
+                width={16}
+                className={`text-gray-500 transition-transform relative bottom-1 ${
+                  expandedCard === "total-items" ? "rotate-180" : ""
+                }`}
+              />
+              {/* Tooltip */}
+              <div
+                className="absolute top-4 -right-12 w-64 bg-white border border-gray-200 rounded-xl shadow-lg p-4
+          opacity-0 invisible group-hover:opacity-100 group-hover:visible
+          transition-opacity duration-300 z-50"
+              >
+                <p className="text-sm text-gray-700">
+                  Keeps track of total items currently present in your inventory
+                  and not yet consumed.
+                </p>
 
+                <button
+                  onClick={() => navigate("/inventory")}
+                  className="text-black underline flex cursor-pointer mt-5"
+                >
+                  Go to Inventory
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Main card content */}
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center">
+            <div className="w-12 h-12 bg-primary rounded-lg flex items-center justify-center">
               <Package className="w-6 h-6 text-black" />
             </div>
 
@@ -348,73 +360,37 @@ export default function Dashboard() {
               </div>
             </div>
           </div>
-
-          {expandedCard === "total-items" && (
-            <div className="pt-6">
-              {/* {" "}
-              <p className="text-sm">
-                {" "}
-                Keeps track of total items currently present in your inventory{" "}
-                <br /> not yet consumed{" "}
-              </p>{" "} */}
-              <button
-                onClick={() => navigate("/inventory")}
-                className="text-blue-500 underline flex cursor-pointer mt-5"
-              >
-                Go to Inventory{" "}
-              </button>{" "}
-            </div>
-          )}
-          {expandedCard !== `total-items` && (
-            <div
-              className="absolute top-50 left-80 transform -translate-x-1/2 -translate-y-full
-                  w-64 bg-white border border-gray-200 rounded-xl shadow-lg p-4
-                  opacity-0 invisible group-hover:opacity-100 group-hover:visible
-                  transition-opacity duration-300 z-50"
-            >
-              <p className="text-sm text-gray-700">
-                Keeps track of total items currently present in your inventory
-                and not yet consumed.
-              </p>
-              {/* <button
-              onClick={() => navigate("/inventory")}
-              className="mt-2 text-blue-500 underline text-sm cursor-pointer"
-            >
-              Go to Inventory
-            </button> */}
-            </div>
-          )}
         </div>
 
         {/* ================= EXPIRING SOON ================= */}
-        <div
-          className={`relative bg-card rounded-xl border border-border p-6 
-      transition-all duration-300 cursor-pointer group
-      hover:shadow-lg hover:bg-muted/40
-      ${expandedCard === "expiring" ? "max-h-80" : "max-h-36"}`}
-        >
-          <p
-            className="flex absolute top-3 right-4 text-xs text-primary opacity-80 
-                 group-hover:opacity-100 transition cursor-pointer"
-            onClick={(e) => {
-              e.stopPropagation();
-              setExpandedCard(expandedCard === "expiring" ? null : "expiring");
-            }}
-          >
-            <ChevronDown
-              height={15}
-              width={15}
-              className={`transition-transform ${
-                expandedCard === "expiring" ? "rotate-180" : ""
-              }`}
-            />
-            View details
-          </p>
+        <div className="relative bg-card rounded-xl border border-border p-6 transition-all duration-300 hover:shadow-lg">
+          {/* Info Icon */}
+          <div className="absolute bottom-1 right-4">
+            <div className="relative group cursor-pointer">
+              <Info height={16} width={16} className="text-gray-500" />
+              <div
+                className="absolute top-4 -right-12 w-64 bg-white border border-gray-200 rounded-xl shadow-lg p-4
+        opacity-0 invisible group-hover:opacity-100 group-hover:visible
+        transition-opacity duration-300 z-50"
+              >
+                <p className="text-sm text-gray-700">
+                  Items nearing expiration that should be consumed soon to avoid
+                  waste.
+                </p>
+                <button
+                  onClick={() => navigate("/inventory")}
+                  className="text-black underline flex cursor-pointer mt-2"
+                >
+                  Go to Inventory
+                </button>
+              </div>
+            </div>
+          </div>
 
           <div className="flex items-center gap-4">
             <div
               className={`w-12 h-12 rounded-lg flex items-center justify-center ${
-                dashboardStats.expiringItems > 0 ? "bg-red-50" : "bg-primary/20"
+                dashboardStats.expiringItems > 0 ? "bg-red-50" : "bg-gray-100"
               }`}
             >
               <Clock
@@ -436,55 +412,34 @@ export default function Dashboard() {
               </div>
             </div>
           </div>
-
-          {expandedCard === "expiring" && (
-            <div className="pt-6 text-sm text-gray-500">
-              No details available.
-            </div>
-          )}
-          {expandedCard !== `expiring` && (
-            <div
-              className="absolute top-50 left-80 transform -translate-x-1/2 -translate-y-full
-                  w-64 bg-white border border-gray-200 rounded-xl shadow-lg p-4
-                  opacity-0 invisible group-hover:opacity-100 group-hover:visible
-                  transition-opacity duration-300 z-50"
-            >
-              <p className="text-sm text-gray-700">
-                Items nearing expiration that should be consumed soon to avoid
-                waste.
-              </p>
-            </div>
-          )}
         </div>
 
         {/* ================= TODAY'S ACTIVITY ================= */}
-        <div
-          className={`relative bg-card rounded-xl border border-border p-6 
-      transition-all duration-300 cursor-pointer group
-      hover:shadow-lg hover:bg-muted/40
-      ${expandedCard === "today" ? "max-h-80" : "max-h-36"}
-      `}
-        >
-          <p
-            className="flex absolute top-3 right-4 text-xs text-primary opacity-80 
-                 group-hover:opacity-100 transition cursor-pointer"
-            onClick={(e) => {
-              e.stopPropagation();
-              setExpandedCard(expandedCard === "today" ? null : "today");
-            }}
-          >
-            <ChevronDown
-              height={15}
-              width={15}
-              className={`transition-transform ${
-                expandedCard === "today" ? "rotate-180" : ""
-              }`}
-            />
-            View details
-          </p>
+        <div className="relative bg-card rounded-xl border border-border p-6 transition-all duration-300 hover:shadow-lg">
+          {/* Info Icon */}
+          <div className="absolute bottom-1 right-4">
+            <div className="relative group cursor-pointer">
+              <Info height={16} width={16} className="text-gray-500" />
+              <div
+                className="absolute top-4 -right-12 w-64 bg-white border border-gray-200 rounded-xl shadow-lg p-4
+        opacity-0 invisible group-hover:opacity-100 group-hover:visible
+        transition-opacity duration-300 z-50"
+              >
+                <p className="text-sm text-gray-700">
+                  Items consumed or updated today.
+                </p>
+                <button
+                  onClick={() => navigate("/daily-log")}
+                  className="text-black underline flex cursor-pointer mt-2"
+                >
+                  Go to Daily Logs
+                </button>
+              </div>
+            </div>
+          </div>
 
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center">
+            <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
               <ChefHat className="w-6 h-6 text-black" />
             </div>
 
@@ -498,61 +453,29 @@ export default function Dashboard() {
               </div>
             </div>
           </div>
-
-          {expandedCard === "today" && (
-            <div className="pt-6">
-              {/* <p className="text-sm">Items consumed or updated today.</p> */}
-              <button
-                onClick={() => navigate("/daily-log")}
-                className="text-blue-500 underline flex cursor-pointer mt-5"
-              >
-                Go to Daily Logs
-              </button>
-            </div>
-          )}
-
-          {expandedCard !== `today` && (
-            <div
-              className="absolute top-40 left-80 transform -translate-x-1/2 -translate-y-full
-                  w-64 bg-white border border-gray-200 rounded-xl shadow-lg p-4
-                  opacity-0 invisible group-hover:opacity-100 group-hover:visible
-                  transition-opacity duration-300 z-50"
-            >
-              <p className="text-sm text-gray-700">
-                Items consumed or updated today.
-              </p>
-            </div>
-          )}
         </div>
 
         {/* ================= WASTE PREVENTED ================= */}
-        <div
-          className={`relative bg-card rounded-xl border border-border p-6 
-      transition-all duration-300 cursor-pointer group
-      hover:shadow-lg hover:bg-muted/40
-      ${expandedCard === "waste" ? "max-h-80" : "max-h-36"}
-      `}
-        >
-          <p
-            className="flex absolute top-3 right-4 text-xs text-primary opacity-80 
-                 group-hover:opacity-100 transition cursor-pointer"
-            onClick={(e) => {
-              e.stopPropagation();
-              setExpandedCard(expandedCard === "waste" ? null : "waste");
-            }}
-          >
-            <ChevronDown
-              height={15}
-              width={15}
-              className={`transition-transform ${
-                expandedCard === "waste" ? "rotate-180" : ""
-              }`}
-            />
-            View details
-          </p>
+        <div className="relative bg-card rounded-xl border border-border p-6 transition-all duration-300 hover:shadow-lg">
+          {/* Info Icon */}
+          <div className="absolute bottom-1 right-4">
+            <div className="relative group cursor-pointer">
+              <Info height={16} width={16} className="text-gray-500" />
+              <div
+                className="absolute top-4 -right-12 w-64 bg-white border border-gray-200 rounded-xl shadow-lg p-4
+        opacity-0 invisible group-hover:opacity-100 group-hover:visible
+        transition-opacity duration-300 z-50"
+              >
+                <p className="text-sm text-gray-700">
+                  Estimated food waste prevented by tracking consumption
+                  patterns.
+                </p>
+              </div>
+            </div>
+          </div>
 
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center">
+            <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
               <Leaf className="w-6 h-6 text-black" />
             </div>
 
@@ -566,25 +489,6 @@ export default function Dashboard() {
               </div>
             </div>
           </div>
-
-          {expandedCard === "waste" && (
-            <div className="pt-6 text-sm text-gray-500">
-              No details available.
-            </div>
-          )}
-
-          {expandedCard !== `waste` && (
-            <div
-              className="absolute top-44 left-40 transform -translate-x-1/2 -translate-y-full
-                  w-64 bg-white border border-gray-200 rounded-xl shadow-lg p-4
-                  opacity-0 invisible group-hover:opacity-100 group-hover:visible
-                  transition-opacity duration-300 z-50"
-            >
-              <p className="text-sm text-gray-700">
-              Estimated food waste prevented by tracking consumption patterns.
-              </p>
-            </div>
-          )}
         </div>
       </div>
 
@@ -610,7 +514,7 @@ export default function Dashboard() {
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="text-center p-4 bg-background rounded-lg">
-              <p className="text-2xl font-bold text-primary-dark">
+              <p className="text-2xl font-bold text-secondary">
                 {dashboardStats.inventoryCount}
               </p>
               <p className="text-sm text-muted-foreground">Inventories</p>
@@ -641,13 +545,13 @@ export default function Dashboard() {
             <div className="flex flex-wrap gap-2">
               <Link
                 to="/inventory"
-                className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-smooth font-bold text-sm"
+                className="px-4 py-2 bg-black text-white rounded-lg hover:bg-primary-dark transition-smooth font-bold text-sm"
               >
                 Manage Inventory
               </Link>
               <Link
                 to="/daily-log"
-                className="px-4 py-2 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/90 transition-smooth font-medium text-sm"
+                className="px-4 py-2 bg-gray-100 text-black rounded-lg hover:bg-secondary/90 transition-smooth font-medium text-sm"
               >
                 View Daily Log
               </Link>
@@ -656,7 +560,7 @@ export default function Dashboard() {
         </div>
 
         {/* Quick Actions */}
-        <div className="bg-linear-to-br from-primary/10 to-secondary/10 rounded-xl border border-border p-6">
+        <div className="bg-linear-to-br from-primary/60 to-secondary/10 rounded-xl border border-border p-6">
           <h2 className="text-xl font-bold text-foreground mb-4 flex items-center gap-2">
             <Target className="w-5 h-5" />
             Quick Actions
@@ -697,7 +601,7 @@ export default function Dashboard() {
             )}
 
             {dashboardStats.totalItems === 0 && (
-              <div className="flex items-center gap-3 p-3 bg-primary/20 border border-primary/30 rounded-lg">
+              <div className="flex items-center gap-3 p-3 bg-gray-100 border border-primary/30 rounded-lg">
                 <Package className="w-5 h-5 text-black shrink-0" />
                 <div className="flex-1">
                   <p className="text-sm font-medium text-foreground">
@@ -815,7 +719,7 @@ export default function Dashboard() {
 
       {/* Welcome Section for New Users */}
       {dashboardStats.totalItems === 0 && (
-        <div className="bg-primary/20 rounded-2xl border border-primary/30 p-8">
+        <div className="bg-gray-100 rounded-2xl border border-primary/30 p-8">
           <h2 className="text-2xl font-bold text-foreground mb-4">
             Welcome to NutriAI! 🌱
           </h2>
