@@ -60,9 +60,9 @@ export function VideoCard({ video }: VideoCardProps) {
                                 <Play className="h-6 w-6 fill-current" />
                             </button>
                         </div>
-                        <div className="absolute top-2 right-2">
+                        {/* <div className="absolute top-2 right-2">
                             <RecommendationBadge reason={video.recommendationReason} />
-                        </div>
+                        </div> */}
                     </>
                 )}
             </div>

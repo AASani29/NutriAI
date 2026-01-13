@@ -29,19 +29,19 @@ export function ArticleCard({ article }: ArticleCardProps) {
                             e.currentTarget.style.display = 'none';
                         }}
                     />
-                    <div className="absolute top-2 right-2">
+                    {/* <div className="absolute top-2 right-2">
                         <RecommendationBadge reason={article.recommendationReason} />
-                    </div>
+                    </div> */}
                 </div>
             )}
 
             {/* Content */}
             <div className="p-4">
-                {!article.imageUrl && (
+                {/* {!article.imageUrl && (
                     <div className="mb-2">
                         <RecommendationBadge reason={article.recommendationReason} />
                     </div>
-                )}
+                )} */}
 
                 <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2 group-hover:text-green-600 transition-colors">
                     {article.title}

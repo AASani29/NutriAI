@@ -366,7 +366,7 @@ export default function Dashboard() {
             <div className="flex flex-wrap gap-2">
               <Link
                 to="/inventory"
-                className="px-4 py-2 bg-primary text-black rounded-lg hover:bg-primary-dark transition-smooth font-bold text-sm"
+                className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-smooth font-bold text-sm"
               >
                 Manage Inventory
               </Link>
@@ -502,12 +502,12 @@ export default function Dashboard() {
                       {item.description}
                     </p>
 
-                    {item.recommendationReason && (
+                    {/* {item.recommendationReason && (
                       <p className="text-xs text-primary-dark mb-3 font-bold italic flex items-start gap-1">
                         <span className="shrink-0">💡</span>
                         <span className="line-clamp-2">{item.recommendationReason}</span>
                       </p>
-                    )}
+                    )} */}
 
                     <div className="flex items-center justify-between mt-auto pt-3 border-t border-border/50">
                       <span className="text-xs text-muted-foreground font-medium">
