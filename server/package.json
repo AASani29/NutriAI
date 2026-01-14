@@ -51,6 +51,7 @@
     "@modelcontextprotocol/sdk": "^1.25.1",
     "@prisma/adapter-pg": "^6.15.0",
     "@prisma/client": "^6.15.0",
+    "@tavily/core": "^0.7.1",
     "@types/compression": "^1.8.1",
     "@types/cors": "^2.8.19",
     "@types/express-fileupload": "^1.5.1",
