@@ -9,12 +9,18 @@ export type InventoryRequest = {
   name: string;
   description?: string;
   isPrivate?: boolean;
+  // Optional list of member identifiers (email or name) to share with during creation
+  shareWith?: string[];
 };
 
 export type UpdateInventoryRequest = {
   name?: string;
   description?: string;
   isPrivate?: boolean;
+};
+
+export type ShareInventoryRequest = {
+  shareWith: string[];
 };
 
 export type InventoryItemRequest = {

@@ -306,7 +306,7 @@ export default function Dashboard() {
       </div>
 
       {/* Quick Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-start">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-start max-w-190">
         {/* Total Items */}
         <div
           className={`relative bg-card rounded-xl border border-border p-6 
@@ -370,8 +370,8 @@ export default function Dashboard() {
               <Info height={16} width={16} className="text-gray-500" />
               <div
                 className="absolute top-4 -right-12 w-64 bg-white border border-gray-200 rounded-xl shadow-lg p-4
-        opacity-0 invisible group-hover:opacity-100 group-hover:visible
-        transition-opacity duration-300 z-50"
+                opacity-0 invisible group-hover:opacity-100 group-hover:visible
+                transition-opacity duration-300 z-50"
               >
                 <p className="text-sm text-gray-700">
                   Items nearing expiration that should be consumed soon to avoid
@@ -456,102 +456,11 @@ export default function Dashboard() {
         </div>
 
         {/* ================= WASTE PREVENTED ================= */}
-        <div className="relative bg-card rounded-xl border border-border p-6 transition-all duration-300 hover:shadow-lg">
-          {/* Info Icon */}
-          <div className="absolute bottom-1 right-4">
-            <div className="relative group cursor-pointer">
-              <Info height={16} width={16} className="text-gray-500" />
-              <div
-                className="absolute top-4 -right-12 w-64 bg-white border border-gray-200 rounded-xl shadow-lg p-4
-        opacity-0 invisible group-hover:opacity-100 group-hover:visible
-        transition-opacity duration-300 z-50"
-              >
-                <p className="text-sm text-gray-700">
-                  Estimated food waste prevented by tracking consumption
-                  patterns.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
-              <Leaf className="w-6 h-6 text-black" />
-            </div>
-
-            <div>
-              <p className="text-sm text-muted-foreground">Waste Prevented</p>
-              <div className="flex items-center gap-2">
-                <p className="text-2xl font-bold text-foreground">
-                  {dashboardStats.wastePreventedKg} kg
-                </p>
-                {patternsLoading && <LoadingSpinner />}
-              </div>
-            </div>
-          </div>
-        </div>
+        
       </div>
 
-      {/* Activity Overview & Quick Actions */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Recent Activity Summary */}
-        <div className="lg:col-span-2 bg-card rounded-xl border border-border p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
-              Activity Overview
-              {isDataLoading && <LoadingSpinner />}
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="text-center p-4 bg-background rounded-lg">
-              <p className="text-2xl font-bold text-secondary">
-                {dashboardStats.inventoryCount}
-              </p>
-              <p className="text-sm text-muted-foreground">Inventories</p>
-            </div>
-            <div className="text-center p-4 bg-background rounded-lg">
-              <p className="text-2xl font-bold text-black">
-                {dashboardStats.totalConsumptionLogs}
-              </p>
-              <p className="text-sm text-muted-foreground">Total Logs</p>
-            </div>
-            <div className="text-center p-4 bg-background rounded-lg">
-              <p className="text-2xl font-bold text-black">
-                {dashboardStats.topCategory}
-              </p>
-              <p className="text-sm text-muted-foreground">Top Category</p>
-            </div>
-            <div className="text-center p-4 bg-background rounded-lg">
-              <p className="text-2xl font-bold text-black">
-                {consumptionPatterns?.wasteReduction
-                  ?.wasteReductionPercentage || 0}
-                %
-              </p>
-              <p className="text-sm text-muted-foreground">Waste Reduced</p>
-            </div>
-          </div>
-
-          <div className="mt-4 pt-4 border-t border-border">
-            <div className="flex flex-wrap gap-2">
-              <Link
-                to="/inventory"
-                className="px-4 py-2 bg-secondary hover:bg-primary text-white hover:text-secondary rounded-lg  transition-smooth font-bold text-sm"
-              >
-                Manage Inventory
-              </Link>
-              <Link
-                to="/daily-log"
-                className="px-4 py-2 transition-all duration-300 bg-primary hover:bg-secondary text-secondary hover:text-primary rounded-lg transition-smooth font-medium text-sm"
-              >
-                View Daily Log
-              </Link>
-            </div>
-          </div>
-        </div>
-
-        {/* Quick Actions */}
-        <div className="bg-linear-to-br from-primary/60 to-secondary/10 rounded-xl border border-border p-6">
+      {/* Quick Actions */}
+        <div className="absolute  top-71 left-204 bg-linear-to-br from-primary/90 to-secondary/10 rounded-xl border border-border p-7">
           <h2 className="text-xl font-bold text-foreground mb-4 flex items-center gap-2">
             <Target className="w-5 h-5" />
             Quick Actions
@@ -607,6 +516,51 @@ export default function Dashboard() {
                 </div>
               </div>
             )}
+          </div>
+        </div>
+
+      {/* Activity Overview & Quick Actions */}
+      <div className="grid grid-cols-3 lg:grid-cols-2 max-w-140 gap-6">
+        {/* Recent Activity Summary */}
+        <div className="lg:col-span-5 max-w-106 bg-card rounded-xl border border-border p-6">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
+              Activity Overview
+              {isDataLoading && <LoadingSpinner />}
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-2  gap-4 ">
+            <div className="text-center bg-background rounded-lg max-w-180">
+              <p className="text-2xl font-bold text-secondary">
+                {dashboardStats.inventoryCount}
+              </p>
+              <p className="text-sm text-muted-foreground">Inventories</p>
+            </div>
+            <div className="text-center  bg-background rounded-lg">
+              <p className="text-2xl font-bold text-black">
+                {dashboardStats.totalConsumptionLogs}
+              </p>
+              <p className="text-sm text-muted-foreground">Total Logs</p>
+            </div>
+          
+          </div>
+
+          <div className="mt-4 pt-4 ">
+            <div className="flex flex-wrap gap-2">
+              <Link
+                to="/inventory"
+                className="px-4 py-2 bg-secondary hover:bg-primary text-white hover:text-secondary rounded-lg  transition-smooth font-bold text-sm max-w-30"
+              >
+                Manage Inventory
+              </Link>
+              <Link
+                to="/daily-log"
+                className="px-4 py-2 transition-all duration-300 bg-primary hover:bg-secondary text-secondary hover:text-primary rounded-lg transition-smooth font-medium text-sm"
+              >
+                View Daily Log
+              </Link>
+            </div>
           </div>
         </div>
       </div>

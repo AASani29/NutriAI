@@ -89,6 +89,38 @@ export class UserController {
     }
   }
 
+  async searchUsers(req: Request, res: Response) {
+    try {
+      const { q, limit } = req.query;
+
+      if (!q || typeof q !== 'string') {
+        return res.status(400).json({ error: 'Query parameter "q" is required' });
+      }
+
+      const users = await userService.searchUsers(q, limit ? parseInt(limit as string, 10) : 10);
+
+      // Get Clerk user data for profile images
+      const clerkUsers = await Promise.all(
+        users.map(async (user) => {
+          try {
+            const clerkUser = await (req as any).clerkClient?.users?.getUser(user.clerkId);
+            return {
+              ...user,
+              imageUrl: clerkUser?.imageUrl || clerkUser?.profileImageUrl || null,
+            };
+          } catch (err) {
+            return { ...user, imageUrl: null };
+          }
+        })
+      );
+
+      res.json({ success: true, users: clerkUsers });
+    } catch (error: any) {
+      console.error('Error searching users:', error);
+      res.status(500).json({ success: false, error: error.message || 'Failed to search users' });
+    }
+  }
+
   async getProfile(req: Request, res: Response) {
     try {
       const clerkId = req.auth?.userId;

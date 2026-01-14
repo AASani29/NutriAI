@@ -30,6 +30,7 @@ router.post('/', inventoryController.createInventory);
 router.get('/:inventoryId', inventoryController.getInventory);
 router.put('/:inventoryId', inventoryController.updateInventory);
 router.delete('/:inventoryId', inventoryController.deleteInventory);
+router.post('/:inventoryId/share', inventoryController.shareInventory);
 
 // Inventory items routes
 router.get('/:inventoryId/items', inventoryController.getInventoryItems);

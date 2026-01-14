@@ -48,6 +48,7 @@ export const ensureUserExists = async (
     // 3. Sync user with database
     await userService.syncUserFromClerk(clerkId, email, fullName);
     req.isFirstSync = true;
+    req.clerkClient = clerkClient;
 
     next();
   } catch (error) {

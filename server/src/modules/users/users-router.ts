@@ -8,6 +8,7 @@ const router = express.Router();
 router.use(requireAuth);
 router.use(ensureUserExists);
 
+router.get('/search', userController.searchUsers.bind(userController));
 router.get('/me', userController.getCurrentUser.bind(userController));
 router.get('/profile', userController.getProfile.bind(userController));
 router.put('/profile', userController.updateProfile.bind(userController));

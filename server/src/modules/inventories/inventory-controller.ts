@@ -11,6 +11,7 @@ import {
   InventoryRequest,
   UpdateInventoryItemRequest,
   UpdateInventoryRequest,
+  ShareInventoryRequest,
 } from './inventory-types';
 
 export class InventoryController {
@@ -75,7 +76,8 @@ export class InventoryController {
   createInventory = async (req: Request, res: Response): Promise<void> => {
     try {
       const userId = req.auth?.userId;
-      const { name, description, isPrivate }: InventoryRequest = req.body;
+      const { name, description, isPrivate, shareWith }: InventoryRequest =
+        req.body;
 
       if (!userId) {
         res.status(401).json({ error: 'Unauthorized' });
@@ -91,6 +93,7 @@ export class InventoryController {
         name,
         description,
         isPrivate,
+        shareWith,
       });
 
       res.status(201).json(newInventory);
@@ -422,10 +425,60 @@ export class InventoryController {
         filters.expiringSoon = expiringSoon === 'true' || expiringSoon === '1';
       }
 
-      const items = await this.inventoryService.getInventoryItems(filters);
+      const items = await this.inventoryService.getInventoryItems(
+        userId,
+        filters,
+      );
       res.status(200).json({ items });
     } catch (error) {
       console.error('Error getting inventory items:', error);
+      if (error instanceof Error && error.message.includes('access')) {
+        res.status(403).json({ error: 'Access denied to inventory' });
+        return;
+      }
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  };
+
+  // Share inventory with additional members
+  shareInventory = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const userId = req.auth?.userId;
+      const { inventoryId } = req.params;
+      const { shareWith }: ShareInventoryRequest = req.body || {};
+
+      if (!userId) {
+        res.status(401).json({ error: 'Unauthorized' });
+        return;
+      }
+
+      if (!inventoryId) {
+        res.status(400).json({ error: 'Inventory ID is required' });
+        return;
+      }
+
+      if (!shareWith || !Array.isArray(shareWith) || shareWith.length === 0) {
+        res.status(400).json({ error: 'shareWith must contain at least one email or name' });
+        return;
+      }
+
+      const members = await this.inventoryService.shareInventory(
+        userId,
+        inventoryId,
+        shareWith,
+      );
+
+      res.status(200).json({ success: true, members });
+    } catch (error) {
+      console.error('Error sharing inventory:', error);
+      if (error instanceof Error && error.message.includes('not found')) {
+        res.status(404).json({ error: error.message });
+        return;
+      }
+      if (error instanceof Error && error.message.includes('access')) {
+        res.status(403).json({ error: 'Access denied to inventory' });
+        return;
+      }
       res.status(500).json({ error: 'Internal server error' });
     }
   };

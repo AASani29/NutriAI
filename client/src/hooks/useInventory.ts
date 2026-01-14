@@ -10,6 +10,16 @@ export interface Inventory {
   updatedAt: string;
   itemCount?: number;
   expiringCount?: number;
+  accessRole?: 'owner' | 'member';
+  ownerName?: string;
+  members?: InventoryMember[];
+}
+
+export interface InventoryMember {
+  id: string;
+  userId?: string | null;
+  memberName?: string | null;
+  role: string;
 }
 
 export interface InventoryItem {
@@ -145,9 +155,12 @@ export function useInventory() {
   // Create inventory
   const useCreateInventory = () => {
     return useMutation({
-      mutationFn: async (
-        inventory: Omit<Inventory, 'id' | 'createdAt' | 'updatedAt'>,
-      ) => {
+      mutationFn: async (inventory: {
+        name: string;
+        description?: string;
+        isPrivate?: boolean;
+        shareWith?: string[];
+      }) => {
         const response = await fetchWithAuth('/inventories', {
           method: 'POST',
           body: JSON.stringify(inventory),
