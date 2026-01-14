@@ -404,9 +404,6 @@ export default function MealPlannerPage() {
                            </span>
                          </h4>
                        </div>
-                       <div className="bg-white p-3 rounded-2xl shadow-sm">
-                         <ChefHat className="w-6 h-6 text-gray-200" />
-                       </div>
                      </div>
                      
                      <div className="p-8 space-y-6">
