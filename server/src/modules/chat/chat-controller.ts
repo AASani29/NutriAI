@@ -40,7 +40,10 @@ export class ChatController {
 
             // 2. Prepare Messages
             const systemContext = `(System: The user's ID is "${userId}". You must use this ID for all tool calls that require 'userId'. 
-IMPORTANT: When adding items or logging consumption, if the user doesn't provide specific nutritional data (calories, protein, etc.), price, or category, you MUST estimate them based on the food item and quantity and pass them to the tool parameters. Do not ask the user for them unless necessary.)`;
+IMPORTANT: When adding items or logging consumption, if the user doesn't provide specific nutritional data (calories, protein, etc.), price, or category, you MUST estimate them and pass to tool parameters. 
+NOTE: All financial/price estimates MUST be in BDT (Bangladeshi Taka). Use exchange rate: 1 USD = 122 BDT.
+Do not ask the user for data unless necessary.
+CRITICAL: Use ONLY standard JSON tool calling. Do NOT use XML tags like <function> or any other format.)`;
 
             const messages: any[] = [
                 { role: 'system', content: systemContext },
@@ -62,7 +65,42 @@ IMPORTANT: When adding items or logging consumption, if the user doesn't provide
             let responseMessage = completion.choices[0].message;
 
             // 4. Handle Tool Calls Loop
-            while (responseMessage.tool_calls) {
+            while (
+                responseMessage.tool_calls || 
+                (responseMessage.content && typeof responseMessage.content === 'string' && responseMessage.content.trim().startsWith('{') && responseMessage.content.includes('"function"'))
+            ) {
+                // Fallback: Check for JSON in content if no native tool calls
+                if (!responseMessage.tool_calls && responseMessage.content) {
+                    try {
+                        // Attempt to extract JSON if it's wrapped in markdown code blocks
+                        let contentToParse = responseMessage.content;
+                        if (contentToParse.includes('```json')) {
+                            contentToParse = contentToParse.split('```json')[1].split('```')[0].trim();
+                        } else if (contentToParse.includes('```')) {
+                            contentToParse = contentToParse.split('```')[1].split('```')[0].trim();
+                        }
+
+                        const potentialJson = JSON.parse(contentToParse);
+                        if (potentialJson.function && potentialJson.parameters) {
+                             console.log('🕵️ Detected hallucinated JSON tool call in content, converting to native call...');
+                             responseMessage.tool_calls = [{
+                                 id: 'call_fallback_' + Date.now(),
+                                 type: 'function',
+                                 function: {
+                                     name: potentialJson.function,
+                                     arguments: JSON.stringify(potentialJson.parameters)
+                                 }
+                             }];
+                             responseMessage.content = null; // Clear content so it doesn't show to user
+                        }
+                    } catch (e) {
+                        // Not valid JSON or expected format, stop loop
+                        break;
+                    }
+                }
+
+                if (!responseMessage.tool_calls) break;
+
                 // Determine if we need to loop again (Groq might return multiple tool calls)
                 // Add the assistant's message with tool_calls to the conversation history
                 messages.push(responseMessage);

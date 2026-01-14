@@ -1,14 +1,15 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { Search, Filter, MapPin, Package, AlertCircle } from 'lucide-react';
 import { useListings } from './sharing-service';
 import { ListingStatus, type ListingFilters } from './types';
 import ListingCard from './ListingCard';
-import { NeighborhoodMap } from './NeighborhoodMap';
-import { Map, List, MapPin, Package, AlertCircle, Filter, Search } from 'lucide-react';
-import { useProfile } from '../../context/ProfileContext';
+import Pagination from './Pagination';
 
 interface AvailableListingsProps {
   externalSearch?: string;
 }
+
+const ITEMS_PER_PAGE = 9;
 
 export default function AvailableListings({ externalSearch }: AvailableListingsProps) {
   const [filters, setFilters] = useState<ListingFilters>({
@@ -17,10 +18,7 @@ export default function AvailableListings({ externalSearch }: AvailableListingsP
   });
   const [showFilters, setShowFilters] = useState(false);
   const [internalSearch, setInternalSearch] = useState('');
-  const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
   const [currentPage, setCurrentPage] = useState(1);
-  const ITEMS_PER_PAGE = 5;
-  const { profile } = useProfile();
 
   const effectiveSearch = externalSearch || internalSearch;
 
@@ -33,6 +31,11 @@ export default function AvailableListings({ externalSearch }: AvailableListingsP
     ...filters,
     search: effectiveSearch || undefined,
   });
+
+  // Reset to first page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filters, effectiveSearch]);
 
   const handleFilterChange = (key: keyof ListingFilters, value: string) => {
     setFilters(prev => ({
@@ -51,6 +54,19 @@ export default function AvailableListings({ externalSearch }: AvailableListingsP
   };
 
   const hasActiveFilters = filters.category || filters.location || effectiveSearch;
+
+  // Pagination Logic
+  const totalPages = Math.ceil(listings.length / ITEMS_PER_PAGE);
+  const paginatedListings = listings.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    // Optional: scroll to top of list
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   if (isLoading) {
     return (
@@ -97,34 +113,16 @@ export default function AvailableListings({ externalSearch }: AvailableListingsP
             {listings.length} items available for sharing
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          <div className="flex bg-gray-100 p-1 rounded-2xl mr-2">
-            <button
-              onClick={() => setViewMode('list')}
-              className={`p-2 rounded-xl transition-all ${viewMode === 'list' ? 'bg-white shadow-sm text-black' : 'text-gray-500 hover:text-black'}`}
-              title="List View"
-            >
-              <List className="w-5 h-5" />
-            </button>
-            <button
-              onClick={() => setViewMode('map')}
-              className={`p-2 rounded-xl transition-all ${viewMode === 'map' ? 'bg-white shadow-sm text-black' : 'text-gray-500 hover:text-black'}`}
-              title="Map View"
-            >
-              <Map className="w-5 h-5" />
-            </button>
-          </div>
-          <button
-            onClick={() => setShowFilters(!showFilters)}
-            className={`flex items-center gap-2 px-6 py-2.5 rounded-2xl border transition-all font-bold shadow-sm ${showFilters
+        <button
+          onClick={() => setShowFilters(!showFilters)}
+          className={`flex items-center gap-2 px-6 py-2.5 rounded-2xl border transition-all font-bold shadow-sm ${showFilters
               ? 'bg-black text-white border-black'
               : 'bg-white border-gray-100 text-muted-foreground hover:text-black hover:bg-gray-50'
-              }`}
-          >
-            <Filter className="w-4 h-4" />
-            Filters
-          </button>
-        </div>
+            }`}
+        >
+          <Filter className="w-4 h-4" />
+          Filters
+        </button>
       </div>
 
       {/* Search - only show if no external search */}
@@ -257,71 +255,26 @@ export default function AvailableListings({ externalSearch }: AvailableListingsP
             </button>
           )}
         </div>
-      ) : viewMode === 'list' ? (
-        <div className="space-y-8">
+      ) : (
+        <>
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-            {listings
-              .slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
-              .map(listing => (
-                <ListingCard
-                  key={listing.id}
-                  listing={listing}
-                  showActions={true}
-                  isOwner={false}
-                  onUpdate={() => refetch()}
-                />
-              ))}
+            {paginatedListings.map(listing => (
+              <ListingCard
+                key={listing.id}
+                listing={listing}
+                showActions={true}
+                isOwner={false}
+                onUpdate={() => refetch()}
+              />
+            ))}
           </div>
 
-          {/* Pagination Controls */}
-          {listings.length > ITEMS_PER_PAGE && (
-            <div className="flex items-center justify-center gap-4 pt-6 border-t border-gray-100">
-              <button
-                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                disabled={currentPage === 1}
-                className="px-6 py-2 rounded-full border border-gray-100 font-bold text-xs uppercase tracking-widest hover:bg-black hover:text-white transition-all disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-current"
-              >
-                Previous
-              </button>
-              <div className="flex items-center gap-2">
-                {Array.from({ length: Math.ceil(listings.length / ITEMS_PER_PAGE) }).map((_, i) => (
-                  <button
-                    key={i}
-                    onClick={() => setCurrentPage(i + 1)}
-                    className={`w-8 h-8 rounded-full font-black text-[10px] transition-all ${currentPage === i + 1
-                      ? 'bg-black text-white shadow-lg'
-                      : 'bg-gray-50 text-muted-foreground hover:bg-gray-100'
-                      }`}
-                  >
-                    {i + 1}
-                  </button>
-                )).slice(Math.max(0, currentPage - 3), Math.min(Math.ceil(listings.length / ITEMS_PER_PAGE), currentPage + 2))}
-              </div>
-              <button
-                onClick={() => setCurrentPage(prev => Math.min(Math.ceil(listings.length / ITEMS_PER_PAGE), prev + 1))}
-                disabled={currentPage === Math.ceil(listings.length / ITEMS_PER_PAGE)}
-                className="px-6 py-2 rounded-full border border-gray-100 font-bold text-xs uppercase tracking-widest hover:bg-black hover:text-white transition-all disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-current"
-              >
-                Next
-              </button>
-            </div>
-          )}
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {listings.some(l => !l.latitude || !l.longitude) && (
-            <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 flex items-center gap-2 text-amber-700 text-sm">
-              <AlertCircle className="w-4 h-4" />
-              <span>Some listings don't have coordinates and won't appear on the map.</span>
-            </div>
-          )}
-          <NeighborhoodMap
-            listings={listings}
-            userLat={profile?.profile?.latitude || undefined}
-            userLng={profile?.profile?.longitude || undefined}
-            height="600px"
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
           />
-        </div>
+        </>
       )}
 
       {/* Quick Stats */}
@@ -329,7 +282,7 @@ export default function AvailableListings({ externalSearch }: AvailableListingsP
         <div className="bg-card rounded-xl border border-border p-4">
           <div className="flex items-center justify-between text-sm">
             <span className="text-foreground/70">
-              Showing {listings.length} available items
+              Showing {paginatedListings.length} of {listings.length} available items
             </span>
             <div className="flex items-center gap-4">
               <span className="text-foreground/60">

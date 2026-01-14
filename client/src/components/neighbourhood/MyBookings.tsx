@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import {
     Loader2,
     ShoppingBag
@@ -7,6 +8,9 @@ import ListingCard from './ListingCard';
 import { useListings } from './sharing-service';
 import { ListingStatus } from './types';
 import type { FoodListing } from './types';
+import Pagination from './Pagination';
+
+const ITEMS_PER_PAGE = 9;
 
 export default function MyBookings() {
     const { userId } = useAuth();
@@ -27,6 +31,13 @@ export default function MyBookings() {
     }
 
     const bookedListings = listings || [];
+    const [currentPage, setCurrentPage] = useState(1);
+
+    const totalPages = Math.ceil(bookedListings.length / ITEMS_PER_PAGE);
+    const paginatedListings = bookedListings.slice(
+        (currentPage - 1) * ITEMS_PER_PAGE,
+        currentPage * ITEMS_PER_PAGE
+    );
 
     return (
         <div className="space-y-6">
@@ -65,15 +76,22 @@ export default function MyBookings() {
                     </p>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {bookedListings.map((listing: FoodListing) => (
-                        <ListingCard
-                            key={listing.id}
-                            listing={listing}
-                            isClaimer={true}
-                            onUpdate={refetch}
-                        />
-                    ))}
+                <div className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {paginatedListings.map((listing: FoodListing) => (
+                            <ListingCard
+                                key={listing.id}
+                                listing={listing}
+                                isClaimer={true}
+                                onUpdate={refetch}
+                            />
+                        ))}
+                    </div>
+                    <Pagination
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        onPageChange={setCurrentPage}
+                    />
                 </div>
             )}
         </div>

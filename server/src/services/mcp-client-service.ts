@@ -1,10 +1,15 @@
 
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
-import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
+import { SSEClientTransport } from '@modelcontextprotocol/sdk/client/sse.js';
+import { EventSource } from 'eventsource';
+
+// Polyfill EventSource for Node.js environment
+// @ts-ignore
+global.EventSource = EventSource;
 
 export class McpClientService {
     private client: Client | null = null;
-    private transport: StdioClientTransport | null = null;
+    private transport: SSEClientTransport | null = null;
     private static instance: McpClientService;
 
     private constructor() { }
@@ -19,12 +24,10 @@ export class McpClientService {
     async connect() {
         if (this.client) return this.client;
 
-        console.log('🔌 Connecting to MCP Server...');
-        this.transport = new StdioClientTransport({
-            command: 'npm',
-            args: ['--silent', 'run', 'mcp'],
-            stderr: 'inherit',
-        });
+        const mcpUrl = process.env.MCP_SERVER_URL || 'http://localhost:3001/sse';
+        console.log(`🔌 Connecting to MCP Server at ${mcpUrl}...`);
+
+        this.transport = new SSEClientTransport(new URL(mcpUrl));
 
         this.client = new Client(
             {
@@ -37,7 +40,7 @@ export class McpClientService {
         );
 
         await this.client.connect(this.transport);
-        console.log('✅ Connected to MCP Server');
+        console.log('✅ Connected to MCP Server via HTTP/SSE');
         return this.client;
     }
 
