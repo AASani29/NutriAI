@@ -17,6 +17,10 @@ export interface UpdateUserProfileDTO {
   weightPreference?: string;
   allergies?: string;
   healthConditions?: string;
+  proteinGoal?: number;
+  carbGoal?: number;
+  fatGoal?: number;
+  energyGoal?: number;
   latitude?: number;
   longitude?: number;
 }

@@ -50,6 +50,10 @@ export class UserController {
         weightPreference,
         allergies,
         healthConditions,
+        proteinGoal,
+        carbGoal,
+        fatGoal,
+        energyGoal,
         latitude,
         longitude,
       } = req.body;
@@ -71,6 +75,10 @@ export class UserController {
         weightPreference,
         allergies,
         healthConditions,
+        proteinGoal: proteinGoal ? parseFloat(proteinGoal) : undefined,
+        carbGoal: carbGoal ? parseFloat(carbGoal) : undefined,
+        fatGoal: fatGoal ? parseFloat(fatGoal) : undefined,
+        energyGoal: energyGoal ? parseFloat(energyGoal) : undefined,
         latitude: latitude ? parseFloat(latitude) : undefined,
         longitude: longitude ? parseFloat(longitude) : undefined,
       });

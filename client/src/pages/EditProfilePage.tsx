@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { User, Utensils, MapPin, Save, ArrowLeft, Ruler, Scale, Target, AlertCircle, Heart } from 'lucide-react';
+import { User, Utensils, MapPin, Save, ArrowLeft, Ruler, Scale, Target, AlertCircle, Heart, Activity, Flame } from 'lucide-react';
 import { useProfile } from '../context/ProfileContext';
 import { useApi } from '../hooks/useApi';
 
@@ -23,6 +23,10 @@ export default function EditProfilePage() {
     weightPreference: '',
     allergies: '',
     healthConditions: '',
+    proteinGoal: '',
+    carbGoal: '',
+    fatGoal: '',
+    energyGoal: '',
     latitude: undefined as number | undefined,
     longitude: undefined as number | undefined,
   });
@@ -39,6 +43,10 @@ export default function EditProfilePage() {
         weightPreference: profile.profile.weightPreference || '',
         allergies: profile.profile.allergies || '',
         healthConditions: profile.profile.healthConditions || '',
+        proteinGoal: (profile.profile as any).proteinGoal?.toString() || '',
+        carbGoal: (profile.profile as any).carbGoal?.toString() || '',
+        fatGoal: (profile.profile as any).fatGoal?.toString() || '',
+        energyGoal: (profile.profile as any).energyGoal?.toString() || '',
         latitude: profile.profile.latitude || undefined,
         longitude: profile.profile.longitude || undefined,
       });
@@ -78,6 +86,10 @@ export default function EditProfilePage() {
         weightPreference: formData.weightPreference || undefined,
         allergies: formData.allergies || undefined,
         healthConditions: formData.healthConditions || undefined,
+        proteinGoal: formData.proteinGoal ? parseFloat(formData.proteinGoal) : undefined,
+        carbGoal: formData.carbGoal ? parseFloat(formData.carbGoal) : undefined,
+        fatGoal: formData.fatGoal ? parseFloat(formData.fatGoal) : undefined,
+        energyGoal: formData.energyGoal ? parseFloat(formData.energyGoal) : undefined,
         latitude: formData.latitude,
         longitude: formData.longitude,
       });
@@ -118,6 +130,41 @@ export default function EditProfilePage() {
     { value: 'ibs', label: 'IBS' },
     { value: 'other', label: 'Other' },
   ];
+
+  // Calculate AI recommendations based on height, weight, and goal
+  const recommendations = useMemo(() => {
+    const height = parseFloat(formData.height);
+    const weight = parseFloat(formData.weight);
+    
+    if (!height || !weight) {
+      return { protein: 60, carbs: 250, fat: 70, energy: 2000 };
+    }
+
+    // Simple BMR calculation (Mifflin-St Jeor for average adult)
+    const bmr = 10 * weight + 6.25 * height - 5 * 25 + 5; // assuming age 25, male
+    const tdee = bmr * 1.55; // moderate activity
+    
+    let targetCalories = tdee;
+    if (formData.weightPreference === 'lose') {
+      targetCalories = tdee - 500;
+    } else if (formData.weightPreference === 'gain') {
+      targetCalories = tdee + 300;
+    }
+
+    const protein = Math.round(weight * 2); // 2g per kg
+    const proteinCals = protein * 4;
+    const fatCals = targetCalories * 0.28;
+    const fat = Math.round(fatCals / 9);
+    const remainingCals = targetCalories - proteinCals - fatCals;
+    const carbs = Math.round(remainingCals / 4);
+
+    return {
+      protein,
+      carbs,
+      fat,
+      energy: Math.round(targetCalories),
+    };
+  }, [formData.height, formData.weight, formData.weightPreference]);
 
   return (
     <main className="flex-1 overflow-y-auto">
@@ -352,6 +399,118 @@ export default function EditProfilePage() {
                     </select>
                   </div>
                   <p className="mt-2 text-xs text-muted-foreground font-medium">Used to provide health-safe meal recommendations</p>
+                </div>
+
+                {/* Nutrition Goals Section */}
+                <div className="pt-8 border-t border-gray-200">
+                  <h3 className="text-lg font-black text-gray-800 mb-1">Daily Nutrition Goals</h3>
+                  <p className='text-sm mb-6'> (Recommended from your height, weight and age)</p>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Protein Goal */}
+                    <div>
+                      <label htmlFor="proteinGoal" className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-3 block">
+                        Protein Goal (g)
+                      </label>
+                      <div className="relative group">
+                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-black transition-colors">
+                          <Activity className="w-5 h-5" />
+                        </div>
+                        <input
+                          type="number"
+                          id="proteinGoal"
+                          name="proteinGoal"
+                          value={formData.proteinGoal}
+                          onChange={handleChange}
+                          min="0"
+                          step="0.1"
+                          className="w-full pl-12 pr-4 py-5 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-4 focus:ring-primary/20 text-foreground font-black placeholder:text-muted-foreground/50 transition-all"
+                          placeholder={`e.g., ${recommendations.protein}`}
+                        />
+                      </div>
+                      <p className="mt-2 text-xs text-blue-600 font-medium">
+                        Recommended: {recommendations.protein}g/day
+                      </p>
+                    </div>
+
+                    {/* Carbohydrate Goal */}
+                    <div>
+                      <label htmlFor="carbGoal" className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-3 block">
+                        Carbohydrate Goal (g)
+                      </label>
+                      <div className="relative group">
+                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-black transition-colors">
+                          <Activity className="w-5 h-5" />
+                        </div>
+                        <input
+                          type="number"
+                          id="carbGoal"
+                          name="carbGoal"
+                          value={formData.carbGoal}
+                          onChange={handleChange}
+                          min="0"
+                          step="0.1"
+                          className="w-full pl-12 pr-4 py-5 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-4 focus:ring-primary/20 text-foreground font-black placeholder:text-muted-foreground/50 transition-all"
+                          placeholder={`e.g., ${recommendations.carbs}`}
+                        />
+                      </div>
+                      <p className="mt-2 text-xs text-emerald-600 font-medium">
+                        Recommended: {recommendations.carbs}g/day
+                      </p>
+                    </div>
+
+                    {/* Fat Goal */}
+                    <div>
+                      <label htmlFor="fatGoal" className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-3 block">
+                        Fat Goal (g)
+                      </label>
+                      <div className="relative group">
+                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-black transition-colors">
+                          <Activity className="w-5 h-5" />
+                        </div>
+                        <input
+                          type="number"
+                          id="fatGoal"
+                          name="fatGoal"
+                          value={formData.fatGoal}
+                          onChange={handleChange}
+                          min="0"
+                          step="0.1"
+                          className="w-full pl-12 pr-4 py-5 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-4 focus:ring-primary/20 text-foreground font-black placeholder:text-muted-foreground/50 transition-all"
+                          placeholder={`e.g., ${recommendations.fat}`}
+                        />
+                      </div>
+                      <p className="mt-2 text-xs text-orange-600 font-medium">
+                        Recommended: {recommendations.fat}g/day
+                      </p>
+                    </div>
+
+                    {/* Energy Goal */}
+                    <div>
+                      <label htmlFor="energyGoal" className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-3 block">
+                        Energy Goal (kcal)
+                      </label>
+                      <div className="relative group">
+                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-black transition-colors">
+                          <Flame className="w-5 h-5" />
+                        </div>
+                        <input
+                          type="number"
+                          id="energyGoal"
+                          name="energyGoal"
+                          value={formData.energyGoal}
+                          onChange={handleChange}
+                          min="0"
+                          step="1"
+                          className="w-full pl-12 pr-4 py-5 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-4 focus:ring-primary/20 text-foreground font-black placeholder:text-muted-foreground/50 transition-all"
+                          placeholder={`e.g., ${recommendations.energy}`}
+                        />
+                      </div>
+                      <p className="mt-2 text-xs text-red-600 font-medium">
+                        Recommended: {recommendations.energy} kcal/day
+                      </p>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Error Message */}

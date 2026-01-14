@@ -144,7 +144,7 @@ export default function NutritionRadarChart({
 
               {/* Recommended intake - Green Triangle */}
               <Radar
-                name="Recommended"
+                name="Goal"
                 dataKey="recommended"
                 stroke="#10b981"
                 fill="#10b981"

@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import prisma from '../../config/database';
 import { userService } from '../users/users-service';
+import { NutritionCalculator } from '../../utils/nutrition-calculator';
 
 export const nutritionController = {
   // Get nutrition stats for a specific period
@@ -96,12 +97,42 @@ export const nutritionController = {
 
       console.log('🔍 [Nutrition Stats] Totals:', totals);
 
-      // Define recommended daily values (can be customized based on user profile)
-      const dailyRecommended = {
-        protein: 60, // grams
-        carbohydrates: 130, // grams
-        fat: 30, // grams
+      // Get user profile with goals
+      const userProfile = await prisma.userProfile.findUnique({
+        where: { userId: user.id },
+      });
+
+      // Use user's custom goals if set, otherwise calculate recommendations
+      let dailyRecommended = {
+        protein: 60,
+        carbohydrates: 250,
+        fat: 70,
       };
+
+      if (userProfile?.proteinGoal || userProfile?.carbGoal || userProfile?.fatGoal) {
+        // User has custom goals
+        dailyRecommended = {
+          protein: userProfile.proteinGoal || 60,
+          carbohydrates: userProfile.carbGoal || 250,
+          fat: userProfile.fatGoal || 70,
+        };
+        console.log('🔍 [Nutrition Stats] Using custom user goals:', dailyRecommended);
+      } else if (userProfile?.height && userProfile?.weight) {
+        // Calculate based on user metrics
+        const recommendations = NutritionCalculator.calculateRecommendations({
+          height: userProfile.height,
+          weight: userProfile.weight,
+          weightPreference: userProfile.weightPreference || undefined,
+        });
+        dailyRecommended = {
+          protein: recommendations.protein,
+          carbohydrates: recommendations.carbohydrates,
+          fat: recommendations.fat,
+        };
+        console.log('🔍 [Nutrition Stats] Using AI-calculated goals:', dailyRecommended);
+      } else {
+        console.log('🔍 [Nutrition Stats] Using default goals:', dailyRecommended);
+      }
 
       // Calculate recommended values based on period
       let recommended = dailyRecommended;

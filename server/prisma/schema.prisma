@@ -76,6 +76,10 @@ model UserProfile {
   healthConditions  String?
   latitude          Float?
   longitude         Float?
+  proteinGoal       Float?
+  carbGoal          Float?
+  fatGoal           Float?
+  energyGoal        Float?
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
   isDeleted         Boolean   @default(false)
