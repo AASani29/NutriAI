@@ -20,6 +20,10 @@ export interface UserProfile {
     weightPreference: string | null;
     allergies: string | null;
     healthConditions: string | null;
+    proteinGoal: number | null;
+    carbGoal: number | null;
+    fatGoal: number | null;
+    energyGoal: number | null;
     latitude: number | null;
     longitude: number | null;
   } | null;

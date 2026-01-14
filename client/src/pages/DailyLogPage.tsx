@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { useMemo, useState, useRef, useEffect } from 'react';
 import { useInventory, type ConsumptionLog } from '../hooks/useInventory';
+import { useProfile } from '../context/ProfileContext';
 
 export default function DailyLogPage() {
   // Stable default date range using useMemo to prevent cache misses
@@ -50,6 +51,8 @@ export default function DailyLogPage() {
     useGetHydration,
     useUpdateFitness
   } = useInventory();
+
+  const { profile } = useProfile();
 
   // New Date States
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -322,10 +325,17 @@ export default function DailyLogPage() {
     }), { carbs: 0, protein: 0, fat: 0 });
   }, [filteredLogs]);
 
-  const goalCalories = 2500;
+  const macroGoals = useMemo(() => ({
+    carbs: profile?.profile?.carbGoal ?? 300,
+    protein: profile?.profile?.proteinGoal ?? 180,
+    fat: profile?.profile?.fatGoal ?? 70
+  }), [profile]);
+
+  const goalCalories = profile?.profile?.energyGoal ?? 2500;
+  const safeGoalCalories = goalCalories > 0 ? goalCalories : 1;
   const consumedCalories = totalCalories;
   const caloriesLeft = Math.max(0, goalCalories - consumedCalories);
-  const caloriePercentage = Math.min(100, (consumedCalories / goalCalories) * 100);
+  const caloriePercentage = Math.min(100, (consumedCalories / safeGoalCalories) * 100);
   const strokeDasharray = 552;
   const strokeDashoffset = strokeDasharray - (strokeDasharray * caloriePercentage) / 100;
 
@@ -832,26 +842,30 @@ export default function DailyLogPage() {
 
               <div className="space-y-8">
                 {[
-                  { label: 'Carbohydrates', value: totalMacros.carbs, goal: 300, color: 'bg-primary', unit: 'g' },
-                  { label: 'Proteins', value: totalMacros.protein, goal: 180, color: 'bg-blue-400', unit: 'g' },
-                  { label: 'Fats', value: totalMacros.fat, goal: 70, color: 'bg-orange-400', unit: 'g' }
-                ].map((macro) => (
-                  <div key={macro.label}>
-                    <div className="flex justify-between items-end mb-3">
-                      <span className="text-xs font-black text-black uppercase tracking-widest">{macro.label}</span>
-                      <span className="text-sm font-black text-black tracking-tighter">
-                        {Math.round(macro.value)}{macro.unit}
-                        <span className="text-muted-foreground text-[10px] font-bold ml-1">/ {macro.goal}{macro.unit}</span>
-                      </span>
+                  { label: 'Carbohydrates', value: totalMacros.carbs, goal: macroGoals.carbs, color: 'bg-primary', unit: 'g' },
+                  { label: 'Proteins', value: totalMacros.protein, goal: macroGoals.protein, color: 'bg-blue-400', unit: 'g' },
+                  { label: 'Fats', value: totalMacros.fat, goal: macroGoals.fat, color: 'bg-orange-400', unit: 'g' }
+                ].map((macro) => {
+                  const percentage = macro.goal ? Math.min(100, (macro.value / macro.goal) * 100) : 0;
+
+                  return (
+                    <div key={macro.label}>
+                      <div className="flex justify-between items-end mb-3">
+                        <span className="text-xs font-black text-black uppercase tracking-widest">{macro.label}</span>
+                        <span className="text-sm font-black text-black tracking-tighter">
+                          {Math.round(macro.value)}{macro.unit}
+                          <span className="text-muted-foreground text-[10px] font-bold ml-1">/ {macro.goal}{macro.unit}</span>
+                        </span>
+                      </div>
+                      <div className="h-4 w-full bg-gray-50 rounded-full overflow-hidden border border-gray-100 p-0.5">
+                        <div
+                          className={`h-full ${macro.color} rounded-full transition-all duration-1000 ease-out`}
+                          style={{ width: `${percentage}%` }}
+                        />
+                      </div>
                     </div>
-                    <div className="h-4 w-full bg-gray-50 rounded-full overflow-hidden border border-gray-100 p-0.5">
-                      <div
-                        className={`h-full ${macro.color} rounded-full transition-all duration-1000 ease-out`}
-                        style={{ width: `${Math.min(100, (macro.value / macro.goal) * 100)}%` }}
-                      />
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
 
               <div className="mt-12 pt-8 border-t border-gray-50">
