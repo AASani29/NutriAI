@@ -313,13 +313,7 @@ export default function NeighbourhoodPage() {
               </div>
             </div>
 
-            <div className="mt-16 space-y-8">
-              <div className="flex items-center justify-between">
-                <h2 className="text-3xl font-black text-black tracking-tight">Browse Listings</h2>
-                <div className="h-px flex-1 bg-gray-100 mx-8" />
-              </div>
-              <AvailableListings externalSearch={searchQuery} />
-            </div>
+            
           </>
         )}
 

@@ -286,13 +286,7 @@ export default function MealPlannerPage() {
             </div>
 
             <div className="relative z-10 flex items-end justify-between mt-auto pt-8">
-              <div className="flex items-center gap-3">
-                <div className="flex -space-x-3">
-                  <div className="w-10 h-10 rounded-full border-2 border-emerald-500 bg-white/20 backdrop-blur-md flex items-center justify-center text-[10px] font-black">AI</div>
-                  <div className="w-10 h-10 rounded-full border-2 border-emerald-500 bg-emerald-800 text-white flex items-center justify-center text-[10px] font-black">+3</div>
-                </div>
-                <span className="text-xs font-black uppercase tracking-widest ml-1">Joined the challenge</span>
-              </div>
+              
               <button 
                 onClick={() => setViewMode(viewMode === 'current' ? 'saved' : 'current')}
                 className="bg-black text-white px-8 py-4 rounded-full font-black flex items-center gap-3 hover:scale-105 transition-transform shadow-2xl active:scale-95 text-xs uppercase tracking-widest"
