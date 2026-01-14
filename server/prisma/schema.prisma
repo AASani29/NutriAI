@@ -4,47 +4,48 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url = env("DATABASE_URL")
+  url      = env("DATABASE_URL")
 }
 
 model User {
-  id                  String            @id @default(uuid())
-  clerkId             String            @unique
-  email               String?           @unique
-  createdAt           DateTime          @default(now())
-  updatedAt           DateTime          @updatedAt
-  isDeleted           Boolean           @default(false)
+  id                  String               @id @default(uuid())
+  clerkId             String               @unique
+  email               String?              @unique
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  isDeleted           Boolean              @default(false)
   deletedAt           DateTime?
-  files               File[]            @relation("UserFiles")
-  foodItemsCreated    FoodItem[]        @relation("CreatedFoodItems")
-  inventoriesCreated  Inventory[]       @relation("CreatedInventories")
-  inventoryItemsAdded InventoryItem[]   @relation("AddedInventoryItems")
-  addedMembers        InventoryMember[] @relation("AddedInventoryMembers")
-  inventoryMembers    InventoryMember[] @relation("UserInventoryMembers")
-  foodListings        FoodListing[]     @relation("UserListings")
-  sharingLogs         SharingLog[]      @relation("UserSharingLogs")
-  profile             UserProfile?
+  aiInsights          AiInsight[]
+  auditLogs           AuditLog[]
+  chatSessions        ChatSession[]
+  consumptions        ConsumptionLog[]     @relation("UserConsumptionLogs")
+  consumptionPatterns ConsumptionPattern[]
+  files               File[]               @relation("UserFiles")
+  fitnessLogs         FitnessLog[]
+  foodItemsCreated    FoodItem[]           @relation("CreatedFoodItems")
+  foodListings        FoodListing[]        @relation("UserListings")
+  hydrationLogs       HydrationLog[]
+  inventoriesCreated  Inventory[]          @relation("CreatedInventories")
+  inventoryItemsAdded InventoryItem[]      @relation("AddedInventoryItems")
+  addedMembers        InventoryMember[]    @relation("AddedInventoryMembers")
+  inventoryMembers    InventoryMember[]    @relation("UserInventoryMembers")
+  mealPlans           MealPlan[]
+  resourcesCreated    Resource[]           @relation("CreatedResources")
   sdgAchievements     SdgAchievement[]
   sdgScores           SdgScore[]
-  chatSessions        ChatSession[]
-  mealPlans           MealPlan[]
-  aiInsights          AiInsight[]
-  consumptionPatterns ConsumptionPattern[]
-  auditLogs           AuditLog[]
-  consumptions        ConsumptionLog[]  @relation("UserConsumptionLogs")
-  resourcesCreated    Resource[]        @relation("CreatedResources")
-  hydrationLogs       HydrationLog[]
-  fitnessLogs         FitnessLog[]
+  sharingLogs         SharingLog[]         @relation("UserSharingLogs")
+  profile             UserProfile?
 }
 
 model HydrationLog {
   id        String   @id @default(uuid())
   userId    String
   date      DateTime
-  amount    Float    @default(0) // in Liters
-  goal      Float    @default(2.5) // Default goal
+  amount    Float    @default(0)
+  goal      Float    @default(2.5)
   updatedAt DateTime @updatedAt
   user      User     @relation(fields: [userId], references: [id])
+
   @@unique([userId, date])
 }
 
@@ -52,11 +53,12 @@ model FitnessLog {
   id             String   @id @default(uuid())
   userId         String
   date           DateTime
-  weight         Float?   // in kg
+  weight         Float?
   steps          Int      @default(0)
   caloriesBurned Float    @default(0)
   updatedAt      DateTime @updatedAt
   user           User     @relation(fields: [userId], references: [id])
+
   @@unique([userId, date])
 }
 
@@ -69,9 +71,9 @@ model UserProfile {
   budgetRange       Float?
   height            Float?
   weight            Float?
-  weightPreference  String?   // "lose", "gain", "maintain"
+  weightPreference  String?
   allergies         String?
-  healthConditions  String?   // e.g. "Diabetes", "Hypertension", etc.
+  healthConditions  String?
   latitude          Float?
   longitude         Float?
   createdAt         DateTime  @default(now())
@@ -82,7 +84,7 @@ model UserProfile {
 }
 
 model FoodItem {
-  id                    String           @id @default(uuid())
+  id                    String            @id @default(uuid())
   name                  String
   unit                  String?
   category              String?
@@ -90,19 +92,19 @@ model FoodItem {
   sampleCostPerUnit     Float?
   description           String?
   createdById           String?
-  nutritionPerUnit      Json?    // e.g. { calories: 100, protein: 20... }
-  nutritionUnit         String?  // e.g. "g", "ml", "piece"
-  nutritionBasis        Float?   // e.g. 100 (for 100g)
-  basePrice             Float?   // Price corresponding to nutritionBasis quantity
-  createdAt             DateTime         @default(now())
-  updatedAt             DateTime         @updatedAt
-  isDeleted             Boolean          @default(false)
+  nutritionPerUnit      Json?
+  nutritionUnit         String?
+  nutritionBasis        Float?
+  basePrice             Float?
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
+  isDeleted             Boolean           @default(false)
   deletedAt             DateTime?
-  consumptionLogs       ConsumptionLog[] @relation("FoodItemConsumptions")
-  files                 File[]           @relation("FoodItemFiles")
-  createdBy             User?            @relation("CreatedFoodItems", fields: [createdById], references: [id])
-  inventoryItems        InventoryItem[]
+  consumptionLogs       ConsumptionLog[]  @relation("FoodItemConsumptions")
+  files                 File[]            @relation("FoodItemFiles")
+  createdBy             User?             @relation("CreatedFoodItems", fields: [createdById], references: [id])
   foodSafetyAlerts      FoodSafetyAlert[] @relation("FoodItemAlerts")
+  inventoryItems        InventoryItem[]
 }
 
 model Inventory {
@@ -139,28 +141,28 @@ model InventoryMember {
 }
 
 model InventoryItem {
-  id              String           @id @default(uuid())
-  inventoryId     String
-  foodItemId      String?
-  customName      String?
-  quantity        Float            @default(0)
-  unit            String?
-  addedAt         DateTime         @default(now())
-  expiryDate      DateTime?
-  removed         Boolean          @default(false)
-  notes           String?
-  addedById       String?
-  updatedAt       DateTime         @updatedAt
-  isDeleted       Boolean          @default(false)
-  deletedAt       DateTime?
-  consumptionLogs ConsumptionLog[] @relation("InventoryItemConsumptions")
-  files           File[]           @relation("InventoryItemFiles")
-  foodListings    FoodListing[]    @relation("FoodListings")
-  addedBy         User?            @relation("AddedInventoryItems", fields: [addedById], references: [id])
-  foodItem        FoodItem?        @relation(fields: [foodItemId], references: [id])
-  inventory       Inventory        @relation("InventoryItems", fields: [inventoryId], references: [id])
-  expirationRisk  ExpirationRisk?
+  id               String            @id @default(uuid())
+  inventoryId      String
+  foodItemId       String?
+  customName       String?
+  quantity         Float             @default(0)
+  unit             String?
+  addedAt          DateTime          @default(now())
+  expiryDate       DateTime?
+  removed          Boolean           @default(false)
+  notes            String?
+  addedById        String?
+  updatedAt        DateTime          @updatedAt
+  isDeleted        Boolean           @default(false)
+  deletedAt        DateTime?
+  consumptionLogs  ConsumptionLog[]  @relation("InventoryItemConsumptions")
+  expirationRisk   ExpirationRisk?
+  files            File[]            @relation("InventoryItemFiles")
+  foodListings     FoodListing[]     @relation("FoodListings")
   foodSafetyAlerts FoodSafetyAlert[] @relation("InventoryItemAlerts")
+  addedBy          User?             @relation("AddedInventoryItems", fields: [addedById], references: [id])
+  foodItem         FoodItem?         @relation(fields: [foodItemId], references: [id])
+  inventory        Inventory         @relation("InventoryItems", fields: [inventoryId], references: [id])
 }
 
 model ConsumptionLog {
@@ -179,56 +181,52 @@ model ConsumptionLog {
   fiber           Float?
   sugar           Float?
   sodium          Float?
-  cost            Float?   // Total cost of this consumption
+  cost            Float?
   consumedAt      DateTime         @default(now())
   notes           String?
   isDeleted       Boolean          @default(false)
   deletedAt       DateTime?
+  userId          String?
   consumedBy      InventoryMember? @relation("MemberConsumptions", fields: [consumedById], references: [id])
   foodItem        FoodItem?        @relation("FoodItemConsumptions", fields: [foodItemId], references: [id])
   inventory       Inventory?       @relation("InventoryConsumptions", fields: [inventoryId], references: [id])
   inventoryItem   InventoryItem?   @relation("InventoryItemConsumptions", fields: [inventoryItemId], references: [id])
-  userId          String?
   user            User?            @relation("UserConsumptionLogs", fields: [userId], references: [id])
 }
 
-enum ResourceType {
-  Article
-  Video
-}
-
 model Resource {
-  id          String    @id @default(uuid())
+  id          String                  @id @default(uuid())
   title       String
   description String?
   url         String?
   type        ResourceType
   createdById String?
-  isPublic    Boolean   @default(true)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  isDeleted   Boolean   @default(false)
+  isPublic    Boolean                 @default(true)
+  createdAt   DateTime                @default(now())
+  updatedAt   DateTime                @updatedAt
+  isDeleted   Boolean                 @default(false)
   deletedAt   DateTime?
+  createdBy   User?                   @relation("CreatedResources", fields: [createdById], references: [id])
   tags        ResourceTagOnResource[]
-  createdBy   User?     @relation("CreatedResources", fields: [createdById], references: [id])
 }
 
 model ResourceTag {
-  id         String   @id @default(uuid())
-  tag        String   @unique
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  isDeleted  Boolean  @default(false)
-  deletedAt  DateTime?
-  resources  ResourceTagOnResource[]
+  id        String                  @id @default(uuid())
+  tag       String                  @unique
+  createdAt DateTime                @default(now())
+  updatedAt DateTime                @updatedAt
+  isDeleted Boolean                 @default(false)
+  deletedAt DateTime?
+  resources ResourceTagOnResource[]
 }
 
 model ResourceTagOnResource {
   resourceId String
-  resource   Resource @relation(fields: [resourceId], references: [id])
   tagId      String
+  createdAt  DateTime    @default(now())
+  resource   Resource    @relation(fields: [resourceId], references: [id])
   tag        ResourceTag @relation(fields: [tagId], references: [id])
-  createdAt  DateTime @default(now())
+
   @@id([resourceId, tagId])
 }
 
@@ -252,75 +250,74 @@ model File {
 }
 
 model ConsumptionPattern {
-  id              String   @id @default(cuid())
-  userId          String
-  user            User     @relation(fields: [userId], references: [id])
-  weekStartDate   DateTime
-  category        String
-  avgQuantity     Float
-  trendDirection  String   // "up", "down", "stable"
-  patternType     String?  // e.g. "weekend_spike", "weekday_heavy"
-  createdAt       DateTime @default(now())
+  id             String   @id @default(cuid())
+  userId         String
+  weekStartDate  DateTime
+  category       String
+  avgQuantity    Float
+  trendDirection String
+  patternType    String?
+  createdAt      DateTime @default(now())
+  user           User     @relation(fields: [userId], references: [id])
 }
 
 model AiInsight {
-  id           String   @id @default(cuid())
-  userId       String
-  user         User     @relation(fields: [userId], references: [id])
-  insightType  String   // "pattern", "waste", "nutrition", "risk"
-  data         Json
-  generatedAt  DateTime @default(now())
-  expiresAt    DateTime
+  id          String   @id @default(cuid())
+  userId      String
+  insightType String
+  data        Json
+  generatedAt DateTime @default(now())
+  expiresAt   DateTime
+  user        User     @relation(fields: [userId], references: [id])
 }
 
 model ExpirationRisk {
-  id                String        @id @default(cuid())
-  inventoryItemId   String        @unique
-  inventoryItem     InventoryItem @relation(fields: [inventoryItemId], references: [id])
-  riskScore         Int           // 0 - 100
-  riskFactors       Json
+  id                 String        @id @default(cuid())
+  inventoryItemId    String        @unique
+  riskScore          Int
+  riskFactors        Json
   predictedWasteDate DateTime?
-  alertSent         Boolean       @default(false)
-  createdAt         DateTime      @default(now())
+  alertSent          Boolean       @default(false)
+  createdAt          DateTime      @default(now())
+  inventoryItem      InventoryItem @relation(fields: [inventoryItemId], references: [id])
 }
 
 model MealPlan {
-  id              String   @id @default(cuid())
-  userId          String
-  user            User     @relation(fields: [userId], references: [id])
-  weekStartDate   DateTime
-  budget          Float
-  meals           Json     // array of meal objects
-  shoppingList    Json
-  totalCost       Float
+  id               String   @id @default(cuid())
+  userId           String
+  weekStartDate    DateTime
+  budget           Float
+  meals            Json
+  shoppingList     Json
+  totalCost        Float
   nutritionSummary Json?
-  status          String   @default("active") // "active", "completed", "cancelled"
-  createdAt       DateTime @default(now())
+  status           String   @default("active")
+  createdAt        DateTime @default(now())
+  user             User     @relation(fields: [userId], references: [id])
 }
 
 model ChatSession {
   id           String        @id @default(cuid())
   userId       String
-  user         User          @relation(fields: [userId], references: [id])
   startedAt    DateTime      @default(now())
   lastActivity DateTime      @default(now())
   messages     ChatMessage[]
+  user         User          @relation(fields: [userId], references: [id])
 }
 
 model ChatMessage {
   id          String      @id @default(cuid())
   sessionId   String
-  session     ChatSession @relation(fields: [sessionId], references: [id])
-  role        String      // "user" | "assistant"
-  content     String      @db.Text
+  role        String
+  content     String
   contextData Json?
   createdAt   DateTime    @default(now())
+  session     ChatSession @relation(fields: [sessionId], references: [id])
 }
 
 model SdgScore {
   id                  String   @id @default(cuid())
   userId              String
-  user                User     @relation(fields: [userId], references: [id])
   weekStartDate       DateTime
   wasteReductionScore Int
   nutritionScore      Int
@@ -330,28 +327,23 @@ model SdgScore {
   insights            Json
   recommendations     Json
   createdAt           DateTime @default(now())
+  user                User     @relation(fields: [userId], references: [id])
+
   @@unique([userId, weekStartDate])
 }
 
 model SdgAchievement {
-  id             String  @id @default(cuid())
-  userId         String
-  user           User    @relation(fields: [userId], references: [id])
+  id              String   @id @default(cuid())
+  userId          String
   achievementType String
-  title          String
-  description    String
-  unlockedAt     DateTime @default(now())
-}
-
-enum ListingStatus {
-  AVAILABLE
-  CLAIMED
-  COMPLETED
-  CANCELLED
+  title           String
+  description     String
+  unlockedAt      DateTime @default(now())
+  user            User     @relation(fields: [userId], references: [id])
 }
 
 model FoodListing {
-  id              String         @id @default(uuid())
+  id              String        @id @default(uuid())
   inventoryItemId String
   listerId        String
   title           String
@@ -362,37 +354,37 @@ model FoodListing {
   latitude        Float?
   longitude       Float?
   availableUntil  DateTime?
-  status          ListingStatus  @default(AVAILABLE)
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
-  isDeleted       Boolean        @default(false)
+  status          ListingStatus @default(AVAILABLE)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  isDeleted       Boolean       @default(false)
   deletedAt       DateTime?
-  inventoryItem   InventoryItem  @relation("FoodListings", fields: [inventoryItemId], references: [id])
-  lister          User           @relation("UserListings", fields: [listerId], references: [id])
-  sharingLogs     SharingLog[]   @relation("ListingSharingLogs")
+  inventoryItem   InventoryItem @relation("FoodListings", fields: [inventoryItemId], references: [id])
+  lister          User          @relation("UserListings", fields: [listerId], references: [id])
+  sharingLogs     SharingLog[]  @relation("ListingSharingLogs")
 }
 
 model SharingLog {
-  id            String      @id @default(uuid())
-  listingId     String
-  claimerId     String?
-  claimerName   String?
-  claimedAt     DateTime?
-  completedAt   DateTime?
-  notes         String?
+  id              String      @id @default(uuid())
+  listingId       String
+  claimerId       String?
+  claimerName     String?
+  claimedAt       DateTime?
+  completedAt     DateTime?
+  notes           String?
   quantityClaimed Float?
-  status        String      @default("CLAIMED") // CLAIMED, COMPLETED, CANCELLED
-  createdAt     DateTime    @default(now())
-  isDeleted     Boolean     @default(false)
-  deletedAt     DateTime?
-  listing       FoodListing @relation("ListingSharingLogs", fields: [listingId], references: [id])
-  claimer       User?       @relation("UserSharingLogs", fields: [claimerId], references: [id])
+  status          String      @default("CLAIMED")
+  createdAt       DateTime    @default(now())
+  isDeleted       Boolean     @default(false)
+  deletedAt       DateTime?
+  claimer         User?       @relation("UserSharingLogs", fields: [claimerId], references: [id])
+  listing         FoodListing @relation("ListingSharingLogs", fields: [listingId], references: [id])
 }
 
 model AuditLog {
   id        String   @id @default(uuid())
   userId    String
-  action    String   // e.g. "CONSUMPTION", "LOGIN", "ITEM_ADDED"
+  action    String
   details   Json
   createdAt DateTime @default(now())
   user      User     @relation(fields: [userId], references: [id])
@@ -402,12 +394,24 @@ model FoodSafetyAlert {
   id              String         @id @default(uuid())
   foodItemId      String?
   inventoryItemId String?
-  alertType       String         // "RECALL", "EXPIRED", "CONTAMINATION"
-  severity        String         // "HIGH", "MEDIUM", "LOW"
+  alertType       String
+  severity        String
   message         String
   createdAt       DateTime       @default(now())
   isResolved      Boolean        @default(false)
   resolvedAt      DateTime?
   foodItem        FoodItem?      @relation("FoodItemAlerts", fields: [foodItemId], references: [id])
   inventoryItem   InventoryItem? @relation("InventoryItemAlerts", fields: [inventoryItemId], references: [id])
+}
+
+enum ResourceType {
+  Article
+  Video
+}
+
+enum ListingStatus {
+  AVAILABLE
+  CLAIMED
+  COMPLETED
+  CANCELLED
 }
