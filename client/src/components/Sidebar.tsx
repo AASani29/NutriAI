@@ -30,7 +30,7 @@ const navItems = [
     bgColor: "bg-sky-50",
     activeColor: "bg-primary text-secondary",
 
-    info: "Your food tracking stats and trends: track inventory items,expiring foods,todays activities and top recommendations all for you",
+    info: "Track inventory items,expiring foods,todays activities and top recommendations all for you",
   },
   {
     label: "AI Intelligence",
@@ -101,7 +101,7 @@ export default function Sidebar({
   return (
     <aside
       className={cn(
-        "flex-shrink-0 flex flex-col items-center py-6 bg-white/90 backdrop-blur-xl border border-white/20 rounded-3xl shadow-xl h-[calc(100vh-2rem)] fixed top-4 left-4 justify-between z-50 transition-all duration-500 cubic-bezier(0.4, 0, 0.2, 1)",
+        " flex-shrink-0 flex flex-col items-center py-6 bg-white/90 backdrop-blur-xl border border-white/20 rounded-3xl shadow-xl h-[calc(100vh)] fixed top-0 left-0 justify-between z-50 transition-all duration-500 cubic-bezier(0.4, 0, 0.2, 1)",
         isExpanded ? "w-72 px-4" : "w-20 lg:w-24"
       )}
     >
@@ -193,7 +193,7 @@ export default function Sidebar({
                       />
 
                       {/* Tooltip only appears when icon is hovered */}
-                      <div className="absolute left-8 top-1/2 -translate-y-1/2 w-84 bg-white border border-gray-200 rounded-xl shadow-lg p-3 text-sm text-gray-700 opacity-0 invisible group-hover/icon:opacity-100 group-hover/icon:visible transition-opacity duration-300 z-50 pointer-events-none">
+                      <div className="absolute left-8 top-1/2 -translate-y-1/2 w-54 bg-white border border-gray-200 rounded-xl shadow-lg p-3 text-sm text-gray-500 opacity-0 invisible group-hover/icon:opacity-100 group-hover/icon:visible transition-opacity duration-300 z-50 pointer-events-none">
                         {item.info}
                       </div>
                     </div>
