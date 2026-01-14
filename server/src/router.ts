@@ -9,6 +9,7 @@ import { resourcesRouter } from './modules/resources/resources-router';
 import { usersRouter } from './modules/users/users-router';
 import { sharingRouter } from './modules/sharing/sharing-router';
 import weatherRouter from './modules/weather/weather-router';
+import { nutritionRouter } from './modules/nutrition/nutrition-router';
 const router = express.Router();
 
 router.get('/', (req: Request, res: Response) => {
@@ -35,6 +36,7 @@ router.use('/users', usersRouter);
 router.use('/inventories', inventoryRouter);
 router.use('/images', imageRouter);
 router.use('/sharing', sharingRouter);
+router.use('/nutrition', nutritionRouter);
 
 // AI Intelligence routes (require authentication)
 router.use('/intelligence', intelligenceRouter);

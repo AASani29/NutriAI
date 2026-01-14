@@ -27,6 +27,7 @@ import { BASE_URL } from "../services/utils";
 import { useAuth } from "@clerk/clerk-react";
 import type { Article, Video } from "../types/resource-types";
 import { PlayCircle } from "lucide-react";
+import NutritionRadarChart from "../components/NutritionRadarChart";
 
 // Analytics interfaces
 interface ConsumptionPattern {
@@ -294,6 +295,11 @@ export default function Dashboard() {
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl space-y-8">
+      {/* Nutrition Radar Chart - Absolutely Positioned */}
+      <div className="absolute top-20 right-8 w-96 h-auto z-40">
+        <NutritionRadarChart className="h-full shadow-lg" />
+      </div>
+
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold text-foreground mb-2">
