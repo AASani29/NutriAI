@@ -76,6 +76,10 @@ model UserProfile {
   healthConditions  String?
   latitude          Float?
   longitude         Float?
+  proteinGoal       Float?
+  carbGoal          Float?
+  fatGoal           Float?
+  energyGoal        Float?
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
   isDeleted         Boolean   @default(false)
@@ -113,6 +117,8 @@ model Inventory {
   description String?
   createdById String?
   isPrivate   Boolean           @default(true)
+  isArchived  Boolean           @default(false)
+  archivedAt  DateTime?
   createdAt   DateTime          @default(now())
   updatedAt   DateTime          @updatedAt
   isDeleted   Boolean           @default(false)

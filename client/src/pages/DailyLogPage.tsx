@@ -16,6 +16,9 @@ import {
 } from 'lucide-react';
 import { useMemo, useState, useRef, useEffect } from 'react';
 import { useInventory, type ConsumptionLog } from '../hooks/useInventory';
+import { useProfile } from '../context/ProfileContext';
+import { useApi } from '../hooks/useApi';
+import { useNavigate } from 'react-router-dom';
 
 export default function DailyLogPage() {
   // Stable default date range using useMemo to prevent cache misses
@@ -51,11 +54,15 @@ export default function DailyLogPage() {
     useUpdateFitness
   } = useInventory();
 
+  const { profile, refreshProfile } = useProfile();
+  const api = useApi();
+
   // New Date States
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedMonth, setSelectedMonth] = useState(new Date()); // For monthly view navigation
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 10;
+  const [weightUpdateMutation, setWeightUpdateMutation] = useState(false);
 
   // Reset page when filters change
   useEffect(() => {
@@ -76,6 +83,8 @@ export default function DailyLogPage() {
     }
   };
 
+  const navigate= useNavigate();
+
   const clearFilters = () => {
     setFilters({ inventoryId: '', category: '' });
     setSearchQuery('');
@@ -90,11 +99,55 @@ export default function DailyLogPage() {
   const [isFitnessModalOpen, setIsFitnessModalOpen] = useState(false);
   const [tempWeight, setTempWeight] = useState('');
   const [tempSteps, setTempSteps] = useState('');
+  // Start from 2 days before today (showing today and nearby days centered)
+  const [weightChartStartIndex, setWeightChartStartIndex] = useState(27); // Index 27 = 2 days ago, 28 = yesterday, 29 = today
+  // Weight chart view mode (daily carousel or monthly bars)
+  const [weightChartViewMode, setWeightChartViewMode] = useState<'daily' | 'monthly'>('daily');
+  // Monthly chart carousel index (showing 5 months at a time)
+  const [monthlyChartStartIndex, setMonthlyChartStartIndex] = useState(7); // Start from 2 months ago
 
   // Fetch Hydration for Selected Date (Main Display)
   const { data: hydrationData, isLoading: hydrationLoading } = useGetHydration(selectedDate);
   const { data: fitnessData } = useGetFitness(selectedDate);
   const updateFitnessMutation = useUpdateFitness();
+
+  // Past 30 dates for daily weight history view
+  const pastDates = useMemo(() => {
+    const dates = [];
+    for (let i = 29; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      d.setHours(0, 0, 0, 0);
+      dates.push(d);
+    }
+    return dates;
+  }, []);
+
+  // Past 12 months for monthly weight history view
+  const pastMonths = useMemo(() => {
+    const months = [];
+    for (let i = 11; i >= 0; i--) {
+      const d = new Date();
+      d.setMonth(d.getMonth() - i);
+      d.setDate(1);
+      d.setHours(0, 0, 0, 0);
+      months.push(d);
+    }
+    return months;
+  }, []);
+
+  // Fetch fitness data for each of the past 30 days (daily view)
+  const fitnessHistory = useMemo(() => {
+    return pastDates.map(date => {
+      const isToday = date.toDateString() === new Date().toDateString();
+      // For today, use current fitnessData. For other days, we'd need to fetch from backend
+      // For now, we'll store just today's data; in production you'd fetch each day
+      if (isToday && fitnessData?.weight) {
+        return { date, weight: fitnessData.weight, steps: fitnessData.steps };
+      }
+      return { date, weight: null, steps: null };
+    });
+  }, [pastDates, fitnessData]);
 
   // Fetch History for Monthly View OR Daily Strip (last 30 days)
   // Determine range based on viewMode
@@ -180,6 +233,88 @@ export default function DailyLogPage() {
   const hydrationAmount = hydrationData?.amount || 0;
   const hydrationGoal = hydrationData?.goal || 2.5;
 
+  // Calculate calories burned - ONLY from activity (steps), not BMR
+  const calculateCaloriesBurned = useMemo(() => {
+    if (!fitnessData) return 0;
+    
+    const steps = fitnessData.steps || 0;
+    // Activity calories from steps (approximately 0.05 cal per step for average person)
+    // This represents actual movement/activity, not resting metabolic rate
+    const activityCalories = steps * 0.05;
+    
+    return Math.round(activityCalories);
+  }, [fitnessData]);
+
+  // Daily calorie burn goal (for circular progress)
+  const dailyBurnGoal = 500; // Average daily activity calorie goal
+
+  // Weight history (last 30 days for daily view) - Each day has its own weight data
+  const weightHistory = useMemo(() => {
+    return fitnessHistory.map((entry) => {
+      // Use logged weight if available, otherwise no data (don't fall back to profile for all days)
+      const weight = entry.weight || 0;
+      
+      return {
+        date: entry.date,
+        weight,
+        isToday: entry.date.toDateString() === new Date().toDateString()
+      };
+    });
+  }, [fitnessHistory]);
+
+  // Monthly weight history (last 12 months) - Shows average weight per month
+  const monthlyWeightHistory = useMemo(() => {
+    return pastMonths.map((monthStart) => {
+      const monthEnd = new Date(monthStart);
+      monthEnd.setMonth(monthEnd.getMonth() + 1);
+      monthEnd.setDate(0);
+      
+      const isCurrentMonth = monthStart.getMonth() === new Date().getMonth() && 
+                            monthStart.getFullYear() === new Date().getFullYear();
+      
+      // Get all fitness data for this month to calculate average weight
+      const monthFitnessData = fitnessHistory.filter(entry => {
+        const entryDate = new Date(entry.date);
+        return entryDate.getMonth() === monthStart.getMonth() && 
+               entryDate.getFullYear() === monthStart.getFullYear() &&
+               entry.weight > 0;
+      });
+      
+      // Calculate average weight for the month
+      let averageWeight = 0;
+      if (monthFitnessData.length > 0) {
+        const totalWeight = monthFitnessData.reduce((sum, entry) => sum + entry.weight, 0);
+        averageWeight = totalWeight / monthFitnessData.length;
+      }
+      
+      return {
+        date: monthStart,
+        year: monthStart.getFullYear(),
+        month: monthStart.toLocaleDateString('en-US', { month: 'short' }),
+        weight: averageWeight,
+        isCurrentMonth,
+        entriesCount: monthFitnessData.length
+      };
+    });
+  }, [pastMonths, fitnessHistory]);
+
+  // Handle weight update with profile sync
+  const handleWeightUpdate = async (newWeight: number) => {
+    try {
+      setWeightUpdateMutation(true);
+      // Update fitness data
+      await updateFitnessMutation.mutateAsync({ weight: newWeight, date: selectedDate });
+      // Update profile
+      await api.updateProfile({ weight: newWeight });
+      // Refresh profile to get latest data
+      await refreshProfile(true);
+    } catch (err) {
+      console.error('Failed to update weight:', err);
+    } finally {
+      setWeightUpdateMutation(false);
+    }
+  };
+
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const handleScrollStats = (direction: 'left' | 'right') => {
     if (scrollContainerRef.current) {
@@ -190,6 +325,27 @@ export default function DailyLogPage() {
       });
     }
   };
+
+  // Auto-scroll to show today at the leftmost position
+  useEffect(() => {
+    if (scrollContainerRef.current && dailyHistory && dailyHistory.length > 0) {
+      // Find today's button position
+      const todayButton = scrollContainerRef.current.querySelector('[data-today="true"]');
+      if (todayButton) {
+        // Scroll so today is at the leftmost visible position
+        const containerRect = scrollContainerRef.current.getBoundingClientRect();
+        const buttonRect = todayButton.getBoundingClientRect();
+        const scrollLeft = scrollContainerRef.current.scrollLeft + buttonRect.left - containerRect.left;
+        scrollContainerRef.current.scrollLeft = Math.max(0, scrollLeft - 16); // 16px offset for padding
+      }
+    }
+  }, [dailyHistory]);
+
+  // Reset weight chart indices when switching views
+  useEffect(() => {
+    setWeightChartStartIndex(27); // Start from 2 days before today
+    setMonthlyChartStartIndex(7); // Start from 2 months ago
+  }, [viewMode]);
 
 
   // ... (Keep existing inventories query) ...
@@ -222,11 +378,37 @@ export default function DailyLogPage() {
     data: consumptionResult,
     isLoading: consumptionLoading,
     error: consumptionError,
+    refetch: refetchConsumptionLogs,
   } = useGetConsumptionLogs(consumptionParams);
 
   const consumptionLogs = consumptionResult?.consumptionLogs || [];
   const totalPages = consumptionResult?.totalPages || 1;
   const totalCalories = consumptionResult?.totalCalories || 0;
+
+  // Auto-refetch consumption logs periodically and on page focus to catch MCP updates
+  useEffect(() => {
+    // Refetch immediately on mount
+    refetchConsumptionLogs();
+
+    // Set up polling interval (every 5 seconds) to catch external updates
+    const pollInterval = setInterval(() => {
+      refetchConsumptionLogs();
+    }, 5000);
+
+    // Refetch when page regains focus
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        refetchConsumptionLogs();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      clearInterval(pollInterval);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [refetchConsumptionLogs]);
 
 
   // No local filtering needed anymore, results are filtered by the backend
@@ -322,10 +504,17 @@ export default function DailyLogPage() {
     }), { carbs: 0, protein: 0, fat: 0 });
   }, [filteredLogs]);
 
-  const goalCalories = 2500;
+  const macroGoals = useMemo(() => ({
+    carbs: profile?.profile?.carbGoal ?? 300,
+    protein: profile?.profile?.proteinGoal ?? 180,
+    fat: profile?.profile?.fatGoal ?? 70
+  }), [profile]);
+
+  const goalCalories = profile?.profile?.energyGoal ?? 2500;
+  const safeGoalCalories = goalCalories > 0 ? goalCalories : 1;
   const consumedCalories = totalCalories;
   const caloriesLeft = Math.max(0, goalCalories - consumedCalories);
-  const caloriePercentage = Math.min(100, (consumedCalories / goalCalories) * 100);
+  const caloriePercentage = Math.min(100, (consumedCalories / safeGoalCalories) * 100);
   const strokeDasharray = 552;
   const strokeDashoffset = strokeDasharray - (strokeDasharray * caloriePercentage) / 100;
 
@@ -336,22 +525,12 @@ export default function DailyLogPage() {
       <div className="container mx-auto px-4 py-8 max-w-7xl space-y-8">
         <header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
           <div>
-            <h1 className="text-4xl font-black text-black tracking-tight">Consumption Log</h1>
-            <p className="text-muted-foreground font-medium mt-1">Track your daily intake and maintain a healthy balance.</p>
+            <h1 className="text-3xl font-bold text-foreground tracking-tight">Daily Log</h1>
+            <p className="text-muted-foreground mt-1">Track your daily intake and maintain a healthy balance.</p>
           </div>
           <div className="flex items-center gap-4 w-full md:w-auto">
-            <div className="relative flex-1 md:flex-none">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
-              <input
-                className="pl-12 pr-4 py-3 rounded-full border-none bg-white text-gray-700 placeholder-gray-400 shadow-soft focus:ring-2 focus:ring-black w-full md:w-80 font-bold"
-                placeholder="Search food..."
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
-            <button className="bg-black text-white px-8 py-3 rounded-full font-black flex items-center gap-2 hover:opacity-90 transition-all active:scale-95 whitespace-nowrap shadow-lg shadow-black/10">
-              <Plus className="w-5 h-5 text-primary font-black" />
+            <button className="bg-secondary text-white px-8 py-3 rounded-lg font-bold flex items-center gap-2 hover:bg-secondary/90 transition-all active:scale-95 whitespace-nowrap shadow-lg" onClick={()=>navigate('/inventory')}>
+              <Plus className="w-5 h-5" />
               Log Meal
             </button>
           </div>
@@ -368,19 +547,36 @@ export default function DailyLogPage() {
               </div>
 
               <div className="relative z-10 w-full md:w-1/2">
-                <h2 className="text-5xl font-black text-black mb-4 leading-tight">Eat Smarter,<br /><span className="text-primary-dark">Live Better!</span></h2>
-                <p className="text-muted-foreground font-medium mb-8 max-w-sm leading-relaxed">
-                  You've consumed <span className="text-black font-black">{Math.round(consumedCalories)} kcal</span> today.
-                  That's <span className="text-black font-black flex items-center gap-1 inline-flex">
-                    <TrendingUp className="w-4 h-4 text-primary" />
-                    {Math.round(caloriePercentage)}%
-                  </span> of your daily goal.
-                </p>
+                <h2 className="text-4xl font-bold text-foreground mb-4 leading-tight">Eat Smarter,<br /><span className="text-secondary">Live Better!</span></h2>
+                <div className="space-y-4 mb-8">
+                   <div className="relative w-56 h-56">
+                    <svg className="w-full h-full transform -rotate-90">
+                      <circle className="text-gray-100" cx="112" cy="112" fill="transparent" r="98" stroke="currentColor" strokeWidth="16"></circle>
+                      <circle 
+                        className="text-[#8EC5DB] transition-all duration-1000 ease-out" 
+                        cx="112" 
+                        cy="112" 
+                        fill="transparent" 
+                        r="98" 
+                        stroke="currentColor" 
+                        strokeDasharray={615.75} 
+                        strokeDashoffset={615.75 - (615.75 * Math.min(100, (calculateCaloriesBurned / dailyBurnGoal) * 100)) / 100}
+                        strokeLinecap="round" 
+                        strokeWidth="16"
+                      ></circle>
+                    </svg>
+                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                      <span className="text-4xl font-bold text-[#8EC5DB] tracking-tighter">{calculateCaloriesBurned}</span>
+                      <span className="text-[10px] uppercase font-bold tracking-[0.2em] text-muted-foreground mt-1">kcal Burned</span>
+                    </div>
+                  </div>
+
+                </div>
                 <div className="flex items-center gap-6">
-                  <button className="bg-black text-white px-8 py-4 rounded-full font-black hover:bg-primary hover:text-black transition-all flex items-center gap-3 group shadow-xl shadow-black/10 active:scale-95">
+                  <button className="bg-secondary text-white px-8 py-4 rounded-lg font-bold hover:bg-primary hover:text-secondary transition-all flex items-center gap-3 group shadow-lg active:scale-95">
                     View Analytics
                     <div className="bg-white rounded-full p-1.5 w-7 h-7 flex items-center justify-center transition-transform group-hover:translate-x-1">
-                      <ArrowRight className="w-4 h-4 text-black" />
+                      <ArrowRight className="w-4 h-4 text-foreground" />
                     </div>
                   </button>
                 </div>
@@ -393,11 +589,12 @@ export default function DailyLogPage() {
                     <circle className="text-black transition-all duration-1000 ease-out" cx="112" cy="112" fill="transparent" r="98" stroke="currentColor" strokeDasharray={strokeDasharray} strokeDashoffset={strokeDashoffset} strokeLinecap="round" strokeWidth="16"></circle>
                   </svg>
                   <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className="text-4xl font-black text-black tracking-tighter">{Math.round(caloriesLeft)}</span>
-                    <span className="text-[10px] uppercase font-black tracking-[0.2em] text-muted-foreground mt-1">kcal Left</span>
+                    <span className="text-4xl font-bold text-black tracking-tighter">{Math.round(caloriesLeft)}</span>
+                    <span className="text-[10px] uppercase font-bold tracking-[0.2em] text-muted-foreground mt-1">kcal Left</span>
                   </div>
-                  <div className="absolute -top-2 -right-2 bg-primary/20 backdrop-blur-md border border-primary/50 text-black px-4 py-2 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg">Carbs {Math.round((totalMacros.carbs * 4 / (consumedCalories || 1)) * 100)}%</div>
-                  <div className="absolute bottom-4 -left-6 bg-black text-white px-4 py-2 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl">Protein {Math.round((totalMacros.protein * 4 / (consumedCalories || 1)) * 100)}%</div>
+                  <div className="absolute -top-2 -right-2 bg-primary/20 backdrop-blur-md border border-primary/50 text-black px-4 py-2 rounded-2xl text-[10px] font-bold uppercase tracking-widest shadow-lg">Carbs {Math.round((totalMacros.carbs * 4 / (consumedCalories || 1)) * 100)}%</div>
+ <div className="absolute -bottom-2 -right-2 bg-orange-500/20 backdrop-blur-md border border-orange-500/50 text-black px-4 py-2 rounded-2xl text-[10px] font-bold uppercase tracking-widest shadow-lg">Fats {Math.round((totalMacros.fat * 9 / (consumedCalories || 1)) * 100)}%</div>
+                  <div className="absolute bottom-4 -left-6 bg-black text-white px-4 py-2 rounded-2xl text-[10px] font-bold uppercase tracking-widest shadow-xl">Protein {Math.round((totalMacros.protein * 4 / (consumedCalories || 1)) * 100)}%</div>
                 </div>
               </div>
             </div>
@@ -412,14 +609,14 @@ export default function DailyLogPage() {
               )}
               <div className="flex justify-between items-center mb-10">
                 <div>
-                  <h3 className="text-2xl font-black text-black tracking-tight">Today's Meals</h3>
-                  <p className="text-muted-foreground text-xs font-bold uppercase tracking-widest mt-1">Daily Log Feed</p>
+                  <h3 className="text-xl font-bold text-foreground tracking-tight">Today's Meals</h3>
+                  <p className="text-muted-foreground text-sm mt-1">Daily Log Feed</p>
                 </div>
                 <button
                   onClick={() => setShowFilters(!showFilters)}
-                  className={`px-6 py-2.5 rounded-2xl font-black text-sm transition-all active:scale-95 border flex items-center gap-2 ${showFilters || hasActiveFilters
-                    ? 'bg-black text-white border-black'
-                    : 'bg-gray-50 text-black border-gray-100'
+                  className={`px-6 py-2.5 rounded-lg font-medium text-sm transition-all active:scale-95 border flex items-center gap-2 ${showFilters || hasActiveFilters
+                    ? 'bg-secondary text-white border-secondary'
+                    : 'bg-card text-foreground border-border'
                     }`}
                 >
                   <Filter className="w-4 h-4" />
@@ -434,21 +631,21 @@ export default function DailyLogPage() {
                     <div className="space-y-4">
                       <div className="flex items-center gap-2 mb-1">
                         <Calendar className="w-4 h-4 text-primary" />
-                        <label className="text-[10px] font-black uppercase tracking-widest text-black">Date Range</label>
+                        <label className="text-[10px] font-bold uppercase tracking-widest text-black">Date Range</label>
                       </div>
                       <div className="grid grid-cols-[1fr,auto,1fr] items-center gap-3 bg-white p-4 rounded-2xl border border-gray-100 shadow-sm focus-within:ring-2 focus-within:ring-black transition-all">
                         <input
                           type="date"
                           value={dateRange.startDate.toISOString().split('T')[0]}
                           onChange={handleStartDateChange}
-                          className="bg-transparent text-xs font-bold focus:outline-none w-full cursor-pointer hover:text-primary transition-colors"
+                          className="bg-transparent text-xs font-bold focus:outline-none w-full cursor-pointer hover:text-secondary transition-colors"
                         />
-                        <span className="text-muted-foreground font-black opacity-30">—</span>
+                        <span className="text-muted-foreground font-bold opacity-30">—</span>
                         <input
                           type="date"
                           value={dateRange.endDate.toISOString().split('T')[0]}
                           onChange={handleEndDateChange}
-                          className="bg-transparent text-xs font-bold focus:outline-none w-full cursor-pointer hover:text-primary transition-colors text-right"
+                          className="bg-transparent text-xs font-bold focus:outline-none w-full cursor-pointer hover:text-secondary transition-colors text-right"
                         />
                       </div>
                     </div>
@@ -457,7 +654,7 @@ export default function DailyLogPage() {
                     <div className="space-y-4">
                       <div className="flex items-center gap-2 mb-1">
                         <Package className="w-4 h-4 text-primary" />
-                        <label className="text-[10px] font-black uppercase tracking-widest text-black">Source Inventory</label>
+                        <label className="text-[10px] font-bold uppercase tracking-widest text-black">Source Inventory</label>
                       </div>
                       <select
                         value={filters.inventoryId}
@@ -477,7 +674,7 @@ export default function DailyLogPage() {
                     <div className="space-y-4">
                       <div className="flex items-center gap-2 mb-1">
                         <Filter className="w-4 h-4 text-primary" />
-                        <label className="text-[10px] font-black uppercase tracking-widest text-black">Food Category</label>
+                        <label className="text-[10px] font-bold uppercase tracking-widest text-black">Food Category</label>
                       </div>
                       <select
                         value={filters.category}
@@ -499,7 +696,7 @@ export default function DailyLogPage() {
                     <div className="flex items-center justify-between pt-6 border-t border-gray-100">
                       <div className="flex flex-wrap gap-2">
                         {filters.inventoryId && (
-                          <span className="px-3 py-1 bg-black text-white rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
+                          <span className="px-3 py-1 bg-black text-white rounded-full text-[10px] font-bold uppercase tracking-widest flex items-center gap-2">
                             {inventories?.find(i => i.id === filters.inventoryId)?.name}
                             <button onClick={() => setFilters(prev => ({ ...prev, inventoryId: '' }))}>
                               <X className="w-3 h-3 text-primary" />
@@ -507,7 +704,7 @@ export default function DailyLogPage() {
                           </span>
                         )}
                         {filters.category && (
-                          <span className="px-3 py-1 bg-primary text-black rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
+                          <span className="px-3 py-1 bg-primary text-black rounded-full text-[10px] font-bold uppercase tracking-widest flex items-center gap-2">
                             {filters.category}
                             <button onClick={() => setFilters(prev => ({ ...prev, category: '' }))}>
                               <X className="w-3 h-3" />
@@ -517,7 +714,7 @@ export default function DailyLogPage() {
                       </div>
                       <button
                         onClick={clearFilters}
-                        className="text-[10px] font-black uppercase tracking-[0.2em] text-black hover:text-primary transition-colors underline underline-offset-4"
+                        className="text-[10px] font-bold uppercase tracking-[0.2em] text-black hover:text-secondary transition-colors underline underline-offset-4"
                       >
                         Clear All
                       </button>
@@ -530,15 +727,15 @@ export default function DailyLogPage() {
                 {consumptionLoading && consumptionLogs.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-20 gap-4">
                     <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-                    <p className="text-black font-black uppercase tracking-widest text-[10px]">Updating Log Feed...</p>
+                    <p className="text-black font-bold uppercase tracking-widest text-[10px]">Updating Log Feed...</p>
                   </div>
                 ) : consumptionError ? (
                   <div className="text-center py-16 bg-red-50/30 rounded-[2rem] border-2 border-dashed border-red-100">
                     <X className="w-16 h-16 text-red-200 mx-auto mb-4" />
-                    <p className="text-red-700 font-black uppercase tracking-widest text-xs">Failed to load meals</p>
+                    <p className="text-red-700 font-bold uppercase tracking-widest text-xs">Failed to load meals</p>
                     <button
                       onClick={() => window.location.reload()}
-                      className="mt-4 text-black font-black hover:text-primary underline underline-offset-8 transition-all"
+                      className="mt-4 text-black font-bold hover:text-secondary underline underline-offset-8 transition-all"
                     >
                       Retry Connection
                     </button>
@@ -546,8 +743,8 @@ export default function DailyLogPage() {
                 ) : Object.keys(logsByDate).length === 0 ? (
                   <div className="text-center py-16 bg-gray-50/50 rounded-[2rem] border-2 border-dashed border-gray-100">
                     <Utensils className="w-16 h-16 text-gray-200 mx-auto mb-4" />
-                    <p className="text-muted-foreground font-black uppercase tracking-widest text-xs">No meals logged for this period</p>
-                    <button className="mt-4 text-black font-black hover:text-primary underline underline-offset-8 transition-all">Log your first meal</button>
+                    <p className="text-muted-foreground font-bold uppercase tracking-widest text-xs">No meals logged for this period</p>
+                    <button className="mt-4 text-black font-bold hover:text-secondary underline underline-offset-8 transition-all">Log your first meal</button>
                   </div>
                 ) : (
                   Object.entries(logsByDate)
@@ -555,7 +752,7 @@ export default function DailyLogPage() {
                     .map(([date, logs]) => (
                       <div key={date} className="space-y-6 animate-in fade-in duration-500">
                         <div className="flex items-center gap-4">
-                          <h4 className="text-sm font-black text-black uppercase tracking-[0.3em] whitespace-nowrap">{formatDate(date)}</h4>
+                          <h4 className="text-sm font-bold text-black uppercase tracking-[0.3em] whitespace-nowrap">{formatDate(date)}</h4>
                           <div className="h-px bg-gray-100 w-full" />
                         </div>
 
@@ -570,27 +767,27 @@ export default function DailyLogPage() {
                               <div className="flex-1 min-w-0">
                                 <div className="flex justify-between items-start mb-2">
                                   <div>
-                                    <h4 className="font-black text-lg text-black leading-none mb-1 group-hover:text-primary transition-colors">{log.itemName}</h4>
-                                    <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest flex items-center gap-2">
-                                      <Clock className="w-3 h-3 text-primary" />
+                                    <h4 className="font-bold text-lg text-black leading-none mb-1 group-hover:text-secondary transition-colors">{log.itemName}</h4>
+                                    <p className="text-[12px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-2">
+                                      <Clock className="w-3 h-3 text-secondary" />
                                       {formatTime(log.consumedAt)} • {log.foodItem?.category || 'Uncategorized'}
                                     </p>
                                   </div>
                                   <div className="text-right">
-                                    <span className="font-black text-xl text-black tracking-tighter block">{Math.round(log.calories || 0)} <span className="text-[8px] text-muted-foreground uppercase tracking-widest">kcal</span></span>
+                                    <span className="font-bold text-xl text-black tracking-tighter block">{Math.round(log.calories || 0)} <span className="text-[8px] text-muted-foreground uppercase tracking-widest">kcal</span></span>
                                     {log.quantity > 1 && (
-                                      <span className="text-[8px] font-black text-muted-foreground uppercase tracking-[0.2em]">Qty: {log.quantity}</span>
+                                      <span className="text-[8px] font-bold text-muted-foreground uppercase tracking-[0.2em]">Qty: {log.quantity}</span>
                                     )}
                                   </div>
                                 </div>
                                 <div className="flex gap-2">
-                                  <div className="text-[8px] font-black uppercase tracking-widest bg-gray-50 text-gray-500 px-2 py-1 rounded-lg border border-gray-100">
+                                  <div className="text-[12px] font-bold uppercase tracking-widest bg-gray-50 text-gray-500 px-2 py-1 rounded-lg border border-gray-100">
                                     {log.carbohydrates?.toFixed(1) || 0}g Carbs
                                   </div>
-                                  <div className="text-[8px] font-black uppercase tracking-widest bg-gray-50 text-gray-500 px-2 py-1 rounded-lg border border-gray-100">
+                                  <div className="text-[12px] font-bold uppercase tracking-widest bg-gray-50 text-gray-500 px-2 py-1 rounded-lg border border-gray-100">
                                     {log.protein?.toFixed(1) || 0}g Protein
                                   </div>
-                                  <div className="text-[8px] font-black uppercase tracking-widest bg-gray-50 text-gray-500 px-2 py-1 rounded-lg border border-gray-100">
+                                  <div className="text-[12px] font-bold uppercase tracking-widest bg-gray-50 text-gray-500 px-2 py-1 rounded-lg border border-gray-100">
                                     {log.fat?.toFixed(1) || 0}g Fat
                                   </div>
                                 </div>
@@ -608,7 +805,7 @@ export default function DailyLogPage() {
                     <button
                       onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                       disabled={currentPage === 1}
-                      className="w-10 h-10 rounded-xl bg-white border border-gray-100 flex items-center justify-center disabled:opacity-30 hover:bg-gray-50 transition-all font-black text-xs"
+                      className="w-10 h-10 rounded-xl bg-white border border-gray-100 flex items-center justify-center disabled:opacity-30 hover:bg-gray-50 transition-all font-bold text-xs"
                     >
                       ←
                     </button>
@@ -616,7 +813,7 @@ export default function DailyLogPage() {
                       <button
                         key={i}
                         onClick={() => setCurrentPage(i + 1)}
-                        className={`w-10 h-10 rounded-xl border transition-all font-black text-xs ${currentPage === i + 1
+                        className={`w-10 h-10 rounded-xl border transition-all font-bold text-xs ${currentPage === i + 1
                           ? 'bg-black text-primary border-black'
                           : 'bg-white border-gray-100 text-gray-400 hover:border-black hover:text-black'
                           }`}
@@ -627,7 +824,7 @@ export default function DailyLogPage() {
                     <button
                       onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                       disabled={currentPage === totalPages}
-                      className="w-10 h-10 rounded-xl bg-white border border-gray-100 flex items-center justify-center disabled:opacity-30 hover:bg-gray-50 transition-all font-black text-xs"
+                      className="w-10 h-10 rounded-xl bg-white border border-gray-100 flex items-center justify-center disabled:opacity-30 hover:bg-gray-50 transition-all font-bold text-xs"
                     >
                       →
                     </button>
@@ -635,14 +832,14 @@ export default function DailyLogPage() {
                 )}
 
                 {/* Add Snack Card */}
-                <div className="flex items-center p-6 rounded-[2rem] bg-gray-50 border-2 border-dashed border-gray-100 group cursor-pointer hover:border-black transition-all mt-8">
-                  <div className="w-16 h-16 rounded-2xl flex items-center justify-center bg-white text-gray-300 group-hover:scale-110 group-hover:bg-black group-hover:text-primary transition-all shadow-sm">
+                <div onClick={()=>navigate('/inventory')} className="flex items-center p-6 rounded-[2rem] bg-gray-50 border-2 border-dashed border-gray-100 group cursor-pointer hover:border-black transition-all mt-8">
+                  <div className="w-16 h-16 rounded-2xl flex items-center justify-center bg-white text-gray-300 group-hover:scale-110 group-hover:bg-primary group-hover:text-secondary transition-all shadow-sm">
                     <Utensils className="w-8 h-8" />
                   </div>
                   <div className="flex-1 flex items-center justify-between ml-6">
                     <div>
-                      <h4 className="font-black text-lg text-black">Feeling peckish?</h4>
-                      <p className="text-xs font-black text-muted-foreground uppercase tracking-widest">Log a quick snack to stay precise</p>
+                      <h4 className="font-bold text-lg text-black">Feeling peckish?</h4>
+                      <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Log a quick snack to stay precise</p>
                     </div>
                     <button className="w-12 h-12 rounded-2xl bg-black text-primary flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-xl shadow-black/20">
                       <Plus className="w-6 h-6" />
@@ -656,14 +853,14 @@ export default function DailyLogPage() {
           {/* Right Column */}
           <div className="xl:sticky xl:top-8 flex flex-col gap-8 h-fit">
             {/* Hydration Card */}
-            <div className="bg-gradient-to-br from-[#8EC5DB] to-[#7FB0C8] rounded-[2.5rem] p-8 text-white relative overflow-hidden shadow-xl min-h-[380px] flex flex-col group">
+            <div className="bg-gradient-to-br from-[#8EC5DB] to-[#7FB0C8] rounded-xl p-8 text-white relative overflow-hidden shadow-lg min-h-[380px] flex flex-col group">
               <div className="absolute -right-10 -top-10 w-44 h-104 bg-white opacity-10 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-1000"></div>
 
               {/* Header / Date Selector */}
               <div className="relative z-10 mb-6 h-26">
                 <div className="flex justify-between items-start">
                   <div>
-                    <h3 className="text-xl font-black mb-1 flex items-center gap-2">
+                    <h3 className="text-lg font-bold mb-1 flex items-center gap-2">
                       Hydration <Droplets className="w-5 h-5 text-white/80" />
                       {hydrationLoading && <span className="text-[10px] opacity-70">Syncing...</span>}
                     </h3>
@@ -722,12 +919,13 @@ export default function DailyLogPage() {
                             <button
                               key={day.date}
                               onClick={() => setSelectedDate(d)}
+                              data-today={isToday}
                               className={`group/day flex flex-col items-center gap-2 transition-all ${isSelected ? 'opacity-100 scale-110' : 'opacity-60 hover:opacity-100'}`}
                             >
                               <div className={`w-2 h-8 rounded-full bg-white/20 overflow-hidden relative ${isSelected ? 'shadow-[0_0_10px_rgba(255,255,255,0.5)]' : ''}`}>
                                 <div className="absolute bottom-0 left-0 w-full bg-white transition-all duration-500" style={{ height: `${percent}%` }} />
                               </div>
-                              <span className={`text-[10px] font-black uppercase tracking-wider ${isToday ? 'text-white' : ''}`}>
+                              <span className={`text-[10px] font-bold uppercase tracking-wider ${isToday ? 'text-white' : ''}`}>
                                 {d.getDate()}
                               </span>
                             </button>
@@ -761,13 +959,13 @@ export default function DailyLogPage() {
                     <button
                       onClick={handleAddWater}
                       disabled={updateHydrationMutation.isPending}
-                      className="bg-white text-[#8EC5DB] px-6 py-3 rounded-2xl text-xs font-black uppercase tracking-widest shadow-xl hover:bg-black hover:text-white transition-all active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed"
+                      className="bg-white text-[#8EC5DB] px-6 py-3 rounded-lg text-sm font-bold shadow-lg hover:bg-secondary hover:text-white transition-all active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed"
                     >
                       {updateHydrationMutation.isPending ? 'Saving...' : '+ 250ml'}
                     </button>
                     <div className="text-right">
-                      <span className="text-5xl font-black block leading-none tracking-tighter">{hydrationAmount.toFixed(1)}L</span>
-                      <span className="text-[10px] font-black uppercase tracking-widest opacity-70">/ {hydrationGoal}L Goal</span>
+                      <span className="text-5xl font-bold block leading-none tracking-tighter">{hydrationAmount.toFixed(1)}L</span>
+                      <span className="text-[10px] font-bold uppercase tracking-widest opacity-70">/ {hydrationGoal}L Goal</span>
                     </div>
                   </div>
                 </>
@@ -777,20 +975,20 @@ export default function DailyLogPage() {
                   <div className="relative z-10 grid grid-cols-2 gap-4 mt-4">
                     <div className="bg-white/10 rounded-2xl p-4 backdrop-blur-sm">
                       <p className="text-[10px] uppercase tracking-widest opacity-70 mb-1">Total Intake</p>
-                      <p className="text-3xl font-black">{monthlyStats.total.toFixed(0)}L</p>
+                      <p className="text-3xl font-bold">{monthlyStats.total.toFixed(0)}L</p>
                     </div>
                     <div className="bg-white/10 rounded-2xl p-4 backdrop-blur-sm">
                       <p className="text-[10px] uppercase tracking-widest opacity-70 mb-1">Daily Avg</p>
-                      <p className="text-3xl font-black">{monthlyStats.avg.toFixed(1)}L</p>
+                      <p className="text-3xl font-bold">{monthlyStats.avg.toFixed(1)}L</p>
                     </div>
                   </div>
 
                   <div className="relative z-10 mt-6 bg-white/10 rounded-2xl p-6 backdrop-blur-sm flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-full bg-white text-[#8EC5DB] flex items-center justify-center font-black text-lg">
+                    <div className="w-12 h-12 rounded-full bg-white text-[#8EC5DB] flex items-center justify-center font-bold text-lg">
                       {monthlyStats.daysMetGoal}
                     </div>
                     <div>
-                      <p className="text-sm font-black">Goal Days</p>
+                      <p className="text-sm font-bold">Goal Days</p>
                       <p className="text-[10px] opacity-70 uppercase tracking-widest">Days you hit your target</p>
                     </div>
                   </div>
@@ -801,13 +999,13 @@ export default function DailyLogPage() {
               <div className="absolute top-8 left-75 transform -translate-x-1/2 bg-white/10 backdrop-blur-xl border border-white/20 rounded-full p-1.5 flex shadow-2xl z-20">
                 <button
                   onClick={() => setViewMode('daily')}
-                  className={`w-12 h-10 rounded-full font-black text-xs flex items-center justify-center shadow-lg transition-all scale-105 ${viewMode === 'daily' ? 'bg-white text-[#8EC5DB]' : 'text-white hover:bg-white/10'}`}
+                  className={`w-12 h-10 rounded-full font-bold text-xs flex items-center justify-center shadow-lg transition-all scale-105 ${viewMode === 'daily' ? 'bg-white text-[#8EC5DB]' : 'text-white hover:bg-white/10'}`}
                 >
                   Daily
                 </button>
                 <button
                   onClick={() => setViewMode('monthly')}
-                  className={`w-16 h-10 rounded-full font-black text-xs flex items-center justify-center shadow-lg transition-all scale-105 ${viewMode === 'monthly' ? 'bg-white text-[#8EC5DB]' : 'text-white hover:bg-white/10'}`}
+                  className={`w-16 h-10 rounded-full font-bold text-xs flex items-center justify-center shadow-lg transition-all scale-105 ${viewMode === 'monthly' ? 'bg-white text-[#8EC5DB]' : 'text-white hover:bg-white/10'}`}
                 >
                   Monthly
                 </button>
@@ -815,43 +1013,47 @@ export default function DailyLogPage() {
             </div>
 
             {/* Macros Card */}
-            <div className="bg-white rounded-[2.5rem] p-8 shadow-soft border border-gray-50/50">
+            <div className="bg-card rounded-xl p-8 shadow-lg border border-border">
               <div className="flex justify-between items-center mb-10">
                 <div>
-                  <h3 className="font-black text-xl text-black flex items-center gap-2 tracking-tight">
-                    <PieChart className="w-6 h-6 text-primary" />
+                  <h3 className="font-bold text-lg text-foreground flex items-center gap-2 tracking-tight">
+                    <PieChart className="w-5 h-5 text-primary" />
                     Macros
                   </h3>
-                  <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mt-1">Daily Balance</p>
+                  <p className="text-sm text-muted-foreground mt-1">Daily Balance</p>
                 </div>
                 <div className="text-right">
-                  <span className="text-2xl font-black text-black tracking-tighter">{Math.round(consumedCalories)}</span>
-                  <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest ml-1">kcal</span>
+                  <span className="text-2xl font-bold text-black tracking-tighter">{Math.round(consumedCalories)}</span>
+                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1">kcal</span>
                 </div>
               </div>
 
               <div className="space-y-8">
                 {[
-                  { label: 'Carbohydrates', value: totalMacros.carbs, goal: 300, color: 'bg-primary', unit: 'g' },
-                  { label: 'Proteins', value: totalMacros.protein, goal: 180, color: 'bg-blue-400', unit: 'g' },
-                  { label: 'Fats', value: totalMacros.fat, goal: 70, color: 'bg-orange-400', unit: 'g' }
-                ].map((macro) => (
-                  <div key={macro.label}>
-                    <div className="flex justify-between items-end mb-3">
-                      <span className="text-xs font-black text-black uppercase tracking-widest">{macro.label}</span>
-                      <span className="text-sm font-black text-black tracking-tighter">
-                        {Math.round(macro.value)}{macro.unit}
-                        <span className="text-muted-foreground text-[10px] font-bold ml-1">/ {macro.goal}{macro.unit}</span>
-                      </span>
+                  { label: 'Carbohydrates', value: totalMacros.carbs, goal: macroGoals.carbs, color: 'bg-primary', unit: 'g' },
+                  { label: 'Proteins', value: totalMacros.protein, goal: macroGoals.protein, color: 'bg-blue-400', unit: 'g' },
+                  { label: 'Fats', value: totalMacros.fat, goal: macroGoals.fat, color: 'bg-orange-400', unit: 'g' }
+                ].map((macro) => {
+                  const percentage = macro.goal ? Math.min(100, (macro.value / macro.goal) * 100) : 0;
+
+                  return (
+                    <div key={macro.label}>
+                      <div className="flex justify-between items-end mb-3">
+                        <span className="text-xs font-bold text-black uppercase tracking-widest">{macro.label}</span>
+                        <span className="text-sm font-bold text-black tracking-tighter">
+                          {Math.round(macro.value)}{macro.unit}
+                          <span className="text-muted-foreground text-[10px] font-bold ml-1">/ {macro.goal}{macro.unit}</span>
+                        </span>
+                      </div>
+                      <div className="h-4 w-full bg-gray-50 rounded-full overflow-hidden border border-gray-100 p-0.5">
+                        <div
+                          className={`h-full ${macro.color} rounded-full transition-all duration-1000 ease-out`}
+                          style={{ width: `${percentage}%` }}
+                        />
+                      </div>
                     </div>
-                    <div className="h-4 w-full bg-gray-50 rounded-full overflow-hidden border border-gray-100 p-0.5">
-                      <div
-                        className={`h-full ${macro.color} rounded-full transition-all duration-1000 ease-out`}
-                        style={{ width: `${Math.min(100, (macro.value / macro.goal) * 100)}%` }}
-                      />
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
 
               <div className="mt-12 pt-8 border-t border-gray-50">
@@ -864,7 +1066,7 @@ export default function DailyLogPage() {
                     />
                   ))}
                 </div>
-                <div className="flex justify-between mt-4 text-[10px] font-black text-muted-foreground uppercase tracking-widest">
+                <div className="flex justify-between mt-4 text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
                   <span>Morning</span>
                   <span>Midnight</span>
                 </div>
@@ -872,48 +1074,221 @@ export default function DailyLogPage() {
             </div>
 
             {/* Fitness Card */}
-            <div className="bg-white rounded-[2.5rem] p-8 shadow-soft border border-gray-50/50 flex flex-col group">
+            <div className="bg-card rounded-xl p-8 shadow-lg border border-border flex flex-col group">
               <div className="flex justify-between items-start mb-6">
                 <div>
-                  <h3 className="font-black text-xl text-black flex items-center gap-2">
-                    <Dumbbell className="w-6 h-6 text-muted-foreground group-hover:text-black transition-colors" />
+                  <h3 className="font-bold text-lg text-foreground flex items-center gap-2">
+                    <Dumbbell className="w-5 h-5 text-muted-foreground group-hover:text-foreground transition-colors" />
                     Fitness
                   </h3>
-                  <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mt-1">
-                    {fitnessData?.weight ? `Last weigh-in: ${fitnessData.weight}kg` : 'No weight logged'}
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {fitnessData?.weight || profile?.profile?.weight ? `Current Weight: ${fitnessData?.weight || profile?.profile?.weight}kg` : 'No weight logged'}
                   </p>
                 </div>
                 <div className="text-right">
-                  <span className="block text-2xl font-black text-black tracking-tighter">
+                  <span className="block text-2xl font-bold text-black tracking-tighter">
                     {fitnessData?.steps || 0} <span className="text-xs text-muted-foreground font-medium uppercase tracking-widest">Steps</span>
-                  </span>
-                  <span className="text-[10px] font-black uppercase tracking-widest text-[#8EC5DB]">
-                    {fitnessData?.caloriesBurned || 0} kcal burned
                   </span>
                 </div>
               </div>
 
-              <div className="relative h-20 w-full my-6 group-hover:scale-105 transition-transform duration-500">
-                <svg className="w-full h-full text-[#8EC5DB] drop-shadow-xl" preserveAspectRatio="none" viewBox="0 0 100 30">
-                  <path d="M0,15 Q25,5 50,15 T100,15" fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="3" />
-                  <circle
-                    cx={Math.min(100, (fitnessData?.steps || 0) / 100)}
-                    cy="11"
-                    fill="white"
-                    r="3"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  />
-                </svg>
+              {/* Burned Calories Circular Progress - Daily View Only */}
+              {viewMode === 'daily' && (
+                <div className="relative w-40 h-40 mx-auto mb-8">
+                  <svg className="w-full h-full transform -rotate-90">
+                    <circle className="text-gray-100" cx="80" cy="80" fill="transparent" r="70" stroke="currentColor" strokeWidth="12"></circle>
+                    <circle
+                      className="text-[#8EC5DB] transition-all duration-1000 ease-out"
+                      cx="80"
+                      cy="80"
+                      fill="transparent"
+                      r="70"
+                      stroke="currentColor"
+                      strokeDasharray={439.82}
+                      strokeDashoffset={439.82 - (439.82 * Math.min(100, (calculateCaloriesBurned / dailyBurnGoal) * 100)) / 100}
+                      strokeLinecap="round"
+                      strokeWidth="12"
+                    ></circle>
+                  </svg>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center">
+                    <span className="text-3xl font-bold text-[#8EC5DB] tracking-tighter">{calculateCaloriesBurned}</span>
+                    <span className="text-[8px] uppercase font-bold tracking-[0.2em] text-muted-foreground">kcal burned</span>
+                    <span className="text-[7px] font-bold text-gray-400 mt-1">Goal: {dailyBurnGoal}kcal</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Weight Chart Tabs */}
+              <div className="relative mb-6 flex items-center justify-between">
+                <div className="bg-gray-50 backdrop-blur-sm border border-gray-100 rounded-full p-1.5 flex shadow-sm">
+                  <button
+                    onClick={() => setWeightChartViewMode('daily')}
+                    className={`px-5 py-2 rounded-full font-bold text-xs flex items-center justify-center shadow-sm transition-all ${
+                      weightChartViewMode === 'daily' ? 'bg-black text-primary' : 'text-black hover:bg-gray-100'
+                    }`}
+                  >
+                    Daily
+                  </button>
+                  <button
+                    onClick={() => setWeightChartViewMode('monthly')}
+                    className={`px-5 py-2 rounded-full font-bold text-xs flex items-center justify-center shadow-sm transition-all ${
+                      weightChartViewMode === 'monthly' ? 'bg-black text-primary' : 'text-black hover:bg-gray-100'
+                    }`}
+                  >
+                    Monthly
+                  </button>
+                </div>
               </div>
 
-              <div className="flex items-end justify-between mt-auto">
-                <div className="flex items-center gap-4">
+              {/* Weight History Chart - Daily View with Carousel */}
+              {weightChartViewMode === 'daily' && (
+                <div className="relative my-6">
+                  {/* Left Button */}
+                  <button
+                    onClick={() => setWeightChartStartIndex(Math.max(0, weightChartStartIndex - 1))}
+                    className="absolute -left-4 top-1/2 -translate-y-1/2 z-20 w-8 h-8 bg-gray-100 hover:bg-black hover:text-white rounded-full flex items-center justify-center transition-all shadow-sm"
+                  >
+                    <ArrowRight className="w-4 h-4 rotate-180" />
+                  </button>
+
+                  {/* Weight Chart Container - Bars Only */}
+                  <div className="relative h-32 w-full bg-gray-50/50 rounded-t-2xl p-6 border border-b-0 border-gray-100 flex items-end justify-center gap-4">
+                    {weightHistory.slice(weightChartStartIndex, weightChartStartIndex + 5).map((day, visIdx) => {
+                      // Calculate min/max from ALL weights for consistent scaling
+                      const validWeights = weightHistory.filter(d => d.weight > 0).map(d => d.weight);
+                      const maxWeight = validWeights.length > 0 ? Math.max(...validWeights) : (profile?.profile?.weight || 80);
+                      const minWeight = validWeights.length > 0 ? Math.min(...validWeights) : (maxWeight - 2);
+                      const range = Math.max(maxWeight - minWeight, 2);
+                      const displayWeight = day.weight;
+                      const height = displayWeight ? ((displayWeight - minWeight) / range) * 100 : 0;
+                      const actualIndex = weightChartStartIndex + visIdx;
+                      
+                      return (
+                        <div key={actualIndex} className="flex-1 flex flex-col items-center justify-end h-full group/bar" title={displayWeight ? `${displayWeight}kg` : 'No data'}>
+                          <div className="w-full h-24 rounded-xl overflow-hidden bg-white border border-gray-100 flex items-end justify-center group-hover/bar:bg-primary/10 transition-colors shadow-sm">
+                            {displayWeight > 0 && (
+                              <div
+                                className={`w-2/3 rounded-t-lg transition-all duration-300 ${
+                                  day.isToday ? 'bg-primary shadow-lg' : 'bg-gray-300'
+                                }`}
+                                style={{ height: `${Math.max(20, height)}%` }}
+                              />
+                            )}
+                            {displayWeight === 0 && (
+                              <span className="text-sm text-gray-300 font-bold">-</span>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Weight Labels Below Chart */}
+                  <div className="relative w-full bg-gray-50/50 rounded-b-2xl px-6 pb-4 border border-t-0 border-gray-100 flex items-start justify-center gap-4">
+                    {weightHistory.slice(weightChartStartIndex, weightChartStartIndex + 5).map((day, visIdx) => {
+                      const displayWeight = day.weight;
+                      const actualIndex = weightChartStartIndex + visIdx;
+                      
+                      return (
+                        <div key={actualIndex} className="flex-1 text-center">
+                          <span className="text-lg font-bold text-black block">{day.date.getDate()}</span>
+                          <span className="text-[11px] font-bold text-gray-500">{day.date.toLocaleDateString('en-US', { weekday: 'short' })}</span>
+                          {displayWeight > 0 && <span className="text-sm font-bold text-black block mt-2">{displayWeight}kg</span>}
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Right Button */}
+                  <button
+                    onClick={() => setWeightChartStartIndex(Math.min(weightHistory.length - 5, weightChartStartIndex + 1))}
+                    className="absolute -right-4 top-1/2 -translate-y-1/2 z-20 w-8 h-8 bg-gray-100 hover:bg-black hover:text-white rounded-full flex items-center justify-center transition-all shadow-sm"
+                  >
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
+
+              {/* Weight History Chart - Monthly View */}
+              {weightChartViewMode === 'monthly' && (
+                <div className="relative my-6">
+                  {/* Left Button */}
+                  <button
+                    onClick={() => setMonthlyChartStartIndex(Math.max(0, monthlyChartStartIndex - 1))}
+                    className="absolute -left-4 top-1/2 -translate-y-1/2 z-20 w-8 h-8 bg-gray-100 hover:bg-black hover:text-white rounded-full flex items-center justify-center transition-all shadow-sm"
+                  >
+                    <ArrowRight className="w-4 h-4 rotate-180" />
+                  </button>
+
+                  {/* Weight Chart Container - Bars Only */}
+                  <div className="relative h-32 w-full bg-gray-50/50 rounded-t-2xl p-6 border border-b-0 border-gray-100 flex items-end justify-center gap-4">
+                    {monthlyWeightHistory.slice(monthlyChartStartIndex, monthlyChartStartIndex + 5).map((month, visIdx) => {
+                      // Calculate min/max from ALL weights for consistent scaling
+                      const validWeights = monthlyWeightHistory.filter(d => d.weight > 0).map(d => d.weight);
+                      const maxWeight = validWeights.length > 0 ? Math.max(...validWeights) : (profile?.profile?.weight || 80);
+                      const minWeight = validWeights.length > 0 ? Math.min(...validWeights) : (maxWeight - 2);
+                      const range = Math.max(maxWeight - minWeight, 2);
+                      const displayWeight = month.weight;
+                      const height = displayWeight ? ((displayWeight - minWeight) / range) * 100 : 0;
+                      const actualIndex = monthlyChartStartIndex + visIdx;
+                      
+                      return (
+                        <div key={actualIndex} className="flex-1 flex flex-col items-center justify-end h-full group/bar" title={displayWeight ? `${displayWeight.toFixed(1)}kg (${month.entriesCount} entries)` : 'No data'}>
+                          <div className="w-full h-24 rounded-xl overflow-hidden bg-white border border-gray-100 flex items-end justify-center group-hover/bar:bg-primary/10 transition-colors shadow-sm">
+                            {displayWeight > 0 && (
+                              <div
+                                className={`w-2/3 rounded-t-lg transition-all duration-300 ${
+                                  month.isCurrentMonth ? 'bg-primary shadow-lg' : 'bg-gray-300'
+                                }`}
+                                style={{ height: `${Math.max(20, height)}%` }}
+                              />
+                            )}
+                            {displayWeight === 0 && (
+                              <span className="text-sm text-gray-300 font-bold">-</span>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Month Labels Below Chart */}
+                  <div className="relative w-full bg-gray-50/50 rounded-b-2xl px-6 pb-4 border border-t-0 border-gray-100 flex items-start justify-center gap-4">
+                    {monthlyWeightHistory.slice(monthlyChartStartIndex, monthlyChartStartIndex + 5).map((month, visIdx) => {
+                      const displayWeight = month.weight;
+                      const actualIndex = monthlyChartStartIndex + visIdx;
+                      
+                      return (
+                        <div key={actualIndex} className="flex-1 text-center">
+                          <span className="text-sm font-bold text-black block">{month.month}</span>
+                          <span className="text-[10px] font-bold text-gray-500">{month.year}</span>
+                          {displayWeight > 0 && <span className="text-sm font-bold text-black block mt-2">{displayWeight.toFixed(1)}kg</span>}
+                          {month.entriesCount > 0 && <span className="text-[8px] font-bold text-gray-400 block">{month.entriesCount} logs</span>}
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Right Button */}
+                  <button
+                    onClick={() => setMonthlyChartStartIndex(Math.min(monthlyWeightHistory.length - 5, monthlyChartStartIndex + 1))}
+                    className="absolute -right-4 top-1/2 -translate-y-1/2 z-20 w-8 h-8 bg-gray-100 hover:bg-black hover:text-white rounded-full flex items-center justify-center transition-all shadow-sm"
+                  >
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
+
+              <div className="flex items-end justify-between mt-auto gap-4">
+                <div className="flex items-center gap-4 flex-1">
                   <div>
-                    <span className="text-5xl font-black text-black tracking-tighter">
-                      {fitnessData?.weight || '--'}
-                      <span className="text-2xl text-muted-foreground font-medium tracking-tight">kg</span>
+                    <span className="text-4xl font-bold text-black tracking-tighter">
+                      {fitnessData?.weight || profile?.profile?.weight || '--'}
+                      <span className="text-xl text-muted-foreground font-medium tracking-tight">kg</span>
                     </span>
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-1">
+                      {fitnessData?.weight ? 'Logged Today' : profile?.profile?.weight ? 'From Profile' : 'No Data'}
+                    </p>
                   </div>
                   <button
                     onClick={() => {
@@ -921,7 +1296,8 @@ export default function DailyLogPage() {
                       setTempSteps(fitnessData?.steps?.toString() || '');
                       setIsFitnessModalOpen(true);
                     }}
-                    className="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center hover:bg-black hover:text-white transition-all shadow-sm group-hover:shadow-md"
+                    disabled={weightUpdateMutation}
+                    className="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center hover:bg-black hover:text-white transition-all shadow-sm group-hover:shadow-md disabled:opacity-50"
                   >
                     <Plus className="w-5 h-5" />
                   </button>
@@ -933,11 +1309,11 @@ export default function DailyLogPage() {
                       setTempSteps(fitnessData?.steps?.toString() || '');
                       setIsFitnessModalOpen(true);
                     }}
-                    className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] w-32 leading-relaxed hover:text-black transition-colors"
+                    className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] w-32 leading-relaxed hover:text-black transition-colors"
                   >
                     Log Activity →
                   </button>
-                  <p className="text-xs font-black text-black mt-1 uppercase tracking-widest group-hover:translate-x-1 transition-transform">Keep Pushing</p>
+                  <p className="text-xs font-bold text-black mt-1 uppercase tracking-widest group-hover:translate-x-1 transition-transform">Keep Pushing</p>
                 </div>
               </div>
             </div>
@@ -949,7 +1325,7 @@ export default function DailyLogPage() {
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-300">
           <div className="bg-white rounded-[3rem] w-full max-w-sm p-10 shadow-2xl animate-in zoom-in-95 duration-300 border border-white/20">
             <div className="flex justify-between items-center mb-8">
-              <h3 className="text-2xl font-black text-black flex items-center gap-3">
+              <h3 className="text-2xl font-bold text-black flex items-center gap-3">
                 <Dumbbell className="w-7 h-7 text-primary" />
                 Daily Fitness
               </h3>
@@ -963,7 +1339,7 @@ export default function DailyLogPage() {
 
             <div className="space-y-6">
               <div className="bg-gray-50 p-6 rounded-[2rem] border border-gray-100 group transition-all focus-within:border-black focus-within:bg-white focus-within:shadow-xl">
-                <label className="block text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-2 group-focus-within:text-black transition-colors">Current Weight (kg)</label>
+                <label className="block text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2 group-focus-within:text-black transition-colors">Current Weight (kg)</label>
                 <div className="flex items-baseline gap-2">
                   <input
                     type="number"
@@ -972,21 +1348,21 @@ export default function DailyLogPage() {
                     value={tempWeight}
                     onChange={(e) => setTempWeight(e.target.value)}
                     placeholder="00.0"
-                    className="bg-transparent border-none p-0 text-5xl font-black tracking-tighter w-full focus:ring-0 placeholder:text-gray-200"
+                    className="bg-transparent border-none p-0 text-5xl font-bold tracking-tighter w-full focus:ring-0 placeholder:text-gray-200"
                   />
-                  <span className="text-2xl font-black text-muted-foreground">kg</span>
+                  <span className="text-2xl font-bold text-muted-foreground">kg</span>
                 </div>
               </div>
 
               <div className="bg-gray-50 p-6 rounded-[2rem] border border-gray-100 group transition-all focus-within:border-black focus-within:bg-white focus-within:shadow-xl">
-                <label className="block text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-2 group-focus-within:text-black transition-colors">Daily Steps</label>
+                <label className="block text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2 group-focus-within:text-black transition-colors">Daily Steps</label>
                 <div className="flex items-baseline gap-2">
                   <input
                     type="number"
                     value={tempSteps}
                     onChange={(e) => setTempSteps(e.target.value)}
                     placeholder="0"
-                    className="bg-transparent border-none p-0 text-5xl font-black tracking-tighter w-full focus:ring-0 placeholder:text-gray-200"
+                    className="bg-transparent border-none p-0 text-5xl font-bold tracking-tighter w-full focus:ring-0 placeholder:text-gray-200"
                   />
                   <TrendingUp className="w-6 h-6 text-primary animate-pulse" />
                 </div>
@@ -996,6 +1372,10 @@ export default function DailyLogPage() {
                 onClick={() => {
                   const pWeight = tempWeight && !isNaN(parseFloat(tempWeight)) ? parseFloat(tempWeight) : undefined;
                   const pSteps = tempSteps && !isNaN(parseInt(tempSteps)) ? parseInt(tempSteps) : undefined;
+
+                  if (pWeight) {
+                    handleWeightUpdate(pWeight);
+                  }
 
                   updateFitnessMutation.mutate({
                     weight: pWeight,
@@ -1011,11 +1391,11 @@ export default function DailyLogPage() {
                     }
                   });
                 }}
-                disabled={updateFitnessMutation.isPending}
-                className="w-full bg-black text-primary py-6 rounded-[2rem] font-black uppercase tracking-widest text-sm hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl shadow-black/20 mt-4 flex items-center justify-center gap-2 group disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={updateFitnessMutation.isPending || weightUpdateMutation}
+                className="w-full bg-black text-primary py-6 rounded-[2rem] font-bold uppercase tracking-widest text-sm hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl shadow-black/20 mt-4 flex items-center justify-center gap-2 group disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {updateFitnessMutation.isPending ? 'Syncing...' : 'Save Daily Stats'}
-                {!updateFitnessMutation.isPending && <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />}
+                {updateFitnessMutation.isPending || weightUpdateMutation ? 'Syncing...' : 'Save Daily Stats'}
+                {!updateFitnessMutation.isPending && !weightUpdateMutation && <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />}
               </button>
             </div>
           </div>

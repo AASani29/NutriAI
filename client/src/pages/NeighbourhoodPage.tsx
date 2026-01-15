@@ -128,7 +128,7 @@ export default function NeighbourhoodPage() {
       {/* Header */}
       <header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-6 pt-4">
         <div>
-          <h1 className="text-4xl font-black text-foreground tracking-tight">Neighbourhood</h1>
+          <h1 className="text-4xl font-bold text-foreground tracking-tight">Neighbourhood</h1>
           <p className="text-muted-foreground font-medium mt-1">Find fresh, surplus food nearby and reduce waste.</p>
         </div>
         <div className="flex items-center gap-4 w-full md:w-auto">
@@ -203,13 +203,13 @@ export default function NeighbourhoodPage() {
                   src={"https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&q=80&w=1200"}
                 />
                 <div className="relative z-20 h-full flex flex-col justify-end p-8 md:p-12 text-white">
-                  <div className="bg-white/10 backdrop-blur-md px-4 py-1.5 rounded-full w-fit mb-6 border border-white/20 text-xs font-black uppercase tracking-widest flex items-center gap-2">
+                  <div className="bg-white/10 backdrop-blur-md px-4 py-1.5 rounded-full w-fit mb-6 border border-white/20 text-xs font-bold uppercase tracking-widest flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
                     {featuredListing ? 'Just Posted • 10 mins ago' : 'No items yet'}
                   </div>
                   {featuredListing ? (
                     <>
-                      <h2 className="text-4xl md:text-5xl font-black leading-tight mb-4 tracking-tighter">
+                      <h2 className="text-4xl md:text-5xl font-bold leading-tight mb-4 tracking-tighter">
                         {featuredListing.title}
                       </h2>
                       <p className="text-gray-300 max-w-md mb-8 font-medium text-lg leading-relaxed">
@@ -223,7 +223,7 @@ export default function NeighbourhoodPage() {
                         <span className="text-sm font-bold opacity-80 uppercase tracking-wider">Interested neighbors</span>
                         <button
                           onClick={() => setSelectedListing(featuredListing)}
-                          className="md:ml-auto w-full md:w-auto bg-primary text-black hover:bg-white px-8 py-4 rounded-2xl font-black transition-all flex items-center justify-center gap-2 shadow-xl shadow-primary/20 hover:scale-105"
+                          className="md:ml-auto w-full md:w-auto bg-primary text-black hover:bg-white px-8 py-4 rounded-2xl font-bold transition-all flex items-center justify-center gap-2 shadow-xl shadow-primary/20 hover:scale-105"
                         >
                           Reserve Now
                           <ArrowRight className="w-5 h-5" />
@@ -241,7 +241,7 @@ export default function NeighbourhoodPage() {
               {/* Near You / Map Placeholder */}
               <div className="col-span-12 lg:col-span-4 bg-gray-50 rounded-[2.5rem] p-8 relative flex flex-col shadow-soft border border-gray-100 overflow-hidden group">
                 <div className="flex justify-between items-center mb-6">
-                  <h3 className="text-xl font-black text-black tracking-tight">Near You</h3>
+                  <h3 className="text-xl font-bold text-black tracking-tight">Near You</h3>
                   <div className="bg-white rounded-xl p-2.5 shadow-sm border border-gray-100 cursor-pointer hover:bg-black hover:text-white transition-all">
                     <Filter className="w-5 h-5" />
                   </div>
@@ -269,7 +269,7 @@ export default function NeighbourhoodPage() {
                       <Package className="w-6 h-6 text-black" />
                     </div>
                     <div>
-                      <h4 className="text-sm font-black text-black">{featuredListing?.title || 'No active pins'}</h4>
+                      <h4 className="text-sm font-bold text-black">{featuredListing?.title || 'No active pins'}</h4>
                       <p className="text-xs text-muted-foreground font-bold">{featuredListing?.pickupLocation || 'Join to see locations'}</p>
                     </div>
                     <button className="ml-auto bg-gray-50 p-2.5 rounded-xl hover:bg-black hover:text-white transition-all">
@@ -283,7 +283,7 @@ export default function NeighbourhoodPage() {
               <div className="col-span-12 md:col-span-6 lg:col-span-4 bg-white rounded-[2.5rem] p-8 shadow-soft border border-gray-100 flex flex-col">
                 <div className="flex justify-between items-start mb-8">
                   <div>
-                    <h3 className="text-xl font-black text-black tracking-tight">Categories</h3>
+                    <h3 className="text-xl font-bold text-black tracking-tight">Categories</h3>
                     <p className="text-sm text-muted-foreground font-medium mt-1">What are you looking for?</p>
                   </div>
                   <div className="w-10 h-10 bg-gray-50 rounded-xl flex items-center justify-center">
@@ -299,7 +299,7 @@ export default function NeighbourhoodPage() {
                         </div>
                         <span className="font-bold text-black capitalize">{cat.name}</span>
                       </div>
-                      <span className="text-sm font-black bg-black text-white px-3 py-1 rounded-full group-hover:bg-white group-hover:text-black transition-colors">{cat.count}</span>
+                      <span className="text-sm font-bold bg-black text-white px-3 py-1 rounded-full group-hover:bg-white group-hover:text-black transition-colors">{cat.count}</span>
                     </div>
                   )) : (
                     <p className="text-center text-muted-foreground font-medium py-4">No categories yet</p>
@@ -310,13 +310,13 @@ export default function NeighbourhoodPage() {
               {/* Your Impact */}
               <div className="col-span-12 md:col-span-6 lg:col-span-4 bg-white rounded-[2.5rem] p-8 shadow-soft border border-gray-100">
                 <div className="flex justify-between items-center mb-10">
-                  <h3 className="text-xl font-black text-black tracking-tight">Your Impact</h3>
-                  <div className="bg-black text-white px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest">Personal Stats</div>
+                  <h3 className="text-xl font-bold text-black tracking-tight">Your Impact</h3>
+                  <div className="bg-black text-white px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest">Personal Stats</div>
                 </div>
                 <div className="flex flex-col gap-8">
                   <div className="flex items-end gap-3">
-                    <span className="text-6xl font-black text-black tracking-tighter">{yourImpactCount}</span>
-                    <span className="text-lg font-black text-muted-foreground mb-2">items shared</span>
+                    <span className="text-6xl font-bold text-black tracking-tighter">{yourImpactCount}</span>
+                    <span className="text-lg font-bold text-muted-foreground mb-2">items shared</span>
                   </div>
 
                   <div className="relative h-28 w-full flex items-end justify-between gap-3 px-1">
@@ -325,19 +325,19 @@ export default function NeighbourhoodPage() {
                         className={`w-full ${i === 4 ? 'bg-primary' : 'bg-gray-100'} rounded-t-2xl transition-all duration-500 hover:bg-black group relative cursor-help`}
                         style={{ height: `${maxStat > 0 ? (count / maxStat) * 100 : 0}%`, minHeight: '4px' }}
                       >
-                        <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-black text-white text-[10px] font-black px-2 py-1 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50">
+                        <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-black text-white text-[10px] font-bold px-2 py-1 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50">
                           {count} listings
                         </div>
                       </div>
                     ))}
                   </div>
 
-                  <div className="flex justify-between text-[10px] text-muted-foreground font-black uppercase tracking-widest">
+                  <div className="flex justify-between text-[10px] text-muted-foreground font-bold uppercase tracking-widest">
                     <span>Wk 1</span>
                     <span>Wk 2</span>
                     <span>Wk 3</span>
                     <span>Wk 4</span>
-                    <span className="text-primary">Now</span>
+                    <span className="text-secondary">Now</span>
                   </div>
                 </div>
               </div>
@@ -345,10 +345,10 @@ export default function NeighbourhoodPage() {
               {/* Active Bookings Feed */}
               <div className="col-span-12 lg:col-span-4 bg-white rounded-[2.5rem] p-8 shadow-soft border border-gray-100 flex flex-col">
                 <div className="flex justify-between items-center mb-8">
-                  <h3 className="text-xl font-black text-black tracking-tight">Your Bookings</h3>
+                  <h3 className="text-xl font-bold text-black tracking-tight">Your Bookings</h3>
                   <button
                     onClick={() => setActiveTab('mybookings')}
-                    className="text-xs font-black text-primary uppercase tracking-widest hover:text-black transition-colors"
+                    className="text-xs font-bold text-primary uppercase tracking-widest hover:text-black transition-colors"
                   >
                     View All
                   </button>
@@ -371,7 +371,7 @@ export default function NeighbourhoodPage() {
                       <div className="flex-1 min-w-0">
                         <h4 className="font-bold text-black truncate group-hover:text-primary transition-colors">{listing.title}</h4>
                         <p className="text-xs text-muted-foreground font-bold mb-1 truncate">Ready for pickup</p>
-                        <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-orange-500">
+                        <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-orange-500">
                           <span className="w-2 h-2 rounded-full bg-orange-500 animate-pulse" />
                           To Collect
                         </div>
@@ -386,7 +386,7 @@ export default function NeighbourhoodPage() {
                       <p className="text-sm font-bold text-muted-foreground">No active bookings</p>
                       <button
                         onClick={() => document.getElementById('search-input')?.focus()}
-                        className="mt-2 text-xs text-primary font-black uppercase tracking-widest"
+                        className="mt-2 text-xs text-primary font-bold uppercase tracking-widest"
                       >
                         Browse Food
                       </button>
@@ -398,21 +398,11 @@ export default function NeighbourhoodPage() {
 
             <div className="mt-16 space-y-8">
               <div className="flex items-center justify-between">
-                <h2 className="text-3xl font-black text-black tracking-tight">Browse Listings</h2>
+                <h2 className="text-3xl font-bold text-black tracking-tight">Browse Listings</h2>
                 <div className="h-px flex-1 bg-gray-100 mx-8" />
               </div>
               <AvailableListings externalSearch={searchQuery} />
             </div>
-
-            {/* Modal */}
-            {selectedListing && (
-              <ClaimModal
-                listing={selectedListing}
-                onClose={() => setSelectedListing(null)}
-                onClaim={handleClaim}
-                isLoading={claimMutation.isPending}
-              />
-            )}
           </>
         )}
 

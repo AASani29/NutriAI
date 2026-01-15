@@ -15,7 +15,7 @@ export default function SignUpPage() {
       
       <div className="w-full max-w-md relative z-10">
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-black text-foreground mb-3 tracking-tight">Join NutriAI</h1>
+          <h1 className="text-4xl font-bold text-foreground mb-3 tracking-tight">Join NutriAI</h1>
           <p className="text-muted-foreground font-medium">Create your account and start your sustainable journey</p>
         </div>
         

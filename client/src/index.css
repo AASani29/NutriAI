@@ -7,24 +7,24 @@
   --font-body: 'Poppins', system-ui, sans-serif;
 
 
-  --color-primary: #ac9c06;
+  --color-primary: #d3edff;
   --color-primary-dark: #8a7d05;
   --color-primary-foreground: #FFFFFF;
 
-  --color-secondary: #fdfbf0;
+  --color-secondary: #1b5f79;
   --color-secondary-foreground: #ac9c06;
 
   --color-accent: #f5f0d3;
   --color-accent-foreground: #8a7d05;
 
-  --color-background: #ffffff;
+  --color-background: #f5fbff;
   --color-background-dark: #18181b;
   --color-foreground: #1c1917;
 
   --color-card: #ffffff;
   --color-card-dark: #27272a;
   --color-card-foreground: #1c1917;
-
+  --color-styled-card:#e6f4fb;
   --color-muted: #f8fafc;
   --color-muted-foreground: #64748b;
 
@@ -43,7 +43,7 @@
   }
 
   body {
-    background-color: var(--color-background);
+    background-color: var(--color-primary);
     /* font-family: 'operetta', sans-serif; */
     color: var(--color-foreground);
   }
@@ -79,6 +79,7 @@
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
+
 }
 
 /* Markdown Prose Styles using @apply */
