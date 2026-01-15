@@ -96,16 +96,22 @@ export default function DailyLogPage() {
   const [isFitnessModalOpen, setIsFitnessModalOpen] = useState(false);
   const [tempWeight, setTempWeight] = useState('');
   const [tempSteps, setTempSteps] = useState('');
+  // Start from 2 days before today (showing today and nearby days centered)
+  const [weightChartStartIndex, setWeightChartStartIndex] = useState(27); // Index 27 = 2 days ago, 28 = yesterday, 29 = today
+  // Weight chart view mode (daily carousel or monthly bars)
+  const [weightChartViewMode, setWeightChartViewMode] = useState<'daily' | 'monthly'>('daily');
+  // Monthly chart carousel index (showing 5 months at a time)
+  const [monthlyChartStartIndex, setMonthlyChartStartIndex] = useState(7); // Start from 2 months ago
 
   // Fetch Hydration for Selected Date (Main Display)
   const { data: hydrationData, isLoading: hydrationLoading } = useGetHydration(selectedDate);
   const { data: fitnessData } = useGetFitness(selectedDate);
   const updateFitnessMutation = useUpdateFitness();
 
-  // Past 7 dates for weight history
+  // Past 30 dates for daily weight history view
   const pastDates = useMemo(() => {
     const dates = [];
-    for (let i = 6; i >= 0; i--) {
+    for (let i = 29; i >= 0; i--) {
       const d = new Date();
       d.setDate(d.getDate() - i);
       d.setHours(0, 0, 0, 0);
@@ -114,7 +120,20 @@ export default function DailyLogPage() {
     return dates;
   }, []);
 
-  // Fetch fitness data for each of the past 7 days
+  // Past 12 months for monthly weight history view
+  const pastMonths = useMemo(() => {
+    const months = [];
+    for (let i = 11; i >= 0; i--) {
+      const d = new Date();
+      d.setMonth(d.getMonth() - i);
+      d.setDate(1);
+      d.setHours(0, 0, 0, 0);
+      months.push(d);
+    }
+    return months;
+  }, []);
+
+  // Fetch fitness data for each of the past 30 days (daily view)
   const fitnessHistory = useMemo(() => {
     return pastDates.map(date => {
       const isToday = date.toDateString() === new Date().toDateString();
@@ -211,31 +230,22 @@ export default function DailyLogPage() {
   const hydrationAmount = hydrationData?.amount || 0;
   const hydrationGoal = hydrationData?.goal || 2.5;
 
-  // Calculate calories burned based on Mifflin-St Jeor and activity
+  // Calculate calories burned - ONLY from activity (steps), not BMR
   const calculateCaloriesBurned = useMemo(() => {
-    if (!profile?.profile || !fitnessData) return 0;
+    if (!fitnessData) return 0;
     
-    const weight = fitnessData.weight || profile.profile.weight || 70;
-    const age = 30; // Default age
-    const gender = 'male'; // Default gender
     const steps = fitnessData.steps || 0;
+    // Activity calories from steps (approximately 0.05 cal per step for average person)
+    // This represents actual movement/activity, not resting metabolic rate
+    const activityCalories = steps * 0.05;
     
-    // Base BMR using Mifflin-St Jeor formula
-    let bmr = 0;
-    if (gender === 'male') {
-      bmr = (10 * weight) + (6.25 * 170) - (5 * age) + 5; // Assuming 170cm height
-    } else {
-      bmr = (10 * weight) + (6.25 * 160) - (5 * age) - 161; // Assuming 160cm height
-    }
-    
-    // Activity calories from steps (approximately 0.04 cal per step)
-    const activityCalories = steps * 0.04;
-    
-    // Daily total (BMR + activity)
-    return Math.round(bmr + activityCalories);
-  }, [profile, fitnessData]);
+    return Math.round(activityCalories);
+  }, [fitnessData]);
 
-  // Weight history (last 7 days) - Each day has its own weight data
+  // Daily calorie burn goal (for circular progress)
+  const dailyBurnGoal = 500; // Average daily activity calorie goal
+
+  // Weight history (last 30 days for daily view) - Each day has its own weight data
   const weightHistory = useMemo(() => {
     return fitnessHistory.map((entry) => {
       // Use logged weight if available, otherwise no data (don't fall back to profile for all days)
@@ -248,6 +258,42 @@ export default function DailyLogPage() {
       };
     });
   }, [fitnessHistory]);
+
+  // Monthly weight history (last 12 months) - Shows average weight per month
+  const monthlyWeightHistory = useMemo(() => {
+    return pastMonths.map((monthStart) => {
+      const monthEnd = new Date(monthStart);
+      monthEnd.setMonth(monthEnd.getMonth() + 1);
+      monthEnd.setDate(0);
+      
+      const isCurrentMonth = monthStart.getMonth() === new Date().getMonth() && 
+                            monthStart.getFullYear() === new Date().getFullYear();
+      
+      // Get all fitness data for this month to calculate average weight
+      const monthFitnessData = fitnessHistory.filter(entry => {
+        const entryDate = new Date(entry.date);
+        return entryDate.getMonth() === monthStart.getMonth() && 
+               entryDate.getFullYear() === monthStart.getFullYear() &&
+               entry.weight > 0;
+      });
+      
+      // Calculate average weight for the month
+      let averageWeight = 0;
+      if (monthFitnessData.length > 0) {
+        const totalWeight = monthFitnessData.reduce((sum, entry) => sum + entry.weight, 0);
+        averageWeight = totalWeight / monthFitnessData.length;
+      }
+      
+      return {
+        date: monthStart,
+        year: monthStart.getFullYear(),
+        month: monthStart.toLocaleDateString('en-US', { month: 'short' }),
+        weight: averageWeight,
+        isCurrentMonth,
+        entriesCount: monthFitnessData.length
+      };
+    });
+  }, [pastMonths, fitnessHistory]);
 
   // Handle weight update with profile sync
   const handleWeightUpdate = async (newWeight: number) => {
@@ -291,6 +337,12 @@ export default function DailyLogPage() {
       }
     }
   }, [dailyHistory]);
+
+  // Reset weight chart indices when switching views
+  useEffect(() => {
+    setWeightChartStartIndex(27); // Start from 2 days before today
+    setMonthlyChartStartIndex(7); // Start from 2 months ago
+  }, [viewMode]);
 
 
   // ... (Keep existing inventories query) ...
@@ -1009,60 +1061,195 @@ export default function DailyLogPage() {
                   <span className="block text-2xl font-black text-black tracking-tighter">
                     {fitnessData?.steps || 0} <span className="text-xs text-muted-foreground font-medium uppercase tracking-widest">Steps</span>
                   </span>
-                  <span className="text-[10px] font-black uppercase tracking-widest text-[#8EC5DB]">
-                    {calculateCaloriesBurned} kcal burned
-                  </span>
                 </div>
               </div>
 
-              {/* Weight History Chart */}
-              <div className="relative h-16 w-full my-6 bg-gray-50/50 rounded-2xl p-3 border border-gray-100">
-                <div className="flex justify-between items-end h-full gap-1">
-                  {weightHistory.map((day, idx) => {
-                    // Calculate min/max from weights that actually exist
-                    const validWeights = weightHistory.filter(d => d.weight > 0).map(d => d.weight);
-                    const maxWeight = validWeights.length > 0 ? Math.max(...validWeights) : (profile?.profile?.weight || 80);
-                    const minWeight = validWeights.length > 0 ? Math.min(...validWeights) : (maxWeight - 2);
-                    const range = Math.max(maxWeight - minWeight, 2);
-                    const displayWeight = day.weight;
-                    const height = displayWeight ? ((displayWeight - minWeight) / range) * 100 : 0;
-                    
-                    return (
-                      <div key={idx} className="flex-1 flex flex-col items-center gap-1 group/bar" title={displayWeight ? `${displayWeight}kg` : 'No data'}>
-                        <div className="w-full h-12 rounded-lg overflow-hidden bg-white border border-gray-100 flex items-end justify-center group-hover/bar:bg-primary/10 transition-colors">
-                          {displayWeight > 0 && (
-                            <div
-                              className={`w-3/4 rounded-t transition-all duration-300 ${
-                                day.isToday ? 'bg-primary shadow-lg' : 'bg-gray-300'
-                              }`}
-                              style={{ height: `${Math.max(15, height)}%` }}
-                            />
-                          )}
-                          {displayWeight === 0 && (
-                            <span className="text-[8px] text-gray-300 font-bold">-</span>
-                          )}
+              {/* Burned Calories Circular Progress - Daily View Only */}
+              {viewMode === 'daily' && (
+                <div className="relative w-40 h-40 mx-auto mb-8">
+                  <svg className="w-full h-full transform -rotate-90">
+                    <circle className="text-gray-100" cx="80" cy="80" fill="transparent" r="70" stroke="currentColor" strokeWidth="12"></circle>
+                    <circle
+                      className="text-[#8EC5DB] transition-all duration-1000 ease-out"
+                      cx="80"
+                      cy="80"
+                      fill="transparent"
+                      r="70"
+                      stroke="currentColor"
+                      strokeDasharray={439.82}
+                      strokeDashoffset={439.82 - (439.82 * Math.min(100, (calculateCaloriesBurned / dailyBurnGoal) * 100)) / 100}
+                      strokeLinecap="round"
+                      strokeWidth="12"
+                    ></circle>
+                  </svg>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center">
+                    <span className="text-3xl font-black text-[#8EC5DB] tracking-tighter">{calculateCaloriesBurned}</span>
+                    <span className="text-[8px] uppercase font-black tracking-[0.2em] text-muted-foreground">kcal burned</span>
+                    <span className="text-[7px] font-black text-gray-400 mt-1">Goal: {dailyBurnGoal}kcal</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Weight Chart Tabs */}
+              <div className="relative mb-6 flex items-center justify-between">
+                <div className="bg-gray-50 backdrop-blur-sm border border-gray-100 rounded-full p-1.5 flex shadow-sm">
+                  <button
+                    onClick={() => setWeightChartViewMode('daily')}
+                    className={`px-5 py-2 rounded-full font-black text-xs flex items-center justify-center shadow-sm transition-all ${
+                      weightChartViewMode === 'daily' ? 'bg-black text-primary' : 'text-black hover:bg-gray-100'
+                    }`}
+                  >
+                    Daily
+                  </button>
+                  <button
+                    onClick={() => setWeightChartViewMode('monthly')}
+                    className={`px-5 py-2 rounded-full font-black text-xs flex items-center justify-center shadow-sm transition-all ${
+                      weightChartViewMode === 'monthly' ? 'bg-black text-primary' : 'text-black hover:bg-gray-100'
+                    }`}
+                  >
+                    Monthly
+                  </button>
+                </div>
+              </div>
+
+              {/* Weight History Chart - Daily View with Carousel */}
+              {weightChartViewMode === 'daily' && (
+                <div className="relative my-6">
+                  {/* Left Button */}
+                  <button
+                    onClick={() => setWeightChartStartIndex(Math.max(0, weightChartStartIndex - 1))}
+                    className="absolute -left-4 top-1/2 -translate-y-1/2 z-20 w-8 h-8 bg-gray-100 hover:bg-black hover:text-white rounded-full flex items-center justify-center transition-all shadow-sm"
+                  >
+                    <ArrowRight className="w-4 h-4 rotate-180" />
+                  </button>
+
+                  {/* Weight Chart Container - Bars Only */}
+                  <div className="relative h-32 w-full bg-gray-50/50 rounded-t-2xl p-6 border border-b-0 border-gray-100 flex items-end justify-center gap-4">
+                    {weightHistory.slice(weightChartStartIndex, weightChartStartIndex + 5).map((day, visIdx) => {
+                      // Calculate min/max from ALL weights for consistent scaling
+                      const validWeights = weightHistory.filter(d => d.weight > 0).map(d => d.weight);
+                      const maxWeight = validWeights.length > 0 ? Math.max(...validWeights) : (profile?.profile?.weight || 80);
+                      const minWeight = validWeights.length > 0 ? Math.min(...validWeights) : (maxWeight - 2);
+                      const range = Math.max(maxWeight - minWeight, 2);
+                      const displayWeight = day.weight;
+                      const height = displayWeight ? ((displayWeight - minWeight) / range) * 100 : 0;
+                      const actualIndex = weightChartStartIndex + visIdx;
+                      
+                      return (
+                        <div key={actualIndex} className="flex-1 flex flex-col items-center justify-end h-full group/bar" title={displayWeight ? `${displayWeight}kg` : 'No data'}>
+                          <div className="w-full h-24 rounded-xl overflow-hidden bg-white border border-gray-100 flex items-end justify-center group-hover/bar:bg-primary/10 transition-colors shadow-sm">
+                            {displayWeight > 0 && (
+                              <div
+                                className={`w-2/3 rounded-t-lg transition-all duration-300 ${
+                                  day.isToday ? 'bg-primary shadow-lg' : 'bg-gray-300'
+                                }`}
+                                style={{ height: `${Math.max(20, height)}%` }}
+                              />
+                            )}
+                            {displayWeight === 0 && (
+                              <span className="text-sm text-gray-300 font-bold">-</span>
+                            )}
+                          </div>
                         </div>
-                        <span className="text-[8px] font-black text-muted-foreground">{day.date.getDate()}</span>
-                        {displayWeight > 0 && <span className="text-[7px] font-bold text-gray-500">{displayWeight}kg</span>}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
+                      );
+                    })}
+                  </div>
 
-              <div className="relative h-20 w-full my-6 group-hover:scale-105 transition-transform duration-500">
-                <svg className="w-full h-full text-[#8EC5DB] drop-shadow-xl" preserveAspectRatio="none" viewBox="0 0 100 30">
-                  <path d="M0,15 Q25,5 50,15 T100,15" fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="3" />
-                  <circle
-                    cx={Math.min(100, (fitnessData?.steps || 0) / 100)}
-                    cy="11"
-                    fill="white"
-                    r="3"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  />
-                </svg>
-              </div>
+                  {/* Weight Labels Below Chart */}
+                  <div className="relative w-full bg-gray-50/50 rounded-b-2xl px-6 pb-4 border border-t-0 border-gray-100 flex items-start justify-center gap-4">
+                    {weightHistory.slice(weightChartStartIndex, weightChartStartIndex + 5).map((day, visIdx) => {
+                      const displayWeight = day.weight;
+                      const actualIndex = weightChartStartIndex + visIdx;
+                      
+                      return (
+                        <div key={actualIndex} className="flex-1 text-center">
+                          <span className="text-lg font-black text-black block">{day.date.getDate()}</span>
+                          <span className="text-[11px] font-bold text-gray-500">{day.date.toLocaleDateString('en-US', { weekday: 'short' })}</span>
+                          {displayWeight > 0 && <span className="text-sm font-black text-black block mt-2">{displayWeight}kg</span>}
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Right Button */}
+                  <button
+                    onClick={() => setWeightChartStartIndex(Math.min(weightHistory.length - 5, weightChartStartIndex + 1))}
+                    className="absolute -right-4 top-1/2 -translate-y-1/2 z-20 w-8 h-8 bg-gray-100 hover:bg-black hover:text-white rounded-full flex items-center justify-center transition-all shadow-sm"
+                  >
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
+
+              {/* Weight History Chart - Monthly View */}
+              {weightChartViewMode === 'monthly' && (
+                <div className="relative my-6">
+                  {/* Left Button */}
+                  <button
+                    onClick={() => setMonthlyChartStartIndex(Math.max(0, monthlyChartStartIndex - 1))}
+                    className="absolute -left-4 top-1/2 -translate-y-1/2 z-20 w-8 h-8 bg-gray-100 hover:bg-black hover:text-white rounded-full flex items-center justify-center transition-all shadow-sm"
+                  >
+                    <ArrowRight className="w-4 h-4 rotate-180" />
+                  </button>
+
+                  {/* Weight Chart Container - Bars Only */}
+                  <div className="relative h-32 w-full bg-gray-50/50 rounded-t-2xl p-6 border border-b-0 border-gray-100 flex items-end justify-center gap-4">
+                    {monthlyWeightHistory.slice(monthlyChartStartIndex, monthlyChartStartIndex + 5).map((month, visIdx) => {
+                      // Calculate min/max from ALL weights for consistent scaling
+                      const validWeights = monthlyWeightHistory.filter(d => d.weight > 0).map(d => d.weight);
+                      const maxWeight = validWeights.length > 0 ? Math.max(...validWeights) : (profile?.profile?.weight || 80);
+                      const minWeight = validWeights.length > 0 ? Math.min(...validWeights) : (maxWeight - 2);
+                      const range = Math.max(maxWeight - minWeight, 2);
+                      const displayWeight = month.weight;
+                      const height = displayWeight ? ((displayWeight - minWeight) / range) * 100 : 0;
+                      const actualIndex = monthlyChartStartIndex + visIdx;
+                      
+                      return (
+                        <div key={actualIndex} className="flex-1 flex flex-col items-center justify-end h-full group/bar" title={displayWeight ? `${displayWeight.toFixed(1)}kg (${month.entriesCount} entries)` : 'No data'}>
+                          <div className="w-full h-24 rounded-xl overflow-hidden bg-white border border-gray-100 flex items-end justify-center group-hover/bar:bg-primary/10 transition-colors shadow-sm">
+                            {displayWeight > 0 && (
+                              <div
+                                className={`w-2/3 rounded-t-lg transition-all duration-300 ${
+                                  month.isCurrentMonth ? 'bg-primary shadow-lg' : 'bg-gray-300'
+                                }`}
+                                style={{ height: `${Math.max(20, height)}%` }}
+                              />
+                            )}
+                            {displayWeight === 0 && (
+                              <span className="text-sm text-gray-300 font-bold">-</span>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Month Labels Below Chart */}
+                  <div className="relative w-full bg-gray-50/50 rounded-b-2xl px-6 pb-4 border border-t-0 border-gray-100 flex items-start justify-center gap-4">
+                    {monthlyWeightHistory.slice(monthlyChartStartIndex, monthlyChartStartIndex + 5).map((month, visIdx) => {
+                      const displayWeight = month.weight;
+                      const actualIndex = monthlyChartStartIndex + visIdx;
+                      
+                      return (
+                        <div key={actualIndex} className="flex-1 text-center">
+                          <span className="text-sm font-black text-black block">{month.month}</span>
+                          <span className="text-[10px] font-bold text-gray-500">{month.year}</span>
+                          {displayWeight > 0 && <span className="text-sm font-black text-black block mt-2">{displayWeight.toFixed(1)}kg</span>}
+                          {month.entriesCount > 0 && <span className="text-[8px] font-bold text-gray-400 block">{month.entriesCount} logs</span>}
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Right Button */}
+                  <button
+                    onClick={() => setMonthlyChartStartIndex(Math.min(monthlyWeightHistory.length - 5, monthlyChartStartIndex + 1))}
+                    className="absolute -right-4 top-1/2 -translate-y-1/2 z-20 w-8 h-8 bg-gray-100 hover:bg-black hover:text-white rounded-full flex items-center justify-center transition-all shadow-sm"
+                  >
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
 
               <div className="flex items-end justify-between mt-auto gap-4">
                 <div className="flex items-center gap-4 flex-1">
