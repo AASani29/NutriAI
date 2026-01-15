@@ -7,31 +7,31 @@
   --font-body: 'Poppins', system-ui, sans-serif;
 
 
-  --color-primary: #d3edff;
-  --color-primary-dark: #8a7d05;
+  --color-primary: #FFB88C;           /* Warm peach */
+  --color-primary-dark: #D2691E;      /* Terracotta */
   --color-primary-foreground: #FFFFFF;
 
-  --color-secondary: #1b5f79;
-  --color-secondary-foreground: #ac9c06;
+  --color-secondary: #D2691E;         /* Terracotta */
+  --color-secondary-foreground: #FFFFFF;
 
-  --color-accent: #f5f0d3;
-  --color-accent-foreground: #8a7d05;
+  --color-accent: #FFDAB9;            /* Peach puff */
+  --color-accent-foreground: #8B4513;  /* Saddle brown */
 
-  --color-background: #f5fbff;
-  --color-background-dark: #18181b;
-  --color-foreground: #1c1917;
+  --color-background: #FFF8F0;        /* Warm cream */
+  --color-background-dark: #2C1810;    /* Dark chocolate */
+  --color-foreground: #3E2723;         /* Dark brown */
 
-  --color-card: #ffffff;
-  --color-card-dark: #27272a;
-  --color-card-foreground: #1c1917;
-  --color-styled-card:#e6f4fb;
-  --color-muted: #f8fafc;
-  --color-muted-foreground: #64748b;
+  --color-card: #FFFFFF;
+  --color-card-dark: #3E2723;          /* Dark brown */
+  --color-card-foreground: #3E2723;
+  --color-styled-card: #FFE4D6;        /* Light peach */
+  --color-muted: #FFF5EE;              /* Seashell */
+  --color-muted-foreground: #8B6F47;   /* Peru */
 
-  --color-border: #e2e8f0;
-  --color-input: #e2e8f0;
+  --color-border: #F4DCC8;             /* Warm beige */
+  --color-input: #F4DCC8;
 
-  --shadow-soft: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
+  --shadow-soft: 0 4px 20px -2px rgba(210, 105, 30, 0.08);  /* Warm shadow */
 }
 
 /* Base Styles */

@@ -2,23 +2,15 @@ import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useNavigate } from "react-router-dom";
 import {
-  TrendingUp,
-  TrendingDown,
   Clock,
-  AlertTriangle,
   Package,
   ChefHat,
   Lightbulb,
   ArrowRight,
-  Target,
-  Leaf,
   BookOpen,
-  BarChart,
-  ArrowDown,
-  ArrowBigDownIcon,
-  ArrowDown01,
-  ChevronDown,
   Info,
+  Plus,
+  X,
 } from "lucide-react";
 import { useProfile } from "../context/ProfileContext";
 import { useInventory } from "../hooks/useInventory";
@@ -28,6 +20,7 @@ import { useAuth } from "@clerk/clerk-react";
 import type { Article, Video } from "../types/resource-types";
 import { PlayCircle } from "lucide-react";
 import NutritionRadarChart from "../components/NutritionRadarChart";
+import DirectConsumption from "../components/DirectConsumption";
 
 // Analytics interfaces
 interface ConsumptionPattern {
@@ -50,8 +43,8 @@ export default function Dashboard() {
   const { profile, loading: profileLoading } = useProfile();
   const { useGetInventories, useGetConsumptionLogs } = useInventory();
   const { getToken, isSignedIn } = useAuth();
-  const [expandedCard, setExpandedCard] = useState<string | null>(null);
   const navigate = useNavigate();
+  const [showConsumptionModal, setShowConsumptionModal] = useState(false);
 
   // Date range for analytics (last 30 days) - Stable across renders
   const dateRange = useMemo(() => {
@@ -294,286 +287,210 @@ export default function Dashboard() {
   );
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl space-y-8">
-      {/* Nutrition Radar Chart - Absolutely Positioned */}
-      <div className="absolute top-20 right-8 w-96 h-auto z-40">
-        <NutritionRadarChart className="h-full shadow-lg" />
-      </div>
-
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-foreground mb-2">
-          Welcome {profile?.profile?.fullName ? `back` : ``},{" "}
-          {profile?.profile?.fullName || "User"}
-        </h1>
-        <p className="text-muted-foreground">
-          Here's your food tracking summary and insights
-        </p>
-      </div>
-
-      {/* Quick Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-start max-w-190">
-        {/* Total Items */}
-        <div
-          className={`relative bg-card rounded-xl border border-border p-6 
-  transition-all duration-300 hover:shadow-lg
-  ${expandedCard === "total-items" ? "max-h-80" : "max-h-36"}`}
-        >
-          {/* Info Icon */}
-          <div className="absolute bottom-0 right-4">
-            <div className="relative group cursor-pointer">
-              <Info
-                height={16}
-                width={16}
-                className={`text-gray-500 transition-transform relative bottom-1 ${
-                  expandedCard === "total-items" ? "rotate-180" : ""
-                }`}
-              />
-              {/* Tooltip */}
-              <div
-                className="absolute top-4 -right-12 w-64 bg-white border border-gray-200 rounded-xl shadow-lg p-4
-          opacity-0 invisible group-hover:opacity-100 group-hover:visible
-          transition-opacity duration-300 z-50"
-              >
-                <p className="text-sm text-gray-700">
-                  Keeps track of total items currently present in your inventory
-                  and not yet consumed.
-                </p>
-
-                <button
-                  onClick={() => navigate("/inventory")}
-                  className="text-black underline flex cursor-pointer mt-5"
-                >
-                  Go to Inventory
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Main card content */}
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-primary rounded-lg flex items-center justify-center">
-              <Package className="w-6 h-6 text-black" />
-            </div>
-
-            <div className="">
-              <p className="text-sm text-muted-foreground">Items Tracked</p>
-              <div className="flex items-center gap-2">
-                <p className="text-2xl font-bold text-foreground">
-                  {dashboardStats.totalItems}
-                </p>
-                {itemsLoading && <LoadingSpinner />}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* ================= EXPIRING SOON ================= */}
-        <div className="relative bg-card rounded-xl border border-border p-6 transition-all duration-300 hover:shadow-lg">
-          {/* Info Icon */}
-          <div className="absolute bottom-1 right-4">
-            <div className="relative group cursor-pointer">
-              <Info height={16} width={16} className="text-gray-500" />
-              <div
-                className="absolute top-4 -right-12 w-64 bg-white border border-gray-200 rounded-xl shadow-lg p-4
-                opacity-0 invisible group-hover:opacity-100 group-hover:visible
-                transition-opacity duration-300 z-50"
-              >
-                <p className="text-sm text-gray-700">
-                  Items nearing expiration that should be consumed soon to avoid
-                  waste.
-                </p>
-                <button
-                  onClick={() => navigate("/inventory")}
-                  className="text-black underline flex cursor-pointer mt-2"
-                >
-                  Go to Inventory
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-4">
-            <div
-              className={`w-12 h-12 rounded-lg flex items-center justify-center ${
-                dashboardStats.expiringItems > 0 ? "bg-red-50" : "bg-gray-100"
-              }`}
-            >
-              <Clock
-                className={`w-6 h-6 ${
-                  dashboardStats.expiringItems > 0
-                    ? "text-red-600"
-                    : "text-black"
-                }`}
-              />
-            </div>
-
-            <div>
-              <p className="text-sm text-muted-foreground">Expiring Soon</p>
-              <div className="flex items-center gap-2">
-                <p className="text-2xl font-bold text-foreground">
-                  {dashboardStats.expiringItems}
-                </p>
-                {itemsLoading && <LoadingSpinner />}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* ================= TODAY'S ACTIVITY ================= */}
-        <div className="relative bg-card rounded-xl border border-border p-6 transition-all duration-300 hover:shadow-lg">
-          {/* Info Icon */}
-          <div className="absolute bottom-1 right-4">
-            <div className="relative group cursor-pointer">
-              <Info height={16} width={16} className="text-gray-500" />
-              <div
-                className="absolute top-4 -right-12 w-64 bg-white border border-gray-200 rounded-xl shadow-lg p-4
-        opacity-0 invisible group-hover:opacity-100 group-hover:visible
-        transition-opacity duration-300 z-50"
-              >
-                <p className="text-sm text-gray-700">
-                  Items consumed or updated today.
-                </p>
-                <button
-                  onClick={() => navigate("/daily-log")}
-                  className="text-black underline flex cursor-pointer mt-2"
-                >
-                  Go to Daily Logs
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
-              <ChefHat className="w-6 h-6 text-black" />
-            </div>
-
-            <div>
-              <p className="text-sm text-muted-foreground">Today's Activity</p>
-              <div className="flex items-center gap-2">
-                <p className="text-2xl font-bold text-foreground">
-                  {dashboardStats.todayConsumption}
-                </p>
-                {consumptionLoading && <LoadingSpinner />}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* ================= WASTE PREVENTED ================= */}
-        
-      </div>
-
-      {/* Quick Actions */}
-        <div className="absolute  top-71 left-204 bg-linear-to-br from-primary/90 to-secondary/10 rounded-xl border border-border p-7">
-          <h2 className="text-xl font-bold text-foreground mb-4 flex items-center gap-2">
-            <Target className="w-5 h-5" />
-            Quick Actions
-          </h2>
-          <div className="space-y-3">
-            {dashboardStats.expiringItems > 0 && (
-              <div className="flex items-center gap-3 p-3 bg-red-50 border border-red-100 rounded-lg">
-                <AlertTriangle className="w-5 h-5 text-red-600 shrink-0" />
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-red-900">
-                    {dashboardStats.expiringItems} items expiring soon!
-                  </p>
-                  <Link
-                    to="/inventory"
-                    className="text-xs text-red-600 hover:text-red-800 underline font-bold"
-                  >
-                    Check inventory →
-                  </Link>
-                </div>
-              </div>
-            )}
-
-            {dashboardStats.todayConsumption === 0 && (
-              <div className="flex items-center gap-3 p-3 bg-primary/10 border border-primary/20 rounded-lg">
-                <ChefHat className="w-5 h-5 text-black shrink-0" />
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-black/80">
-                    No activity logged today
-                  </p>
-                  <Link
-                    to="/daily-log"
-                    className="text-xs text-black hover:text-primary-dark underline font-bold"
-                  >
-                    Log consumption →
-                  </Link>
-                </div>
-              </div>
-            )}
-
-            {dashboardStats.totalItems === 0 && (
-              <div className="flex items-center gap-3 p-3 bg-gray-100 border border-primary/30 rounded-lg">
-                <Package className="w-5 h-5 text-black shrink-0" />
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-foreground">
-                    Start tracking your food
-                  </p>
-                  <Link
-                    to="/inventory"
-                    className="text-xs text-black hover:text-primary-dark underline font-bold"
-                  >
-                    Add your first item →
-                  </Link>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-
-      {/* Activity Overview & Quick Actions */}
-      <div className="grid grid-cols-3 lg:grid-cols-2 max-w-140 gap-6">
-        {/* Recent Activity Summary */}
-        <div className="lg:col-span-5 max-w-106 bg-card rounded-xl border border-border p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
-              Activity Overview
-              {isDataLoading && <LoadingSpinner />}
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-2  gap-4 ">
-            <div className="text-center bg-background rounded-lg max-w-180">
-              <p className="text-2xl font-bold text-secondary">
-                {dashboardStats.inventoryCount}
-              </p>
-              <p className="text-sm text-muted-foreground">Inventories</p>
-            </div>
-            <div className="text-center  bg-background rounded-lg">
-              <p className="text-2xl font-bold text-black">
-                {dashboardStats.totalConsumptionLogs}
-              </p>
-              <p className="text-sm text-muted-foreground">Total Logs</p>
-            </div>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-primary/5">
+      <div className="container mx-auto px-4 py-8 max-w-7xl space-y-8">
+        {/* Hero Header Section */}
+        <div className="relative overflow-hidden bg-gradient-to-r from-secondary via-secondary/90 to-primary rounded-3xl p-8 md:p-12 shadow-xl">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-primary/20 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full blur-2xl"></div>
           
+          <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+            <div>
+              <h1 className="text-4xl md:text-5xl font-bold text-white mb-3 tracking-tight">
+                Welcome back, {profile?.profile?.fullName || "User"}! 👋
+              </h1>
+              <p className="text-white/90 text-lg">
+                Here's your food tracking summary and insights
+              </p>
+            </div>
+            
+            {/* Log Consumption Button */}
+            <button
+              onClick={() => setShowConsumptionModal(true)}
+              className="flex items-center gap-3 px-8 py-4 bg-white text-secondary rounded-2xl font-bold transition-all duration-300 shadow-lg hover:shadow-2xl hover:scale-105 active:scale-95"
+            >
+              <Plus className="w-6 h-6" />
+              Log Consumption
+            </button>
+          </div>
+        </div>
+
+        {/* Main Content Grid */}
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+          {/* Left Column - Stats Cards */}
+          <div className="xl:col-span-2 space-y-6">
+            {/* Quick Stats Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* Total Items */}
+              <div className="group relative bg-white rounded-2xl border border-gray-100 p-6 transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-2xl group-hover:bg-primary/10 transition-all"></div>
+                
+                <div className="relative">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="w-14 h-14 bg-gradient-to-br from-primary to-primary/70 rounded-xl flex items-center justify-center shadow-lg">
+                      <Package className="w-7 h-7 text-white" />
+                    </div>
+                    <div title="Total items in your inventory">
+                      <Info
+                        height={18}
+                        width={18}
+                        className="text-gray-400 hover:text-gray-600 cursor-help transition-colors"
+                      />
+                    </div>
+                  </div>
+                  
+                  <p className="text-sm font-medium text-gray-600 mb-1">Items Tracked</p>
+                  <div className="flex items-baseline gap-2">
+                    <p className="text-4xl font-bold text-gray-900">
+                      {dashboardStats.totalItems}
+                    </p>
+                    {itemsLoading && <LoadingSpinner size="w-5 h-5" />}
+                  </div>
+                </div>
+              </div>
+
+              {/* Expiring Soon */}
+              <div className="group relative bg-white rounded-2xl border border-gray-100 p-6 transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+                <div className={`absolute top-0 right-0 w-32 h-32 rounded-full blur-2xl transition-all ${
+                  dashboardStats.expiringItems > 0 ? 'bg-red-100/50 group-hover:bg-red-100' : 'bg-gray-50'
+                }`}></div>
+                
+                <div className="relative">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className={`w-14 h-14 rounded-xl flex items-center justify-center shadow-lg ${
+                      dashboardStats.expiringItems > 0 
+                        ? 'bg-gradient-to-br from-red-500 to-red-600' 
+                        : 'bg-gradient-to-br from-gray-400 to-gray-500'
+                    }`}>
+                      <Clock className="w-7 h-7 text-white" />
+                    </div>
+                    <div title="Items expiring within 3 days">
+                      <Info
+                        height={18}
+                        width={18}
+                        className="text-gray-400 hover:text-gray-600 cursor-help transition-colors"
+                      />
+                    </div>
+                  </div>
+                  
+                  <p className="text-sm font-medium text-gray-600 mb-1">Expiring Soon</p>
+                  <div className="flex items-baseline gap-2">
+                    <p className={`text-4xl font-bold ${
+                      dashboardStats.expiringItems > 0 ? 'text-red-600' : 'text-gray-900'
+                    }`}>
+                      {dashboardStats.expiringItems}
+                    </p>
+                    {itemsLoading && <LoadingSpinner size="w-5 h-5" />}
+                  </div>
+                  {dashboardStats.expiringItems > 0 && (
+                    <button
+                      onClick={() => navigate("/inventory")}
+                      className="mt-3 text-xs font-semibold text-red-600 hover:text-red-700 underline underline-offset-2"
+                    >
+                      Check inventory →
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Today's Activity */}
+              <div className="group relative bg-white rounded-2xl border border-gray-100 p-6 transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-secondary/5 rounded-full blur-2xl group-hover:bg-secondary/10 transition-all"></div>
+                
+                <div className="relative">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="w-14 h-14 bg-gradient-to-br from-secondary to-secondary/80 rounded-xl flex items-center justify-center shadow-lg">
+                      <ChefHat className="w-7 h-7 text-white" />
+                    </div>
+                    <div title="Items consumed today">
+                      <Info
+                        height={18}
+                        width={18}
+                        className="text-gray-400 hover:text-gray-600 cursor-help transition-colors"
+                      />
+                    </div>
+                  </div>
+                  
+                  <p className="text-sm font-medium text-gray-600 mb-1">Today's Activity</p>
+                  <div className="flex items-baseline gap-2">
+                    <p className="text-4xl font-bold text-gray-900">
+                      {dashboardStats.todayConsumption}
+                    </p>
+                    {consumptionLoading && <LoadingSpinner size="w-5 h-5" />}
+                  </div>
+                  {dashboardStats.todayConsumption === 0 && (
+                    <button
+                      onClick={() => navigate("/daily-log")}
+                      className="mt-3 text-xs font-semibold text-secondary hover:text-secondary/80 underline underline-offset-2"
+                    >
+                      Log your first meal →
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Activity Overview Card */}
+            <div className="bg-white rounded-2xl border border-gray-100 p-8 shadow-sm hover:shadow-lg transition-shadow">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
+                    Activity Overview
+                    {isDataLoading && <LoadingSpinner />}
+                  </h2>
+                  <p className="text-sm text-gray-600 mt-1">Your inventory and consumption summary</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-6 mb-8">
+                <div className="relative overflow-hidden bg-gradient-to-br from-secondary/10 to-secondary/5 rounded-2xl p-6 border border-secondary/20">
+                  <div className="absolute top-0 right-0 w-24 h-24 bg-secondary/10 rounded-full blur-xl"></div>
+                  <p className="text-sm font-semibold text-secondary/80 mb-2 relative z-10">Total Inventories</p>
+                  <p className="text-4xl font-bold text-secondary relative z-10">
+                    {dashboardStats.inventoryCount}
+                  </p>
+                </div>
+                <div className="relative overflow-hidden bg-gradient-to-br from-primary/10 to-primary/5 rounded-2xl p-6 border border-primary/20">
+                  <div className="absolute top-0 right-0 w-24 h-24 bg-primary/10 rounded-full blur-xl"></div>
+                  <p className="text-sm font-semibold text-gray-700 mb-2 relative z-10">Total Logs</p>
+                  <p className="text-4xl font-bold text-gray-900 relative z-10">
+                    {dashboardStats.totalConsumptionLogs}
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Link
+                  to="/inventory"
+                  className="group flex items-center justify-center gap-2 px-6 py-4 bg-secondary hover:bg-secondary/90 text-white rounded-xl transition-all duration-300 font-bold shadow-lg hover:shadow-xl hover:scale-105"
+                >
+                  <Package className="w-5 h-5" />
+                  Manage Inventory
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </Link>
+                <Link
+                  to="/daily-log"
+                  className="group flex items-center justify-center gap-2 px-6 py-4 bg-primary hover:bg-primary/90 text-gray-900 rounded-xl transition-all duration-300 font-semibold border-2 border-primary hover:scale-105"
+                >
+                  <ChefHat className="w-5 h-5" />
+                  View Daily Log
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </Link>
+              </div>
+            </div>
           </div>
 
-          <div className="mt-4 pt-4 ">
-            <div className="flex flex-wrap gap-2">
-              <Link
-                to="/inventory"
-                className="px-4 py-2 bg-secondary hover:bg-primary text-white hover:text-secondary rounded-lg  transition-smooth font-bold text-sm max-w-30"
-              >
-                Manage Inventory
-              </Link>
-              <Link
-                to="/daily-log"
-                className="px-4 py-2 transition-all duration-300 bg-primary hover:bg-secondary text-secondary hover:text-primary rounded-lg transition-smooth font-medium text-sm"
-              >
-                View Daily Log
-              </Link>
+          {/* Right Column - Nutrition Chart */}
+          <div className="xl:col-span-1">
+            <div className="sticky top-8">
+              <NutritionRadarChart className="shadow-xl rounded-2xl" />
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Helpful Resources */}
-      {dashboardResources.length > 0 && (
-        <div className="bg-card rounded-xl border border-border p-6">
+        {/* Helpful Resources */}
+        {dashboardResources.length > 0 && (
+          <div className="bg-white rounded-2xl border border-gray-100 p-8 shadow-sm hover:shadow-lg transition-shadow">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
               <Lightbulb className="w-5 h-5 text-yellow-600" />
@@ -694,6 +611,33 @@ export default function Dashboard() {
           </div>
         </div>
       )}
+
+      {/* Direct Consumption Modal */}
+      {showConsumptionModal && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200"
+          onClick={() => setShowConsumptionModal(false)}
+        >
+          <div 
+            className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-white rounded-2xl shadow-2xl animate-in zoom-in-95 duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Close Button */}
+            <button
+              onClick={() => setShowConsumptionModal(false)}
+              className="absolute top-4 right-4 z-10 p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
+            >
+              <X className="w-5 h-5 text-gray-600" />
+            </button>
+            
+            {/* DirectConsumption Component */}
+            <div className="p-6">
+              <DirectConsumption />
+            </div>
+          </div>
+        </div>
+      )}
+      </div>
     </div>
   );
 }
