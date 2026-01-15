@@ -12,39 +12,183 @@ import {
 } from './inventory-types';
 
 export class InventoryService {
+  private async getDbUser(clerkId: string) {
+    const user = await prisma.user.findUnique({
+      where: { clerkId },
+    });
+
+    if (!user) {
+      throw new Error('User not found in database');
+    }
+
+    return user;
+  }
+
+  private async ensureInventoryAccess(
+    inventoryId: string,
+    userDbId: string,
+    { requireOwner = false }: { requireOwner?: boolean } = {},
+  ) {
+    const inventory = await prisma.inventory.findFirst({
+      where: {
+        id: inventoryId,
+        isDeleted: false,
+        OR: [
+          { createdById: userDbId },
+          {
+            members: {
+              some: {
+                userId: userDbId,
+                isDeleted: false,
+              },
+            },
+          },
+        ],
+      },
+      select: {
+        id: true,
+        createdById: true,
+      },
+    });
+
+    if (!inventory) {
+      throw new Error('Inventory not found or access denied');
+    }
+
+    const isOwner = inventory.createdById === userDbId;
+    if (requireOwner && !isOwner) {
+      throw new Error('Inventory access denied for non-owner');
+    }
+
+    return { inventory, isOwner };
+  }
+
+  private normalizeIdentifiers(identifiers?: string[]) {
+    if (!identifiers) return [];
+    const trimmed = identifiers
+      .map(id => (id || '').trim())
+      .filter(id => id.length > 0);
+    return Array.from(new Set(trimmed.map(id => id.toLowerCase())));
+  }
+
+  private async addMembersToInventory(
+    inventoryId: string,
+    addedById: string,
+    identifiers?: string[],
+  ) {
+    const normalized = this.normalizeIdentifiers(identifiers);
+    if (normalized.length === 0) return [] as any[];
+
+    const createdMembers = [] as any[];
+
+    for (const identifier of normalized) {
+      const userMatch = await prisma.user.findFirst({
+        where: {
+          isDeleted: false,
+          OR: [
+            { email: { equals: identifier, mode: 'insensitive' } },
+            {
+              profile: {
+                fullName: { equals: identifier, mode: 'insensitive' },
+              },
+            },
+          ],
+        },
+        include: {
+          profile: true,
+        },
+      });
+
+      // Avoid duplicate memberships for resolved users
+      if (userMatch) {
+        const existing = await prisma.inventoryMember.findFirst({
+          where: {
+            inventoryId,
+            userId: userMatch.id,
+            isDeleted: false,
+          },
+        });
+        if (existing) {
+          createdMembers.push(existing);
+          continue;
+        }
+      }
+
+      const memberName =
+        userMatch?.profile?.fullName || userMatch?.email || identifier;
+
+      const membership = await prisma.inventoryMember.create({
+        data: {
+          inventoryId,
+          userId: userMatch?.id,
+          memberName,
+          role: 'member',
+          addedById,
+        },
+      });
+
+      createdMembers.push(membership);
+    }
+
+    return createdMembers;
+  }
+
   /**
    * Get all inventories for a user
    */
   async getUserInventories(userId: string) {
-    const user = await prisma.user.findUnique({
-      where: { clerkId: userId },
-    });
+    const user = await this.getDbUser(userId);
     console.log('Clerk userId:', userId, 'DB user:', user);
-    if (!user) {
-      throw new Error('User not found in database');
-    }
     const today = new Date();
     const next7Days = new Date();
     next7Days.setDate(today.getDate() + 7);
 
     const inventories = await prisma.inventory.findMany({
       where: {
-        createdById: user.id,
         isDeleted: false,
+        OR: [
+          { createdById: user.id },
+          {
+            members: {
+              some: {
+                userId: user.id,
+                isDeleted: false,
+              },
+            },
+          },
+        ],
       },
       select: {
         id: true,
         name: true,
         description: true,
         isPrivate: true,
+        isArchived: true,
+        archivedAt: true,
         createdAt: true,
         updatedAt: true,
+        createdById: true,
+        createdBy: {
+          select: {
+            email: true,
+            profile: { select: { fullName: true } },
+          },
+        },
+        members: {
+          where: { isDeleted: false },
+          select: {
+            id: true,
+            userId: true,
+            memberName: true,
+            role: true,
+          },
+        },
         _count: {
           select: {
             items: {
-              where: { isDeleted: false, removed: false }
-            }
-          }
+              where: { isDeleted: false, removed: false },
+            },
+          },
         },
         items: {
           where: {
@@ -53,10 +197,10 @@ export class InventoryService {
             expiryDate: {
               gte: today,
               lte: next7Days,
-            }
+            },
           },
-          select: { id: true }
-        }
+          select: { id: true },
+        },
       },
       orderBy: {
         createdAt: 'desc',
@@ -65,12 +209,20 @@ export class InventoryService {
 
     // Map to include expiring count explicitly
     const mappedInventories = inventories.map(inv => ({
-      ...inv,
+      id: inv.id,
+      name: inv.name,
+      description: inv.description,
+      isPrivate: inv.isPrivate,
+      isArchived: inv.isArchived,
+      archivedAt: inv.archivedAt,
+      createdAt: inv.createdAt,
+      updatedAt: inv.updatedAt,
       itemCount: inv._count.items,
       expiringCount: inv.items.length,
-      // Remove the raw items array from the response to keep it lean
-      items: undefined,
-      _count: undefined
+      accessRole: inv.createdById === user.id ? 'owner' : 'member',
+      ownerName:
+        inv.createdBy?.profile?.fullName || inv.createdBy?.email || undefined,
+      members: inv.members,
     }));
 
     console.log('Inventories found with counts:', mappedInventories.length);
@@ -81,22 +233,24 @@ export class InventoryService {
    * Get a specific inventory by ID
    */
   async getInventoryById(inventoryId: string, userId: string) {
-    // First, find the application user by their Clerk ID
-    const user = await prisma.user.findUnique({
-      where: { clerkId: userId },
-    });
-
-    if (!user) {
-      throw new Error('User not found in database');
-    }
+    const user = await this.getDbUser(userId);
+    await this.ensureInventoryAccess(inventoryId, user.id);
 
     return await prisma.inventory.findFirst({
       where: {
         id: inventoryId,
-        createdById: user.id,
         isDeleted: false,
       },
       include: {
+        members: {
+          where: { isDeleted: false },
+          select: {
+            id: true,
+            memberName: true,
+            userId: true,
+            role: true,
+          },
+        },
         items: {
           where: {
             isDeleted: false,
@@ -138,16 +292,9 @@ export class InventoryService {
    * Create a new inventory
    */
   async createInventory(userId: string, data: InventoryRequest) {
-    // First, find the application user by their Clerk ID
-    const user = await prisma.user.findUnique({
-      where: { clerkId: userId },
-    });
+    const user = await this.getDbUser(userId);
 
-    if (!user) {
-      throw new Error('User not found in database');
-    }
-
-    return await prisma.inventory.create({
+    const inventory = await prisma.inventory.create({
       data: {
         name: data.name,
         description: data.description,
@@ -155,6 +302,12 @@ export class InventoryService {
         createdById: user.id,
       },
     });
+
+    if (data.shareWith && data.shareWith.length > 0) {
+      await this.addMembersToInventory(inventory.id, user.id, data.shareWith);
+    }
+
+    return inventory;
   }
 
   /**
@@ -165,14 +318,8 @@ export class InventoryService {
     userId: string,
     data: UpdateInventoryRequest,
   ) {
-    // First, find the application user by their Clerk ID
-    const user = await prisma.user.findUnique({
-      where: { clerkId: userId },
-    });
-
-    if (!user) {
-      throw new Error('User not found in database');
-    }
+    const user = await this.getDbUser(userId);
+    await this.ensureInventoryAccess(inventoryId, user.id, { requireOwner: true });
 
     return await prisma.inventory.update({
       where: {
@@ -192,14 +339,8 @@ export class InventoryService {
    * Delete an inventory (soft delete)
    */
   async deleteInventory(inventoryId: string, userId: string) {
-    // First, find the application user by their Clerk ID
-    const user = await prisma.user.findUnique({
-      where: { clerkId: userId },
-    });
-
-    if (!user) {
-      throw new Error('User not found in database');
-    }
+    const user = await this.getDbUser(userId);
+    await this.ensureInventoryAccess(inventoryId, user.id, { requireOwner: true });
 
     return await prisma.inventory.update({
       where: {
@@ -214,6 +355,44 @@ export class InventoryService {
   }
 
   /**
+   * Archive an inventory
+   */
+  async archiveInventory(inventoryId: string, userId: string) {
+    const user = await this.getDbUser(userId);
+    await this.ensureInventoryAccess(inventoryId, user.id, { requireOwner: true });
+
+    return await prisma.inventory.update({
+      where: {
+        id: inventoryId,
+        createdById: user.id,
+      },
+      data: {
+        isArchived: true,
+        archivedAt: new Date(),
+      },
+    });
+  }
+
+  /**
+   * Unarchive an inventory
+   */
+  async unarchiveInventory(inventoryId: string, userId: string) {
+    const user = await this.getDbUser(userId);
+    await this.ensureInventoryAccess(inventoryId, user.id, { requireOwner: true });
+
+    return await prisma.inventory.update({
+      where: {
+        id: inventoryId,
+        createdById: user.id,
+      },
+      data: {
+        isArchived: false,
+        archivedAt: null,
+      },
+    });
+  }
+
+  /**
    * Add an item to an inventory
    */
   async addInventoryItem(
@@ -221,27 +400,8 @@ export class InventoryService {
     inventoryId: string,
     data: InventoryItemRequest,
   ) {
-    // First, find the application user by their Clerk ID
-    const user = await prisma.user.findUnique({
-      where: { clerkId: userId },
-    });
-
-    if (!user) {
-      throw new Error('User not found in database');
-    }
-
-    // Verify that the inventory belongs to the user
-    const inventory = await prisma.inventory.findFirst({
-      where: {
-        id: inventoryId,
-        createdById: user.id,
-        isDeleted: false,
-      },
-    });
-
-    if (!inventory) {
-      throw new Error('Inventory not found or does not belong to user');
-    }
+    const user = await this.getDbUser(userId);
+    await this.ensureInventoryAccess(inventoryId, user.id);
 
     // Handle food item lookup logic
     let finalFoodItemId = data.foodItemId;
@@ -531,8 +691,10 @@ export class InventoryService {
   /**
    * Get inventory items with optional filtering
    */
-  async getInventoryItems(filters: InventoryItemFilters) {
+  async getInventoryItems(userId: string, filters: InventoryItemFilters) {
     console.log('🔍 [getInventoryItems] Fetching items for inventory:', filters.inventoryId);
+    const user = await this.getDbUser(userId);
+    await this.ensureInventoryAccess(filters.inventoryId, user.id);
     const whereClause: any = {
       inventoryId: filters.inventoryId,
       isDeleted: false,
@@ -579,6 +741,23 @@ export class InventoryService {
     });
     console.log(`✅ [getInventoryItems] Found ${items.length} items for ${filters.inventoryId}`);
     return items;
+  }
+
+  async shareInventory(
+    userId: string,
+    inventoryId: string,
+    shareWith: string[],
+  ) {
+    const user = await this.getDbUser(userId);
+    await this.ensureInventoryAccess(inventoryId, user.id, { requireOwner: true });
+
+    const members = await this.addMembersToInventory(
+      inventoryId,
+      user.id,
+      shareWith,
+    );
+
+    return members;
   }
 
   /**

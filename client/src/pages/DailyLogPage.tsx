@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { useMemo, useState, useRef, useEffect } from 'react';
 import { useInventory, type ConsumptionLog } from '../hooks/useInventory';
+import { useProfile } from '../context/ProfileContext';
 
 export default function DailyLogPage() {
   // Stable default date range using useMemo to prevent cache misses
@@ -50,6 +51,8 @@ export default function DailyLogPage() {
     useGetHydration,
     useUpdateFitness
   } = useInventory();
+
+  const { profile } = useProfile();
 
   // New Date States
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -322,10 +325,17 @@ export default function DailyLogPage() {
     }), { carbs: 0, protein: 0, fat: 0 });
   }, [filteredLogs]);
 
-  const goalCalories = 2500;
+  const macroGoals = useMemo(() => ({
+    carbs: profile?.profile?.carbGoal ?? 300,
+    protein: profile?.profile?.proteinGoal ?? 180,
+    fat: profile?.profile?.fatGoal ?? 70
+  }), [profile]);
+
+  const goalCalories = profile?.profile?.energyGoal ?? 2500;
+  const safeGoalCalories = goalCalories > 0 ? goalCalories : 1;
   const consumedCalories = totalCalories;
   const caloriesLeft = Math.max(0, goalCalories - consumedCalories);
-  const caloriePercentage = Math.min(100, (consumedCalories / goalCalories) * 100);
+  const caloriePercentage = Math.min(100, (consumedCalories / safeGoalCalories) * 100);
   const strokeDasharray = 552;
   const strokeDashoffset = strokeDasharray - (strokeDasharray * caloriePercentage) / 100;
 
@@ -441,14 +451,14 @@ export default function DailyLogPage() {
                           type="date"
                           value={dateRange.startDate.toISOString().split('T')[0]}
                           onChange={handleStartDateChange}
-                          className="bg-transparent text-xs font-bold focus:outline-none w-full cursor-pointer hover:text-primary transition-colors"
+                          className="bg-transparent text-xs font-bold focus:outline-none w-full cursor-pointer hover:text-secondary transition-colors"
                         />
                         <span className="text-muted-foreground font-black opacity-30">—</span>
                         <input
                           type="date"
                           value={dateRange.endDate.toISOString().split('T')[0]}
                           onChange={handleEndDateChange}
-                          className="bg-transparent text-xs font-bold focus:outline-none w-full cursor-pointer hover:text-primary transition-colors text-right"
+                          className="bg-transparent text-xs font-bold focus:outline-none w-full cursor-pointer hover:text-secondary transition-colors text-right"
                         />
                       </div>
                     </div>
@@ -517,7 +527,7 @@ export default function DailyLogPage() {
                       </div>
                       <button
                         onClick={clearFilters}
-                        className="text-[10px] font-black uppercase tracking-[0.2em] text-black hover:text-primary transition-colors underline underline-offset-4"
+                        className="text-[10px] font-black uppercase tracking-[0.2em] text-black hover:text-secondary transition-colors underline underline-offset-4"
                       >
                         Clear All
                       </button>
@@ -538,7 +548,7 @@ export default function DailyLogPage() {
                     <p className="text-red-700 font-black uppercase tracking-widest text-xs">Failed to load meals</p>
                     <button
                       onClick={() => window.location.reload()}
-                      className="mt-4 text-black font-black hover:text-primary underline underline-offset-8 transition-all"
+                      className="mt-4 text-black font-black hover:text-secondary underline underline-offset-8 transition-all"
                     >
                       Retry Connection
                     </button>
@@ -547,7 +557,7 @@ export default function DailyLogPage() {
                   <div className="text-center py-16 bg-gray-50/50 rounded-[2rem] border-2 border-dashed border-gray-100">
                     <Utensils className="w-16 h-16 text-gray-200 mx-auto mb-4" />
                     <p className="text-muted-foreground font-black uppercase tracking-widest text-xs">No meals logged for this period</p>
-                    <button className="mt-4 text-black font-black hover:text-primary underline underline-offset-8 transition-all">Log your first meal</button>
+                    <button className="mt-4 text-black font-black hover:text-secondary underline underline-offset-8 transition-all">Log your first meal</button>
                   </div>
                 ) : (
                   Object.entries(logsByDate)
@@ -570,7 +580,7 @@ export default function DailyLogPage() {
                               <div className="flex-1 min-w-0">
                                 <div className="flex justify-between items-start mb-2">
                                   <div>
-                                    <h4 className="font-black text-lg text-black leading-none mb-1 group-hover:text-primary transition-colors">{log.itemName}</h4>
+                                    <h4 className="font-black text-lg text-black leading-none mb-1 group-hover:text-secondary transition-colors">{log.itemName}</h4>
                                     <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest flex items-center gap-2">
                                       <Clock className="w-3 h-3 text-primary" />
                                       {formatTime(log.consumedAt)} • {log.foodItem?.category || 'Uncategorized'}
@@ -636,7 +646,7 @@ export default function DailyLogPage() {
 
                 {/* Add Snack Card */}
                 <div className="flex items-center p-6 rounded-[2rem] bg-gray-50 border-2 border-dashed border-gray-100 group cursor-pointer hover:border-black transition-all mt-8">
-                  <div className="w-16 h-16 rounded-2xl flex items-center justify-center bg-white text-gray-300 group-hover:scale-110 group-hover:bg-black group-hover:text-primary transition-all shadow-sm">
+                  <div className="w-16 h-16 rounded-2xl flex items-center justify-center bg-white text-gray-300 group-hover:scale-110 group-hover:bg-primary group-hover:text-secondary transition-all shadow-sm">
                     <Utensils className="w-8 h-8" />
                   </div>
                   <div className="flex-1 flex items-center justify-between ml-6">
@@ -832,26 +842,30 @@ export default function DailyLogPage() {
 
               <div className="space-y-8">
                 {[
-                  { label: 'Carbohydrates', value: totalMacros.carbs, goal: 300, color: 'bg-primary', unit: 'g' },
-                  { label: 'Proteins', value: totalMacros.protein, goal: 180, color: 'bg-blue-400', unit: 'g' },
-                  { label: 'Fats', value: totalMacros.fat, goal: 70, color: 'bg-orange-400', unit: 'g' }
-                ].map((macro) => (
-                  <div key={macro.label}>
-                    <div className="flex justify-between items-end mb-3">
-                      <span className="text-xs font-black text-black uppercase tracking-widest">{macro.label}</span>
-                      <span className="text-sm font-black text-black tracking-tighter">
-                        {Math.round(macro.value)}{macro.unit}
-                        <span className="text-muted-foreground text-[10px] font-bold ml-1">/ {macro.goal}{macro.unit}</span>
-                      </span>
+                  { label: 'Carbohydrates', value: totalMacros.carbs, goal: macroGoals.carbs, color: 'bg-primary', unit: 'g' },
+                  { label: 'Proteins', value: totalMacros.protein, goal: macroGoals.protein, color: 'bg-blue-400', unit: 'g' },
+                  { label: 'Fats', value: totalMacros.fat, goal: macroGoals.fat, color: 'bg-orange-400', unit: 'g' }
+                ].map((macro) => {
+                  const percentage = macro.goal ? Math.min(100, (macro.value / macro.goal) * 100) : 0;
+
+                  return (
+                    <div key={macro.label}>
+                      <div className="flex justify-between items-end mb-3">
+                        <span className="text-xs font-black text-black uppercase tracking-widest">{macro.label}</span>
+                        <span className="text-sm font-black text-black tracking-tighter">
+                          {Math.round(macro.value)}{macro.unit}
+                          <span className="text-muted-foreground text-[10px] font-bold ml-1">/ {macro.goal}{macro.unit}</span>
+                        </span>
+                      </div>
+                      <div className="h-4 w-full bg-gray-50 rounded-full overflow-hidden border border-gray-100 p-0.5">
+                        <div
+                          className={`h-full ${macro.color} rounded-full transition-all duration-1000 ease-out`}
+                          style={{ width: `${percentage}%` }}
+                        />
+                      </div>
                     </div>
-                    <div className="h-4 w-full bg-gray-50 rounded-full overflow-hidden border border-gray-100 p-0.5">
-                      <div
-                        className={`h-full ${macro.color} rounded-full transition-all duration-1000 ease-out`}
-                        style={{ width: `${Math.min(100, (macro.value / macro.goal) * 100)}%` }}
-                      />
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
 
               <div className="mt-12 pt-8 border-t border-gray-50">

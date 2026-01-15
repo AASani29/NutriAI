@@ -8,6 +8,7 @@ declare global {
             };
             isFirstSync?: boolean;
             files?: any;
+            clerkClient?: any;
         }
     }
 }

@@ -6,10 +6,21 @@ export interface Inventory {
   name: string;
   description?: string;
   isPrivate?: boolean;
+  isArchived?: boolean;
   createdAt: string;
   updatedAt: string;
   itemCount?: number;
   expiringCount?: number;
+  accessRole?: 'owner' | 'member';
+  ownerName?: string;
+  members?: InventoryMember[];
+}
+
+export interface InventoryMember {
+  id: string;
+  userId?: string | null;
+  memberName?: string | null;
+  role: string;
 }
 
 export interface InventoryItem {
@@ -145,9 +156,12 @@ export function useInventory() {
   // Create inventory
   const useCreateInventory = () => {
     return useMutation({
-      mutationFn: async (
-        inventory: Omit<Inventory, 'id' | 'createdAt' | 'updatedAt'>,
-      ) => {
+      mutationFn: async (inventory: {
+        name: string;
+        description?: string;
+        isPrivate?: boolean;
+        shareWith?: string[];
+      }) => {
         const response = await fetchWithAuth('/inventories', {
           method: 'POST',
           body: JSON.stringify(inventory),
@@ -292,6 +306,36 @@ export function useInventory() {
         await fetchWithAuth(`/inventories/${id}`, {
           method: 'DELETE',
         });
+      },
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['inventories'] });
+      },
+    });
+  };
+
+  // Archive inventory
+  const useArchiveInventory = () => {
+    return useMutation({
+      mutationFn: async (id: string) => {
+        const response = await fetchWithAuth(`/inventories/${id}/archive`, {
+          method: 'PATCH',
+        });
+        return response.data || response;
+      },
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['inventories'] });
+      },
+    });
+  };
+
+  // Unarchive inventory
+  const useUnarchiveInventory = () => {
+    return useMutation({
+      mutationFn: async (id: string) => {
+        const response = await fetchWithAuth(`/inventories/${id}/unarchive`, {
+          method: 'PATCH',
+        });
+        return response.data || response;
       },
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ['inventories'] });
@@ -610,6 +654,8 @@ export function useInventory() {
     useUpdateInventory,
     useUpdateInventoryItem,
     useDeleteInventory,
+    useArchiveInventory,
+    useUnarchiveInventory,
     useRemoveItemFromInventory,
     useLogConsumption,
     useGetConsumptionLogs,

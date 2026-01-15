@@ -403,16 +403,6 @@ export default function NeighbourhoodPage() {
               </div>
               <AvailableListings externalSearch={searchQuery} />
             </div>
-
-            {/* Modal */}
-            {selectedListing && (
-              <ClaimModal
-                listing={selectedListing}
-                onClose={() => setSelectedListing(null)}
-                onClaim={handleClaim}
-                isLoading={claimMutation.isPending}
-              />
-            )}
           </>
         )}
 

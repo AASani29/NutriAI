@@ -256,7 +256,7 @@ export default function MealPlannerPage() {
         </div>
       </header>
 
-      <div className="grid grid-cols-12 gap-8">
+      <div className="grid grid-cols-8 gap-8">
         {/* Left Column */}
         <div className="col-span-12 lg:col-span-8 flex flex-col gap-8">
           {/* Hero Banner */}
@@ -286,13 +286,7 @@ export default function MealPlannerPage() {
             </div>
 
             <div className="relative z-10 flex items-end justify-between mt-auto pt-8">
-              <div className="flex items-center gap-3">
-                <div className="flex -space-x-3">
-                  <div className="w-10 h-10 rounded-full border-2 border-emerald-500 bg-white/20 backdrop-blur-md flex items-center justify-center text-[10px] font-black">AI</div>
-                  <div className="w-10 h-10 rounded-full border-2 border-emerald-500 bg-emerald-800 text-white flex items-center justify-center text-[10px] font-black">+3</div>
-                </div>
-                <span className="text-xs font-black uppercase tracking-widest ml-1">Joined the challenge</span>
-              </div>
+              
               <button 
                 onClick={() => setViewMode(viewMode === 'current' ? 'saved' : 'current')}
                 className="bg-black text-white px-8 py-4 rounded-full font-black flex items-center gap-3 hover:scale-105 transition-transform shadow-2xl active:scale-95 text-xs uppercase tracking-widest"
@@ -409,9 +403,6 @@ export default function MealPlannerPage() {
                              {meal.name}
                            </span>
                          </h4>
-                       </div>
-                       <div className="bg-white p-3 rounded-2xl shadow-sm">
-                         <ChefHat className="w-6 h-6 text-gray-200" />
                        </div>
                      </div>
                      
@@ -552,117 +543,7 @@ export default function MealPlannerPage() {
         </div>
 
         {/* Sidebar Mini Dashboard (Right Column) */}
-        <div className="col-span-12 lg:col-span-4 flex flex-col gap-8">
-          {/* Daily Nutrition Card */}
-          <div className="bg-white rounded-[2.5rem] p-10 shadow-soft border border-gray-50/50">
-            <div className="flex justify-between items-center mb-10">
-              <h3 className="text-xl font-black text-black tracking-tight">Daily Nutrition</h3>
-              <span className="text-[10px] font-black bg-primary/20 text-black px-4 py-1.5 rounded-full uppercase tracking-widest">Today</span>
-            </div>
-            <div className="flex flex-col items-center mb-12 relative">
-              <div className="w-56 h-56 rounded-full flex items-center justify-center relative bg-gray-50">
-                <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
-                  <circle className="text-gray-100" cx="50" cy="50" fill="none" r="44" stroke="currentColor" strokeWidth="10"></circle>
-                  <circle className="text-primary transition-all duration-1000 ease-out" cx="50" cy="50" fill="none" r="44" stroke="currentColor" strokeDasharray="276" strokeDashoffset="75" strokeLinecap="round" strokeWidth="10"></circle>
-                </svg>
-                <div className="text-center absolute inset-0 flex flex-col items-center justify-center">
-                  <div className="text-4xl font-black text-black tracking-tighter">1,450</div>
-                  <div className="text-[10px] text-muted-foreground font-black uppercase tracking-[0.2em] mt-1">Kcal Left</div>
-                </div>
-              </div>
-            </div>
-            <div className="space-y-6">
-              <div>
-                <div className="flex justify-between items-end text-xs mb-2">
-                  <span className="font-black text-black uppercase tracking-widest">Carbs</span>
-                  <span className="font-black text-black tracking-tighter">120g <span className="text-muted-foreground/60 font-medium">/ 250g</span></span>
-                </div>
-                <div className="h-3 w-full bg-gray-50 rounded-full overflow-hidden p-0.5 border border-gray-100">
-                  <div className="h-full bg-orange-400 w-1/2 rounded-full shadow-sm"></div>
-                </div>
-              </div>
-              <div>
-                <div className="flex justify-between items-end text-xs mb-2">
-                  <span className="font-black text-black uppercase tracking-widest">Protein</span>
-                  <span className="font-black text-black tracking-tighter">85g <span className="text-muted-foreground/60 font-medium">/ 140g</span></span>
-                </div>
-                <div className="h-3 w-full bg-gray-50 rounded-full overflow-hidden p-0.5 border border-gray-100">
-                  <div className="h-full bg-black w-2/3 rounded-full shadow-sm"></div>
-                </div>
-              </div>
-              <div>
-                <div className="flex justify-between items-end text-xs mb-2">
-                  <span className="font-black text-black uppercase tracking-widest">Fat</span>
-                  <span className="font-black text-black tracking-tighter">30g <span className="text-muted-foreground/60 font-medium">/ 65g</span></span>
-                </div>
-                <div className="h-3 w-full bg-gray-50 rounded-full overflow-hidden p-0.5 border border-gray-100">
-                  <div className="h-full bg-primary w-1/3 rounded-full shadow-sm"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Hydration Card */}
-          <div className="bg-blue-50 rounded-[2.5rem] p-10 shadow-soft border border-blue-100/50 relative overflow-hidden flex flex-col justify-between min-h-[300px]">
-            <div className="absolute -right-8 -top-8 w-40 h-40 bg-blue-100 rounded-full blur-3xl opacity-50"></div>
-            <div className="relative z-10">
-              <h3 className="text-xl font-black text-blue-900 tracking-tight">Hydration</h3>
-              <p className="text-xs text-blue-700/70 font-black uppercase tracking-widest mt-1 mb-6">Metabolic Fuel</p>
-              
-              <div className="flex gap-3 flex-wrap mb-8">
-                {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-                  <div key={i} className={`w-10 h-14 rounded-2xl flex items-end justify-center pb-1 overflow-hidden shadow-sm transition-all border-2 ${i <= 4 ? 'bg-white border-blue-200' : 'bg-blue-100/50 border-transparent opacity-50'}`}>
-                    {i <= 4 && <div className="w-full bg-blue-500 rounded-xl" style={{ height: i === 4 ? '60%' : '100%' }}></div>}
-                  </div>
-                ))}
-              </div>
-            </div>
-            
-            <div className="flex items-center justify-between relative z-10">
-              <div>
-                <span className="text-4xl font-black text-blue-900 tracking-tighter">1.2<span className="text-xl opacity-60">L</span></span>
-                <span className="text-sm text-blue-700/60 font-bold ml-1">/ 2.5L</span>
-              </div>
-              <button className="bg-white text-blue-600 w-14 h-14 rounded-[1.5rem] shadow-xl hover:scale-110 transition-transform active:scale-95 flex items-center justify-center border border-blue-100">
-                <Plus className="w-8 h-8 font-black" />
-              </button>
-            </div>
-          </div>
-
-          {/* Weight Card */}
-          <div className="bg-white rounded-[2.5rem] p-10 shadow-soft border border-gray-50/50 flex flex-col justify-between">
-            <div className="flex justify-between items-start mb-8">
-              <div className="flex items-center gap-4">
-                <div className="bg-purple-100 p-4 rounded-[1.5rem] text-purple-600 shadow-sm">
-                  <Dumbbell className="w-6 h-6" />
-                </div>
-                <div>
-                  <h3 className="text-xl font-black text-black tracking-tight">Weight</h3>
-                  <p className="text-[10px] text-muted-foreground font-black uppercase tracking-widest mt-0.5">Progress Goal</p>
-                </div>
-              </div>
-              <div className="text-right">
-                <span className="text-3xl font-black text-black tracking-tighter">72</span>
-                <span className="text-xs text-muted-foreground font-black uppercase tracking-widest ml-1">kg</span>
-              </div>
-            </div>
-            
-            <div className="h-24 w-full bg-gray-50/50 rounded-3xl p-4 border border-gray-50">
-              <svg className="w-full h-full" preserveAspectRatio="none" viewBox="0 0 100 30">
-                <path className="stroke-purple-400" d="M0,25 Q10,20 20,25 T40,20 T60,25 T80,15 T100,20" fill="none" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"></path>
-                <circle className="fill-white stroke-purple-500" cx="80" cy="15" r="4" strokeWidth="2"></circle>
-              </svg>
-            </div>
-            
-            <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest mt-6">
-              <span className="text-red-500 flex items-center gap-1">
-                 <TrendingDown className="w-3 h-3" />
-                 -1.2 kg
-              </span>
-              <span className="text-muted-foreground">This week</span>
-            </div>
-          </div>
-        </div>
+        
       </div>
 
       {/* Configuration Modal */}
