@@ -378,11 +378,37 @@ export default function DailyLogPage() {
     data: consumptionResult,
     isLoading: consumptionLoading,
     error: consumptionError,
+    refetch: refetchConsumptionLogs,
   } = useGetConsumptionLogs(consumptionParams);
 
   const consumptionLogs = consumptionResult?.consumptionLogs || [];
   const totalPages = consumptionResult?.totalPages || 1;
   const totalCalories = consumptionResult?.totalCalories || 0;
+
+  // Auto-refetch consumption logs periodically and on page focus to catch MCP updates
+  useEffect(() => {
+    // Refetch immediately on mount
+    refetchConsumptionLogs();
+
+    // Set up polling interval (every 5 seconds) to catch external updates
+    const pollInterval = setInterval(() => {
+      refetchConsumptionLogs();
+    }, 5000);
+
+    // Refetch when page regains focus
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        refetchConsumptionLogs();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      clearInterval(pollInterval);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [refetchConsumptionLogs]);
 
 
   // No local filtering needed anymore, results are filtered by the backend

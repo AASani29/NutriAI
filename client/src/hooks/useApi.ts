@@ -94,10 +94,10 @@ export function useApi() {
         body: JSON.stringify({ plan }),
       }),
     getSavedMealPlans: () => fetchWithAuth('/intelligence/meal-plans/saved'),
-    consumeMeal: (mealName: string, items: string[]) =>
+    consumeMeal: (mealName: string, items: string[], isMarketPurchase?: boolean) =>
       fetchWithAuth('/intelligence/meal-plans/consume', {
         method: 'POST',
-        body: JSON.stringify({ mealName, items }),
+        body: JSON.stringify({ mealName, items, isMarketPurchase }),
       }),
     getRecipe: (dishName: string, ingredients: string[]) =>
       fetchWithAuth('/intelligence/recipe', {

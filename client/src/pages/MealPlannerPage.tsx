@@ -67,6 +67,7 @@ export default function MealPlannerPage() {
   const [viewMode, setViewMode] = useState<'current' | 'saved'>('current');
   const [savedPlans, setSavedPlans] = useState<any[]>([]);
   const [consuming, setConsuming] = useState<string | null>(null);
+  const [consumedMeals, setConsumedMeals] = useState<Set<string>>(new Set());
   const [selectedRecipe, setSelectedRecipe] = useState<any | null>(null);
   const [isRecipeLoading, setIsRecipeLoading] = useState(false);
   const [activeMeal, setActiveMeal] = useState<{ name: string; items: string[]; nutrition: any; type: string } | null>(null);
@@ -341,8 +342,17 @@ export default function MealPlannerPage() {
 
     setConsuming(`${idx}-${option}`);
     try {
-      await api.consumeMeal(meal.name, items);
-      alert(`Consumed ${meal.name}! Inventory updated.`);
+      // Pass isMarketPurchase flag for option2 (market purchases)
+      const isMarketPurchase = option === 'option2';
+      await api.consumeMeal(meal.name, items, isMarketPurchase);
+      
+      // Mark as consumed
+      setConsumedMeals(prev => new Set(prev).add(`${idx}-${option}`));
+      
+      const message = isMarketPurchase 
+        ? `${meal.name} purchased and added to inventory, then consumed!`
+        : `Consumed ${meal.name} from inventory!`;
+      alert(message);
     } catch (error) {
       console.error('Error consuming meal:', error);
       alert('Failed to consume meal: ' + (error instanceof Error ? error.message : 'Unknown error'));
@@ -624,6 +634,9 @@ export default function MealPlannerPage() {
                          <div className="text-[10px] font-black uppercase tracking-widest bg-gray-50 text-gray-600 px-4 py-2 rounded-full border border-gray-100">
                             {meal.nutrition.carbs} <span className="text-muted-foreground/60 ml-1">Carbs</span>
                          </div>
+                         <div className="text-[10px] font-black uppercase tracking-widest bg-gray-50 text-gray-600 px-4 py-2 rounded-full border border-gray-100">
+                            {meal.nutrition.fat} <span className="text-muted-foreground/60 ml-1">Fats</span>
+                         </div>
                        </div>
 
                        <div className="space-y-4 pt-2">
@@ -652,15 +665,22 @@ export default function MealPlannerPage() {
                              </p>
                              <button
                                onClick={() => consumeMeal(idx, 'option1')}
-                               disabled={consuming === `${idx}-option1`}
-                               className="w-full py-4 bg-black text-white text-[10px] font-black rounded-2xl hover:bg-primary hover:text-black transition-all flex items-center justify-center gap-3 disabled:opacity-50 uppercase tracking-widest shadow-xl active:scale-95"
+                               disabled={consuming === `${idx}-option1` || consumedMeals.has(`${idx}-option1`)}
+                               className="w-full py-4 bg-black text-white text-[10px] font-black rounded-2xl hover:bg-primary hover:text-black transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed uppercase tracking-widest shadow-xl active:scale-95"
                              >
                                {consuming === `${idx}-option1` ? (
                                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                               ) : consumedMeals.has(`${idx}-option1`) ? (
+                                 <>
+                                   <CheckCircle2 className="w-4 h-4" />
+                                   Marked as Consumed
+                                 </>
                                ) : (
-                                 <Utensils className="w-4 h-4" />
+                                 <>
+                                   <Utensils className="w-4 h-4" />
+                                   Mark as Consumed
+                                 </>
                                )}
-                               Mark as Consumed
                              </button>
                            </div>
                          ) : (
@@ -690,15 +710,22 @@ export default function MealPlannerPage() {
                             </p>
                             <button
                               onClick={() => consumeMeal(idx, 'option2')}
-                              disabled={consuming === `${idx}-option2`}
-                              className="w-full py-4 bg-white border border-gray-200 text-black text-[10px] font-black rounded-2xl hover:bg-black hover:text-white transition-all flex items-center justify-center gap-3 disabled:opacity-50 uppercase tracking-widest shadow-sm active:scale-95"
+                              disabled={consuming === `${idx}-option2` || consumedMeals.has(`${idx}-option2`)}
+                              className="w-full py-4 bg-white border border-gray-200 text-black text-[10px] font-black rounded-2xl hover:bg-black hover:text-white transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed uppercase tracking-widest shadow-sm active:scale-95"
                             >
                               {consuming === `${idx}-option2` ? (
                                 <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
+                              ) : consumedMeals.has(`${idx}-option2`) ? (
+                                <>
+                                  <CheckCircle2 className="w-4 h-4" />
+                                  Purchased and Consumed
+                                </>
                               ) : (
-                                <Utensils className="w-4 h-4" />
+                                <>
+                                  <Utensils className="w-4 h-4" />
+                                  Purchase & Consume
+                                </>
                               )}
-                              Purchase & Consume
                             </button>
                           </div>
                        </div>
