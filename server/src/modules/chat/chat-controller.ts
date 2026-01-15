@@ -42,13 +42,32 @@ export class ChatController {
                     res.status(404).json({ error: 'User not found in database' });
                     return;
                 }
-                session = await (prisma.chatSession as any).create({
-                    data: {
+
+                // Check for existing session for this specific mode to reuse
+                session = await prisma.chatSession.findFirst({
+                    where: { 
                         userId: dbUser.id,
-                        mode: mode,
+                        mode: mode 
                     },
-                    include: { messages: true }
+                    orderBy: { lastActivity: 'desc' },
+                    include: { messages: { orderBy: { createdAt: 'asc' } } }
                 });
+
+                if (!session) {
+                    session = await (prisma.chatSession as any).create({
+                        data: {
+                            userId: dbUser.id,
+                            mode: mode,
+                        },
+                        include: { messages: true }
+                    });
+                }
+            } else {
+                 // Update lastActivity
+                 await prisma.chatSession.update({
+                    where: { id: session.id },
+                    data: { lastActivity: new Date() }
+                 });
             }
 
             // 2. Save User Message
@@ -63,14 +82,18 @@ export class ChatController {
             let finalResponse = "";
 
             // 3. Routing based on mode
+            // Prepare context: Use latest 10 messages (5 exchanges) for context window
+            const historyContext = (session as any).messages ? (session as any).messages.slice(-10) : [];
+
             if (mode === 'ask') {
                 console.log(`🧠 Ask Mode: Routing to HealthAdvisorService for user ${userId}`);
+                // TODO: Update HealthAdvisorService to accept historyContext if needed for multi-turn RAG
+                // For now, we pass the message as is, but could augment with previous context
                 const adviceResult = await healthAdvisorService.getHealthAdvice(userId, message);
                 finalResponse = adviceResult.advice || "I couldn't generate advice at this moment.";
             } else {
                 console.log(`🤖 Agent Mode: Using MCP Tool-Calling logic for user ${userId}`);
-                // Re-fetch messages if we want full history, but for now we use the ones loaded
-                finalResponse = await this.handleAgentMode(userId, message, (session as any).messages || []);
+                finalResponse = await this.handleAgentMode(userId, message, historyContext);
             }
 
             // 4. Save Assistant Response
@@ -183,7 +206,7 @@ export class ChatController {
      * Retrieves the latest chat session history for a user.
      */
     async getHistory(req: Request, res: Response): Promise<void> {
-        const { userId } = req.query;
+        const { userId, mode } = req.query;
 
         if (!userId || typeof userId !== 'string') {
             res.status(400).json({ error: 'userId is required' });
@@ -200,9 +223,12 @@ export class ChatController {
                 return;
             }
 
-            // Find the most recent session for this user
+            // Find the most recent session for this user AND mode
             const session = await prisma.chatSession.findFirst({
-                where: { userId: user.id },
+                where: { 
+                    userId: user.id,
+                    mode: (mode as string) || 'ask'
+                },
                 orderBy: { lastActivity: 'desc' },
                 include: { 
                     messages: { 

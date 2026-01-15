@@ -127,8 +127,8 @@ export default function InventoryDetailPage() {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-muted-foreground font-medium">Loading your premium pantry...</p>
+          <div className="w-16 h-16 border-4 border-primary border-t-secondary rounded-full animate-spin mx-auto mb-6 shadow-sm" />
+          <p className="text-secondary/60 font-bold tracking-tight animate-pulse">Loading your premium pantry...</p>
         </div>
       </div>
     );
@@ -137,17 +137,19 @@ export default function InventoryDetailPage() {
   if (error) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="text-center p-8 bg-white border border-red-100 shadow-xl rounded-2xl max-w-md">
-          <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-          <h3 className="text-xl font-bold text-foreground mb-2">
+        <div className="text-center p-12 bg-white border border-primary/20 shadow-2xl rounded-[3rem] max-w-md animate-in fade-in zoom-in duration-500">
+          <div className="w-20 h-20 bg-red-50 rounded-[2rem] flex items-center justify-center mx-auto mb-6">
+            <AlertCircle className="w-10 h-10 text-red-500" />
+          </div>
+          <h3 className="text-2xl font-bold text-foreground mb-3 tracking-tight">
             Unable to Load Inventory
           </h3>
-          <p className="text-muted-foreground mb-6">{error}</p>
+          <p className="text-muted-foreground mb-8 font-medium">{error}</p>
           <button
             onClick={() => navigate('/inventory')}
-            className="px-6 py-2.5 bg-black text-white font-medium rounded-xl hover:bg-gray-900 transition-all shadow-lg"
+            className="w-full px-8 py-4 bg-secondary text-white font-bold rounded-2xl hover:bg-secondary/90 transition-all shadow-lg active:scale-95"
           >
-            Go Back
+            Return to Inventory
           </button>
         </div>
       </div>
@@ -322,39 +324,41 @@ export default function InventoryDetailPage() {
   }, 0) || 0;
 
   return (
-    <main className="flex-1 flex flex-col h-[calc(100vh-2rem)] overflow-hidden rounded-3xl relative">
+    <main className="flex-1 flex flex-col h-[calc(100vh-2rem)] overflow-hidden rounded-[2.5rem] relative bg-background/30 px-6">
       {/* Premium Header */}
-      <header className="flex flex-col md:flex-row justify-between items-center mb-6 px-4 pt-2 gap-4">
-        <div className="flex items-center gap-4">
+      <header className="flex flex-col md:flex-row justify-between items-center mb-8 pt-6 gap-6">
+        <div className="flex items-center gap-6">
           <button
             onClick={() => navigate('/inventory')}
-            className="w-10 h-10 flex items-center justify-center rounded-full bg-white  shadow-soft hover:text-primary transition-all"
+            className="w-12 h-12 flex items-center justify-center rounded-2xl bg-white shadow-soft text-secondary hover:bg-primary/20 hover:text-secondary transition-all active:scale-90 border border-border/40"
           >
-            <span className="material-icons-outlined">arrow_back</span>
+            <span className="material-icons-outlined text-xl">arrow_back</span>
           </button>
           <div>
-            <h1 className="text-3xl font-bold tracking-tight text-foreground font-display flex items-center gap-2">
+            <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-3">
               {inventory.name}
-              {inventory.isPrivate && <span className="material-icons-outlined text-muted-foreground text-sm">lock</span>}
+              {inventory.isPrivate && <span className="material-icons-outlined text-muted-foreground text-base bg-gray-100 p-1.5 rounded-lg shadow-inner">lock</span>}
             </h1>
-            <p className="text-muted-foreground text-sm">‎৳{totalValue.toFixed(2)} total value • {totalItems} items</p>
+            <p className="text-secondary/60 font-bold text-xs uppercase tracking-widest mt-1.5 opacity-80">
+              <span className="text-secondary">‎৳{totalValue.toFixed(2)}</span> total value • <span className="text-secondary">{totalItems}</span> items
+            </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-3 w-full md:w-auto">
+        <div className="flex items-center gap-4 w-full md:w-auto">
           <button
             onClick={() => setShowImageUploadModal(true)}
-            className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-slate-100 text-slate-800 px-6 py-4 rounded-xl hover:bg-slate-200 transition-all font-bold text-[10px] uppercase tracking-widest"
+            className="flex-1 md:flex-none flex items-center justify-center gap-3 bg-white text-secondary px-6 py-4 rounded-2xl border border-primary/20 hover:bg-primary/10 transition-all font-bold text-[10px] uppercase tracking-widest shadow-soft"
           >
-            <span className="material-icons-round text-lg">photo_camera</span>
+            <span className="material-icons-round text-xl">photo_camera</span>
             <span>Upload Image</span>
           </button>
 
           <button
             onClick={() => setShowAddModal(true)}
-            className="flex items-center gap-2 bg-secondary text-white px-6 py-3 rounded-full hover:bg-gray-900 transition-all shadow-lg font-medium"
+            className="flex-1 md:flex-none flex items-center justify-center gap-3 bg-secondary text-white px-8 py-4 rounded-2xl hover:bg-secondary/90 transition-all shadow-lg font-bold text-[10px] uppercase tracking-widest active:scale-95 shadow-secondary/20"
           >
-            <span className="material-icons-round text-lg">add</span>
+            <span className="material-icons-round text-xl">add</span>
             <span>Add Item</span>
           </button>
         </div>
@@ -373,10 +377,14 @@ export default function InventoryDetailPage() {
         </div>
 
         {/* Header Controls */}
-        <div className="flex flex-wrap items-center gap-4 px-4">
+        <div className="flex flex-wrap items-center gap-4">
           <button
             onClick={() => clearFilters()}
-            className={`px-5 py-2 rounded-full font-medium text-sm transition-all ${!hasActiveFilters ? 'bg-black text-white' : 'bg-white text-muted-foreground hover:bg-gray-50 shadow-sm border border-transparent hover:border-gray-200'}`}
+            className={`px-6 py-3 rounded-2xl font-bold text-[10px] uppercase tracking-widest transition-all duration-300 ${
+              !hasActiveFilters 
+                ? 'bg-secondary text-white shadow-lg shadow-secondary/20' 
+                : 'bg-white text-muted-foreground hover:text-secondary hover:shadow-sm border border-border/50'
+            }`}
           >
             All Items
           </button>
@@ -394,7 +402,7 @@ export default function InventoryDetailPage() {
             <select
               value={filters.expiryStatus}
               onChange={(e) => setFilters(prev => ({ ...prev, expiryStatus: e.target.value }))}
-              className="px-4 py-2 rounded-full bg-white  border-none shadow-soft text-sm focus:ring-2 focus:ring-primary/50 outline-none"
+              className="px-6 py-3 rounded-2xl bg-white border border-border/50 shadow-soft text-[10px] font-bold uppercase tracking-widest text-secondary focus:ring-4 focus:ring-primary/20 outline-none transition-all cursor-pointer hover:border-primary/40"
             >
               <option value="">Freshness</option>
               <option value="fresh">Fresh</option>
@@ -412,15 +420,15 @@ export default function InventoryDetailPage() {
             ))}
           </div>
         ) : filteredItems.length === 0 ? (
-          <div className="text-center py-20 bg-white  rounded-3xl border-2 border-dashed border-gray-100 dark:border-gray-800">
-            <div className="w-20 h-20 bg-gray-50 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-6">
-              <span className="material-icons-outlined text-4xl text-gray-300">shopping_basket</span>
+          <div className="text-center py-32 bg-white rounded-[4rem] border border-dashed border-primary/30 animate-in fade-in duration-700 shadow-soft">
+            <div className="w-24 h-24 bg-primary/10 rounded-[2.5rem] flex items-center justify-center mx-auto mb-8 shadow-inner border border-primary/20">
+              <span className="material-icons-outlined text-5xl text-secondary/40">shopping_basket</span>
             </div>
-            <h3 className="text-xl font-bold text-foreground mb-2">Inventory is Empty</h3>
-            <p className="text-muted-foreground max-w-sm mx-auto mb-8">Start by adding items manually or scanning a grocery receipt.</p>
+            <h3 className="text-3xl font-bold text-foreground mb-3 tracking-tight">Inventory is Empty</h3>
+            <p className="text-muted-foreground max-w-sm mx-auto mb-10 font-medium">Start by adding items manually or scanning a grocery receipt.</p>
             <button
               onClick={() => setShowAddModal(true)}
-              className="px-8 py-3 bg-primary text-gray-900 font-bold rounded-full hover:shadow-lg transition-all"
+              className="px-10 py-5 bg-secondary text-white font-bold rounded-2xl hover:bg-secondary/90 hover:shadow-xl hover:shadow-secondary/20 transition-all active:scale-95"
             >
               Add First Item
             </button>
@@ -434,15 +442,15 @@ export default function InventoryDetailPage() {
               const today = new Date();
               const daysLeft = expDate ? Math.ceil((expDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)) : null;
 
-              let statusColor = 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300';
+              let statusColor = 'bg-emerald-50 text-emerald-700 border border-emerald-100 shadow-[0_0_15px_rgba(16,185,129,0.1)]';
               let statusLabel = 'Fresh';
               if (daysLeft !== null) {
                 if (daysLeft < 0) {
-                  statusColor = 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300';
+                  statusColor = 'bg-rose-50 text-rose-700 border border-rose-100 shadow-[0_0_15px_rgba(244,63,94,0.1)]';
                   statusLabel = 'Expired';
                 } else if (daysLeft <= 3) {
-                  statusColor = 'bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300';
-                  statusLabel = 'Low Freshness';
+                  statusColor = 'bg-orange-50 text-orange-700 border border-orange-100 shadow-[0_0_15px_rgba(249,115,22,0.1)]';
+                  statusLabel = 'Expiring Soon';
                 }
               }
 
@@ -454,13 +462,13 @@ export default function InventoryDetailPage() {
               const fat = nutrition.fat != null ? Math.round(nutrition.fat) : '-';
 
               return (
-                <div key={item.id} className="bg-white  rounded-3xl p-5 shadow-soft hover:shadow-lg transition-all group relative border border-transparent hover:border-primary/20">
-                  <div className={`absolute top-4 right-4 text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wider ${statusColor}`}>
+                <div key={item.id} className="bg-white rounded-[3rem] p-8 shadow-soft hover:shadow-2xl transition-all duration-500 group relative border border-border/40 hover:border-primary/40 flex flex-col shrink-0 animate-in fade-in slide-in-from-bottom-4">
+                  <div className={`absolute top-6 right-6 text-[9px] font-bold px-3 py-1.5 rounded-xl uppercase tracking-widest z-10 ${statusColor}`}>
                     {statusLabel}
                   </div>
 
-                  <div className="flex items-center justify-center h-40 mb-6 bg-slate-50 rounded-[1.5rem] group-hover:bg-primary/5 transition-all duration-500 text-7xl select-none">
-                    <span className="group-hover:scale-110 group-hover:rotate-6 transition-all duration-700 block">
+                  <div className="flex items-center justify-center h-48 mb-8 bg-gray-50/50 rounded-[2.5rem] group-hover:bg-primary/20 transition-all duration-700 text-8xl select-none shadow-inner border border-border/20">
+                    <span className="group-hover:scale-125 group-hover:rotate-12 transition-all duration-1000 block filter drop-shadow-md">
                       {category.toLowerCase().includes('fruit') ? '🍎' :
                         category.toLowerCase().includes('veg') ? '🥦' :
                           category.toLowerCase().includes('meat') ? '🥩' :
@@ -471,60 +479,58 @@ export default function InventoryDetailPage() {
 
                   <div className="space-y-4 flex-1 flex flex-col">
                     <div>
-                      <h4 className="font-bold text-xl text-slate-800 mb-1 group-hover:text-primary transition-colors leading-tight line-clamp-1">{itemName}</h4>
-                      {/* <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest opacity-60">
-                        {category} HUB • {expDate ? `${daysLeft}d REMAINING` : 'PERPETUAL'}
-                      </p> */}
+                      <h4 className="font-bold text-2xl text-foreground mb-1.5 group-hover:text-secondary transition-colors leading-tight line-clamp-1 tracking-tight">{itemName}</h4>
+                      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest opacity-80 mb-2">
+                        {category} • {expDate ? `${daysLeft} days remaining` : 'No expiry'}
+                      </p>
 
-                      <div className="grid grid-cols-4 gap-2 mb-5 mt-4">
-                        <div className="bg-orange-50 rounded-xl p-2 text-center">
-                          <div className="flex items-center justify-center text-orange-400 mb-1"><Flame className="w-3 h-3" /></div>
-                          <p className="text-lg font-bold text-gray-900">{cal}</p>
-                          <p className="text-[10px] text-gray-500">kcal</p>
+                      <div className="grid grid-cols-4 gap-3 mb-6 mt-6">
+                        <div className="bg-orange-50/50 rounded-2xl p-2.5 text-center border border-orange-100/50 hover:bg-white hover:shadow-md transition-all">
+                          <div className="flex items-center justify-center text-orange-400 mb-1.5"><Flame className="w-3.5 h-3.5" /></div>
+                          <p className="text-xl font-bold text-foreground">{cal}</p>
+                          <p className="text-[9px] font-bold text-muted-foreground uppercase">kcal</p>
                         </div>
-                        <div className="bg-blue-50 rounded-xl p-2 text-center">
-                          <div className="flex items-center justify-center text-blue-400 mb-1"><Zap className="w-3 h-3" /></div>
-                          <p className="text-lg font-bold text-gray-900">{protein}{protein !== '-' ? 'g' : ''}</p>
-                          <p className="text-[10px] text-gray-500">prot</p>
+                        <div className="bg-primary/10 rounded-2xl p-2.5 text-center border border-primary/20 hover:bg-white hover:shadow-md transition-all">
+                          <div className="flex items-center justify-center text-secondary mb-1.5"><Zap className="w-3.5 h-3.5" /></div>
+                          <p className="text-xl font-bold text-foreground">{protein}{protein !== '-' ? 'g' : ''}</p>
+                          <p className="text-[9px] font-bold text-muted-foreground uppercase">prot</p>
                         </div>
-                        <div className="bg-green-50 rounded-xl p-2 text-center">
-                          <div className="flex items-center justify-center text-green-400 mb-1"><Apple className="w-3 h-3" /></div>
-                          <p className="text-lg font-bold text-gray-900">{carbs}{carbs !== '-' ? 'g' : ''}</p>
-                          <p className="text-[10px] text-gray-500">carb</p>
+                        <div className="bg-amber-50 rounded-2xl p-2.5 text-center border border-amber-100/50 hover:bg-white hover:shadow-md transition-all">
+                          <div className="flex items-center justify-center text-amber-500 mb-1.5"><Apple className="w-3.5 h-3.5" /></div>
+                          <p className="text-xl font-bold text-foreground">{carbs}{carbs !== '-' ? 'g' : ''}</p>
+                          <p className="text-[9px] font-bold text-muted-foreground uppercase">carb</p>
                         </div>
-                        <div className="bg-yellow-50 rounded-xl p-2 text-center">
-                          <div className="flex items-center justify-center text-yellow-400 mb-1"><Droplet className="w-3 h-3" /></div>
-                          <p className="text-lg font-bold text-gray-900">{fat}{fat !== '-' ? 'g' : ''}</p>
-                          <p className="text-[10px] text-gray-500">fat</p>
+                        <div className="bg-yellow-50 rounded-2xl p-2.5 text-center border border-yellow-100/50 hover:bg-white hover:shadow-md transition-all">
+                          <div className="flex items-center justify-center text-yellow-500 mb-1.5"><Droplet className="w-3.5 h-3.5" /></div>
+                          <p className="text-xl font-bold text-foreground">{fat}{fat !== '-' ? 'g' : ''}</p>
+                          <p className="text-[9px] font-bold text-muted-foreground uppercase">fat</p>
                         </div>
                       </div>
                     </div>
 
-                    <div className="mt-auto pt-6 border-t border-slate-50 flex items-center justify-between">
+                    <div className="mt-auto pt-8 border-t border-border/40 flex items-center justify-between">
                       <div className="flex flex-col">
-                        <span className="text-[10px] font-bold text-slate-300 uppercase tracking-widest mb-1">Stock Load</span>
-                        <div>
-                          <div className="flex items-baseline gap-1">
-                            <span className="text-2xl font-bold text-slate-800">{item.quantity}</span>
-                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{item.unit || 'pcs'}</span>
-                          </div>
+                        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1.5 opacity-60">Stock Load</span>
+                        <div className="flex items-baseline gap-1.5">
+                          <span className="text-3xl font-bold text-foreground tracking-tight">{item.quantity}</span>
+                          <span className="text-[10px] font-bold text-secondary uppercase tracking-widest">{item.unit || 'pcs'}</span>
                         </div>
                         {item.foodItem?.basePrice ? (
-                          <div className="text-sm font-semibold text-foreground/80">
-                            ৳{((item.foodItem.basePrice * item.quantity) / (item.foodItem.nutritionBasis || 1)).toFixed(0)}
+                          <div className="text-xs font-bold text-secondary/70 mt-1">
+                            ৳{((item.foodItem.basePrice * item.quantity) / (item.foodItem.nutritionBasis || 1)).toFixed(0)} Total
                           </div>
                         ) : (
-                          <div className="text-xs text-muted-foreground">No price</div>
+                          <div className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest mt-1 opacity-40">Unpriced</div>
                         )}
                       </div>
 
                       <button
                         onClick={() => handleConsumption(item)}
                         disabled={item.quantity <= 0}
-                        className="w-12 h-12 rounded-xl bg-slate-900 text-white hover:bg-black transition-all shadow-lg active:scale-90 disabled:opacity-20 flex items-center justify-center"
+                        className="w-14 h-14 rounded-2xl bg-secondary text-white hover:bg-secondary/90 transition-all shadow-lg shadow-secondary/20 hover:shadow-xl active:scale-90 disabled:opacity-20 flex items-center justify-center group/btn"
                         title="Log Consumption"
                       >
-                        <ArrowRight className="w-5 h-5" />
+                        <ArrowRight className="w-6 h-6 group-hover/btn:translate-x-1 transition-transform" />
                       </button>
                     </div>
                   </div>
@@ -637,37 +643,37 @@ function ConsumptionModal({ item, onClose, onConsume }: ConsumptionModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden animate-in zoom-in-95 duration-200">
-        <div className="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-          <h3 className="text-lg font-bold text-foreground">Log Consumption</h3>
-          <button onClick={onClose} className="text-muted-foreground hover:text-black transition-colors">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-foreground/30 backdrop-blur-md animate-in fade-in duration-300">
+      <div className="bg-white rounded-[3rem] shadow-2xl max-w-md w-full overflow-hidden animate-in zoom-in-95 duration-500 border border-primary/20">
+        <div className="px-8 py-6 border-b border-border/40 flex justify-between items-center bg-gray-50/50">
+          <h3 className="text-xl font-bold text-foreground tracking-tight">Log Consumption</h3>
+          <button onClick={onClose} className="w-10 h-10 flex items-center justify-center rounded-2xl bg-white text-muted-foreground hover:text-secondary hover:bg-primary/10 transition-all shadow-sm">
             <span className="material-icons-outlined">close</span>
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="p-8 space-y-6">
           {error && (
-            <div className="p-3 bg-red-50 text-red-700 text-sm rounded-lg flex items-center gap-2">
+            <div className="p-4 bg-rose-50 text-rose-700 text-xs font-bold uppercase tracking-widest rounded-2xl flex items-center gap-2 border border-rose-100 animate-shake">
               <AlertCircle className="w-4 h-4" /> {error}
             </div>
           )}
 
-          <div>
-            <label className="block text-sm font-medium text-muted-foreground mb-1">Item</label>
-            <div className="text-foreground font-semibold text-lg">{itemName}</div>
-            <div className="text-sm text-muted-foreground">Current Stock: {maxQuantity} {item.unit}</div>
+          <div className="bg-primary/10 p-5 rounded-[2rem] border border-primary/20">
+            <label className="block text-[10px] font-bold text-secondary uppercase tracking-widest mb-2 opacity-60">Item Selected</label>
+            <div className="text-foreground font-bold text-2xl tracking-tight mb-1">{itemName}</div>
+            <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Available: {maxQuantity} {item.unit}</div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-muted-foreground mb-1">Quantity Consumed</label>
-            <div className="flex gap-2">
-              <div className="flex items-center border border-gray-200 rounded-xl overflow-hidden">
+            <label className="block text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-4 ml-2">Quantity Consumed</label>
+            <div className="flex gap-3">
+              <div className="flex items-center bg-white border border-border/60 rounded-2xl overflow-hidden flex-1 shadow-sm focus-within:ring-4 focus-within:ring-primary/20 transition-all">
                 <button
                   type="button"
                   onClick={() => setForm(prev => ({ ...prev, quantity: Math.max(0, prev.quantity - 1) }))}
                   disabled={form.quantity <= 0}
-                  className="px-3 py-2 bg-gray-50 hover:bg-gray-100 text-foreground font-bold disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="px-4 py-4 bg-gray-50 hover:bg-primary/20 hover:text-secondary text-foreground font-bold disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                 >
                   <span className="material-icons-outlined text-sm">remove</span>
                 </button>
@@ -679,52 +685,52 @@ function ConsumptionModal({ item, onClose, onConsume }: ConsumptionModalProps) {
                   max={maxQuantity}
                   value={form.quantity}
                   onChange={handleChange}
-                  className="flex-1 px-4 py-2 text-center border-0 focus:ring-0 focus:outline-none text-foreground"
+                  className="flex-1 w-20 px-4 py-4 text-center border-0 focus:ring-0 focus:outline-none text-foreground font-bold text-lg"
                 />
                 <button
                   type="button"
                   onClick={() => setForm(prev => ({ ...prev, quantity: Math.min(maxQuantity, prev.quantity + 1) }))}
                   disabled={form.quantity >= maxQuantity}
-                  className="px-3 py-2 bg-gray-50 hover:bg-gray-100 text-foreground font-bold disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="px-4 py-4 bg-gray-50 hover:bg-primary/20 hover:text-secondary text-foreground font-bold disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                 >
                   <span className="material-icons-outlined text-sm">add</span>
                 </button>
               </div>
-              <div className="px-4 py-2 bg-gray-100 rounded-xl text-muted-foreground font-medium flex items-center">
+              <div className="px-6 py-4 bg-primary/20 border border-primary/20 rounded-2xl text-secondary font-bold text-xs uppercase tracking-widest flex items-center shadow-sm">
                 {item.unit || 'units'}
               </div>
             </div>
-            <div className="mt-2">
+            <div className="mt-3 text-right">
               <button
                 type="button"
                 onClick={() => setForm(prev => ({ ...prev, quantity: maxQuantity }))}
-                className="text-sm text-primary-dark hover:text-primary font-bold transition-colors"
+                className="text-[10px] font-bold text-secondary uppercase tracking-widest hover:text-secondary/70 transition-colors bg-primary/10 px-3 py-1.5 rounded-lg"
               >
-                Consume All ({maxQuantity} {item.unit})
+                Consume All stock
               </button>
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-muted-foreground mb-1">Notes (Optional)</label>
+            <label className="block text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-3 ml-2">Notes</label>
             <textarea
               name="notes"
               value={form.notes}
               onChange={handleChange}
-              rows={2}
-              placeholder="e.g., Used for dinner..."
-              className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/50 focus:border-transparent resize-none text-foreground placeholder-muted-foreground"
+              rows={3}
+              placeholder="e.g., Used for today's dinner recipe..."
+              className="w-full px-6 py-4 bg-gray-50 border border-border/40 rounded-2xl focus:ring-4 focus:ring-primary/20 focus:bg-white focus:border-transparent outline-none resize-none text-foreground font-medium transition-all placeholder:text-gray-300"
             />
           </div>
 
-          <div className="pt-2">
+          <div className="pt-4">
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 bg-black text-white font-bold rounded-xl hover:bg-gray-900 transition-colors shadow-lg disabled:opacity-70 disabled:cursor-not-allowed flex justify-center items-center gap-2"
+              className="w-full py-5 bg-secondary text-white font-bold rounded-2xl hover:bg-secondary/90 transition-all shadow-lg shadow-secondary/20 disabled:opacity-70 disabled:cursor-not-allowed flex justify-center items-center gap-3 active:scale-[0.98]"
             >
-              {loading ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" /> : <span className="material-icons-outlined">restaurant</span>}
-              {loading ? 'Logging...' : 'Confirm Consumption'}
+              {loading ? <div className="w-6 h-6 border-3 border-white border-t-transparent rounded-full animate-spin" /> : <span className="material-icons-outlined text-xl">check_circle</span>}
+              <span className="text-[10px] font-bold uppercase tracking-widest">{loading ? 'Processing...' : 'Confirm Consumption'}</span>
             </button>
           </div>
         </form>
@@ -819,17 +825,17 @@ function AddItemModal({ onClose, onAdd, onScan }: {
 
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div className="bg-white rounded-2xl p-6 max-w-md w-full relative max-h-[90vh] overflow-y-auto">
-        <h3 className="text-xl font-bold mb-4">Add Item</h3>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-foreground/30 backdrop-blur-md animate-in fade-in duration-300">
+      <div className="bg-white rounded-[3rem] p-10 max-w-lg w-full relative max-h-[90vh] overflow-y-auto shadow-2xl border border-primary/20 scrollbar-hide">
+        <h3 className="text-3xl font-bold mb-8 text-foreground tracking-tight">Add New Pantry Item</h3>
 
         {/* Quick Action for OCR */}
         <button
           onClick={() => { onClose(); onScan(); }}
-          className="w-full mb-4 py-3 bg-primary/20 text-black font-bold rounded-xl flex items-center justify-center gap-2 border border-primary/30 hover:bg-primary/30 transition-colors"
+          className="w-full mb-6 py-5 bg-primary/20 text-secondary font-bold rounded-2xl flex items-center justify-center gap-3 border border-primary/30 hover:bg-primary/30 transition-all shadow-sm hover:shadow-md active:scale-95"
         >
-          <span className="material-icons-outlined">photo_camera</span>
-          Upload Image
+          <span className="material-icons-outlined text-xl">photo_camera</span>
+          <span className="text-[10px] font-bold uppercase tracking-widest">Scan Shopping Receipt</span>
         </button>
 
         <div className="relative my-4">
@@ -838,119 +844,140 @@ function AddItemModal({ onClose, onAdd, onScan }: {
         </div>
 
         {/* USDA Search */}
-        <div className="mb-4 relative">
+        <div className="mb-6 relative group">
           <div className="relative">
-            <span className="material-icons-outlined absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">search</span>
+            <span className="material-icons-outlined absolute left-5 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-secondary transition-colors">search</span>
             <input
-              className="w-full border border-gray-100 pl-10 pr-10 py-3 rounded-xl bg-gray-50 placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-foreground"
-              placeholder="Search USDA (e.g. 'Apple', 'Oats')"
+              className="w-full border border-border/40 pl-14 pr-12 py-4.5 rounded-2xl bg-gray-50 placeholder:text-gray-300 focus:outline-none focus:ring-4 focus:ring-primary/20 focus:bg-white transition-all text-foreground font-bold"
+              placeholder="Search USDA database..."
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
             />
             {isSearching && (
-              <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+              <div className="absolute right-5 top-1/2 -translate-y-1/2">
+                <div className="w-5 h-5 border-3 border-secondary border-t-transparent rounded-full animate-spin" />
               </div>
             )}
           </div>
 
           {showResults && searchResults.length > 0 && (
-            <div className="absolute z-50 w-full mt-1 bg-white border border-gray-100 rounded-xl shadow-xl max-h-48 overflow-y-auto">
+            <div className="absolute z-50 w-full mt-3 bg-white border border-primary/20 rounded-[2rem] shadow-2xl max-h-64 overflow-y-auto animate-in slide-in-from-top-2 duration-300 p-2 scrollbar-hide">
               {searchResults.map((item, idx) => (
                 <button
                   key={idx}
                   type="button"
                   onClick={() => handleSelectFood(item)}
-                  className="w-full text-left px-4 py-3 text-sm hover:bg-gray-50 transition-colors border-b border-gray-50 last:border-0"
+                  className="w-full text-left px-5 py-4 rounded-xl hover:bg-primary/10 transition-colors flex flex-col gap-1 group/item border-b border-gray-50 last:border-0"
                 >
-                  <div className="font-bold text-foreground">{item.description}</div>
-                  <div className="text-[10px] text-muted-foreground uppercase tracking-wide">{item.dataType} • {item.unitName}</div>
+                  <div className="font-bold text-sm text-foreground group-hover/item:text-secondary transition-colors">{item.description}</div>
+                  <div className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest opacity-60">{item.dataType} • {item.unitName}</div>
                 </button>
               ))}
             </div>
           )}
         </div>
 
-        <div className="space-y-3">
-          <input
-            className="w-full border border-gray-100 p-3 rounded-xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary/50 text-foreground"
-            placeholder="Item Name (e.g. Fuji Apple)"
-            value={form.name}
-            onChange={e => setForm({ ...form, name: e.target.value })}
-          />
-          <div className="flex gap-2">
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <label className="block text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-2">Item Name</label>
             <input
-              type="number"
-              className="w-1/2 border border-gray-100 p-3 rounded-xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary/50 text-foreground"
-              value={form.quantity}
-              onChange={e => setForm({ ...form, quantity: parseFloat(e.target.value) })}
-            />
-            <input
-              className="w-1/2 border border-gray-100 p-3 rounded-xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary/50 text-foreground"
-              placeholder="Unit"
-              value={form.unit}
-              onChange={e => setForm({ ...form, unit: e.target.value })}
+              className="w-full border border-border/40 p-4.5 rounded-2xl bg-gray-50 text-foreground font-bold focus:outline-none focus:ring-4 focus:ring-primary/20 focus:bg-white transition-all placeholder:text-gray-300"
+              placeholder="e.g. Fuji Apple"
+              value={form.name}
+              onChange={e => setForm({ ...form, name: e.target.value })}
             />
           </div>
-          <input
-            type="date"
-            className="w-full border border-gray-100 p-3 rounded-xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary/50 text-foreground"
-            value={form.expiryDate}
-            onChange={e => setForm({ ...form, expiryDate: e.target.value })}
-          />
+          <div className="flex gap-4">
+            <div className="w-1/2 space-y-2">
+              <label className="block text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-2">Quantity</label>
+              <input
+                type="number"
+                className="w-full border border-border/40 p-4.5 rounded-2xl bg-gray-50 text-foreground font-bold focus:outline-none focus:ring-4 focus:ring-primary/20 focus:bg-white transition-all"
+                value={form.quantity}
+                onChange={e => setForm({ ...form, quantity: parseFloat(e.target.value) })}
+              />
+            </div>
+            <div className="w-1/2 space-y-2">
+              <label className="block text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-2">Unit</label>
+              <input
+                className="w-full border border-border/40 p-4.5 rounded-2xl bg-gray-50 text-foreground font-bold focus:outline-none focus:ring-4 focus:ring-primary/20 focus:bg-white transition-all placeholder:text-gray-300"
+                placeholder="pcs, kg, etc."
+                value={form.unit}
+                onChange={e => setForm({ ...form, unit: e.target.value })}
+              />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <label className="block text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-2">Expiry Date</label>
+            <input
+              type="date"
+              className="w-full border border-border/40 p-4.5 rounded-2xl bg-gray-50 text-foreground font-bold focus:outline-none focus:ring-4 focus:ring-primary/20 focus:bg-white transition-all"
+              value={form.expiryDate}
+              onChange={e => setForm({ ...form, expiryDate: e.target.value })}
+            />
+          </div>
 
           {/* Price Section */}
-          <div className="p-3 bg-gray-50 rounded-xl border border-gray-100">
-            <div className="flex items-center justify-between mb-2">
-              <label className="text-sm font-semibold text-foreground">Price (BDT)</label>
+          <div className="p-5 bg-primary/10 rounded-[2rem] border border-primary/20">
+            <div className="flex items-center justify-between mb-3">
+              <label className="text-[10px] font-bold text-secondary uppercase tracking-widest ml-2 px-1">Estimated Value</label>
 
               <button
                 type="button"
                 onClick={handleEstimatePrice}
                 disabled={priceLoading}
-                className="text-[10px] font-bold uppercase tracking-widest text-primary hover:text-primary-dark transition-colors flex items-center gap-1 disabled:opacity-50"
+                className="px-3 py-1.5 bg-white text-[10px] font-bold uppercase tracking-widest text-secondary rounded-lg border border-primary/20 shadow-sm hover:shadow-md transition-all flex items-center gap-2 disabled:opacity-50 active:scale-95"
               >
                 {priceLoading ? (
-                  <div className="w-3 h-3 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                  <div className="w-3 h-3 border-2 border-secondary border-t-transparent rounded-full animate-spin" />
                 ) : (
                   <span className="material-icons-outlined text-sm">auto_awesome</span>
                 )}
-                Estimate price
+                AI Estimate
               </button>
             </div>
 
             <div className="relative">
               <input
                 type="number"
-                className="w-full border border-gray-100 p-3 pl-8 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-foreground"
+                className="w-full border border-border/40 p-4.5 pl-10 rounded-2xl bg-white text-foreground font-bold focus:outline-none focus:ring-4 focus:ring-primary/20 transition-all font-bold"
                 placeholder="0.00"
                 value={form.basePrice || ''}
                 onChange={e => setForm({ ...form, basePrice: parseFloat(e.target.value) })}
               />
-              <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground font-bold">৳</div>
+              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-secondary font-bold text-lg">৳</div>
             </div>
           </div>
 
 
-          <button
-            onClick={() => {
-              onAdd({
-                customName: form.name,
-                quantity: form.quantity,
-                unit: form.unit,
-                expiryDate: form.expiryDate ? new Date(form.expiryDate) : undefined,
-                nutritionPerUnit: form.nutritionPerUnit,
-                nutritionBasis: form.nutritionBasis,
-                nutritionUnit: form.nutritionUnit,
-                basePrice: form.basePrice // Pass the price to the mutation
-              });
-              onClose();
-            }}
-            className="w-full bg-black text-white py-4 rounded-xl font-bold hover:bg-gray-900 transition-all shadow-lg active:scale-[0.98]"
-          >
-            Add Item Manually
-          </button>
-          <button onClick={onClose} className="w-full text-muted-foreground py-2 hover:text-black font-medium">Cancel</button>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-12">
+            <button
+              onClick={() => {
+                onAdd({
+                  customName: form.name,
+                  quantity: form.quantity,
+                  unit: form.unit,
+                  expiryDate: form.expiryDate ? new Date(form.expiryDate) : undefined,
+                  nutritionPerUnit: form.nutritionPerUnit,
+                  nutritionBasis: form.nutritionBasis,
+                  nutritionUnit: form.nutritionUnit,
+                  basePrice: form.basePrice // Pass the price to the mutation
+                });
+                onClose();
+              }}
+              className="py-5 bg-secondary text-white rounded-2xl font-bold hover:bg-secondary/90 transition-all shadow-lg hover:shadow-xl active:scale-[0.98] order-1 sm:order-2"
+            >
+              <div className="flex items-center justify-center gap-2">
+                <span className="text-[10px] font-bold uppercase tracking-widest">Add to Pantry</span>
+              </div>
+            </button>
+            <button 
+              onClick={onClose} 
+              className="py-5 bg-white text-muted-foreground rounded-2xl hover:bg-gray-50 transition-all font-bold border border-border/40 hover:border-border order-2 sm:order-1"
+            >
+              <span className="text-[10px] font-bold uppercase tracking-widest">Cancel</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>

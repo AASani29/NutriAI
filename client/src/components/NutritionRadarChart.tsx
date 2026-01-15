@@ -64,26 +64,26 @@ export default function NutritionRadarChart({
     : [];
 
   return (
-    <div className={`bg-white rounded-lg shadow-md p-6 ${className} `}>
+    <div className={`bg-card rounded-2xl border border-border p-6 ${className} `}>
       {/* Header with toggle */}
       <div className="flex justify-between items-center mb-6 ">
-        <h2 className="text-xl font-bold text-gray-800">Nutrition Intake</h2>
+        <h2 className="text-xl font-bold text-foreground">Nutrition Intake</h2>
 
         {/* Period Toggle Dropdown */}
         <div className="relative inline-block ">
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all shadow-sm"
+            className="flex items-center gap-2 px-4 py-2 bg-secondary text-white rounded-xl hover:bg-secondary/90 transition-all shadow-md group"
           >
-            <span className="text-sm font-medium capitalize">{period}</span>
+            <span className="text-sm font-bold capitalize">{period}</span>
             <ChevronDown
               size={16}
-              className={`transition-transform ${isOpen ? "rotate-180" : ""}`}
+              className={`transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`}
             />
           </button>
 
           {isOpen && (
-            <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
+            <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-100 rounded-xl shadow-xl z-10 animate-in fade-in zoom-in-95 duration-200">
               {["daily", "monthly"].map((p) => (
                 <button
                   key={p}
@@ -91,9 +91,9 @@ export default function NutritionRadarChart({
                     setPeriod(p as "daily" | "monthly");
                     setIsOpen(false);
                   }}
-                  className={`w-full text-left px-4 py-2 text-sm capitalize transition-colors ${
+                  className={`w-full text-left px-4 py-3 text-sm capitalize transition-colors first:rounded-t-xl last:rounded-b-xl ${
                     period === p
-                      ? "bg-blue-50 text-blue-600 font-medium"
+                      ? "bg-primary/20 text-secondary font-bold"
                       : "text-gray-700 hover:bg-gray-50"
                   }`}
                 >
@@ -107,10 +107,10 @@ export default function NutritionRadarChart({
 
       {/* Chart Container */}
       {isLoading ? (
-        <div className="flex items-center justify-center h-20 bg-gray-50 rounded-lg">
+        <div className="flex items-center justify-center h-48 bg-gray-50/50 rounded-2xl">
           <div className="text-center">
-            <div className="w-12 h-12 border-4 border-blue-200 border-t-blue-500 rounded-full animate-spin mx-auto mb-3"></div>
-            <p className="text-gray-600 text-sm">Loading nutrition data...</p>
+            <div className="w-12 h-12 border-4 border-primary/30 border-t-secondary rounded-full animate-spin mx-auto mb-3"></div>
+            <p className="text-gray-600 text-sm font-medium">Loading nutrition data...</p>
           </div>
         </div>
       ) : stats ? (
@@ -120,45 +120,46 @@ export default function NutritionRadarChart({
                 data={chartData}
                 margin={{ top: 0, right: 80, bottom: 20, left: 80 }}
                 >
-              <PolarGrid strokeDasharray="10 10" stroke="#e0e0e0" />
+              <PolarGrid strokeDasharray="10 10" stroke="#F4DCC8" />
               <PolarAngleAxis
                 dataKey="name"
-                tick={{ fill: "#666", fontSize: 16 }}
+                tick={{ fill: "#3E2723", fontSize: 13, fontWeight: 600 }}
               />
               <PolarRadiusAxis
                 angle={90}
                 domain={[0, "auto"]}
-                tick={{ fill: "#999", fontSize: 14, dx: 36, dy:10 }}
+                tick={{ fill: "#8B6F47", fontSize: 12, dx: 36, dy:10 }}
                 tickSize={10}
               />
 
-              {/* Actual intake - Blue Triangle */}
+              {/* Actual intake - Terracotta Triangle */}
               <Radar
                 name="Actual"
                 dataKey="actual"
-                stroke="#3b82f6"
-                fill="#3b82f6"
+                stroke="#D2691E"
+                fill="#D2691E"
                 fillOpacity={0.5}
-                strokeWidth={2.5}
+                strokeWidth={3}
               />
 
-              {/* Recommended intake - Green Triangle */}
+              {/* Recommended intake - Peach Triangle */}
               <Radar
                 name="Goal"
                 dataKey="recommended"
-                stroke="#10b981"
-                fill="#10b981"
+                stroke="#FFB88C"
+                fill="#FFB88C"
                 fillOpacity={0.2}
-                strokeWidth={2.5}
+                strokeWidth={3}
               />
 
               <Legend wrapperStyle={{ paddingTop: "20px" }} />
               <Tooltip
                 contentStyle={{
                   backgroundColor: "#fff",
-                  border: "1px solid #ccc",
-                  borderRadius: "8px",
-                  padding: "8px 12px",
+                  border: "1px solid #F4DCC8",
+                  borderRadius: "12px",
+                  padding: "10px 14px",
+                  boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
                 }}
                 formatter={(value: any) => (typeof value === 'number' ? value.toFixed(1) : value)}
               />
@@ -166,58 +167,67 @@ export default function NutritionRadarChart({
           </ResponsiveContainer>
 
           {/* Stats Summary Below Chart */}
-          <div className="mt-6 grid grid-cols-3 gap-4">
+          <div className="mt-6 grid grid-cols-1 gap-3">
             {[
               {
                 label: "Protein",
                 actual: stats.totals.protein,
                 recommended: stats.recommended.protein,
                 percentage: stats.percentage.protein,
-                color: "blue",
+                color: "#FFB88C", // Primary
+                bg: "rgba(255, 184, 140, 0.1)",
               },
               {
                 label: "Carbs",
                 actual: stats.totals.carbohydrates,
                 recommended: stats.recommended.carbohydrates,
                 percentage: stats.percentage.carbohydrates,
-                color: "emerald",
+                color: "#D2691E", // Secondary
+                bg: "rgba(210, 105, 30, 0.1)",
               },
               {
                 label: "Fat",
                 actual: stats.totals.fat,
                 recommended: stats.recommended.fat,
                 percentage: stats.percentage.fat,
-                color: "orange",
+                color: "#8B4513", // Saddle Brown / Accent
+                bg: "rgba(139, 69, 19, 0.1)",
               },
             ].map((stat) => (
               <div
                 key={stat.label}
-                className={`bg-${stat.color}-50 rounded-lg p-3 border border-${stat.color}-200`}
+                className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm hover:shadow-md transition-shadow"
               >
-                <p className="text-xs text-gray-600 mb-1">{stat.label}</p>
-                <p className={`text-sm font-bold text-${stat.color}-700`}>
-                  {typeof stat.actual === 'number' ? stat.actual.toFixed(1) : 0}g / {stat.recommended || 0}g
-                </p>
-                <div className="mt-2 w-full bg-gray-200 rounded-full h-2">
-                  <div
-                    className={`bg-${stat.color}-500 h-2 rounded-full transition-all`}
-                    style={{
-                      width: `${Math.min(stat.percentage, 100)}%`,
-                    }}
-                  ></div>
+                <div className="flex justify-between items-center mb-2">
+                  <p className="text-sm font-bold text-gray-700">{stat.label}</p>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                    {stat.percentage}% Goal
+                  </p>
                 </div>
-                <p
-                  className={`text-xs mt-1 text-${stat.color}-600 font-medium`}
-                >
-                  {stat.percentage}%
-                </p>
+                
+                <div className="flex items-center gap-3">
+                  <div className="flex-1">
+                    <div className="w-full bg-gray-100 rounded-full h-2">
+                      <div
+                        className="h-2 rounded-full transition-all duration-1000 shadow-sm"
+                        style={{
+                          width: `${Math.min(stat.percentage, 100)}%`,
+                          backgroundColor: stat.color,
+                        }}
+                      ></div>
+                    </div>
+                  </div>
+                  <p className="text-xs font-bold text-gray-900 min-w-[80px] text-right">
+                    {typeof stat.actual === 'number' ? stat.actual.toFixed(1) : 0}g <span className="text-gray-400 font-normal">/ {stat.recommended || 0}g</span>
+                  </p>
+                </div>
               </div>
             ))}
           </div>
         </>
       ) : (
-        <div className="flex items-center justify-center h-96 bg-gray-50 rounded-lg">
-          <p className="text-gray-500 text-sm">No nutrition data available</p>
+        <div className="flex items-center justify-center h-48 bg-gray-50/50 rounded-2xl">
+          <p className="text-gray-500 text-sm font-medium">No nutrition data available</p>
         </div>
       )}
     </div>
