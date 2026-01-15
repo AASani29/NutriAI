@@ -14,7 +14,6 @@ import {
   MessageSquare,
   Search,
   ChevronRight,
-  Info,
   Sunrise,
   Sun,
   Moon,
@@ -57,7 +56,7 @@ export default function MealPlannerPage() {
   const api = useApi();
   const { useGetConsumptionLogs, useGetHydration } = useInventory();
   const [loading, setLoading] = useState(false);
-  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [selectedDate] = useState(new Date());
   const [showConfig, setShowConfig] = useState(false);
   const [mealPlan, setMealPlan] = useState<MealPlan | null>(() => {
     const saved = localStorage.getItem('current_meal_plan');
@@ -125,7 +124,6 @@ export default function MealPlannerPage() {
   // Generate personalized AI insights based on health metrics and lowest nutrient
   const aiInsight = useMemo(() => {
     const userGoals = profile?.profile;
-    const weight = userGoals?.weight || 70;
     const proteinGoal = userGoals?.proteinGoal || 180;
     const energyGoal = userGoals?.energyGoal || 2500;
     
@@ -386,47 +384,49 @@ export default function MealPlannerPage() {
 
   if (!hasHealthMetrics) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center max-w-2xl mx-auto space-y-6">
-        <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center">
-          <Brain className="w-10 h-10 text-primary" />
+      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center max-w-2xl mx-auto space-y-8 animate-in fade-in duration-700">
+        <div className="w-24 h-24 bg-primary/20 rounded-[2.5rem] flex items-center justify-center shadow-inner border border-primary/20">
+          <Brain className="w-12 h-12 text-secondary" />
         </div>
-        <h1 className="text-3xl font-bold text-foreground">Complete Your Health Profile</h1>
-        <p className="text-muted-foreground">
-          To generate a "Price-Smart Meal Plan" tailored to your metabolism and health goals, we need your height, weight, and preferences.
-        </p>
+        <div>
+          <h1 className="text-4xl font-bold text-foreground tracking-tight mb-4">Complete Your Health Profile</h1>
+          <p className="text-muted-foreground font-medium text-lg leading-relaxed">
+            To generate a price-smart meal plan tailored to your metabolism and health goals, we need your height, weight, and preferences.
+          </p>
+        </div>
         <Link
           to="/profile/edit"
-          className="inline-flex items-center gap-2 px-6 py-3 bg-black text-white rounded-xl hover:bg-gray-900 transition-all font-bold shadow-lg"
+          className="inline-flex items-center gap-3 px-10 py-5 bg-secondary text-white rounded-2xl hover:bg-secondary/90 transition-all font-bold shadow-lg shadow-secondary/20 active:scale-95 group"
         >
           Setup My Profile
-          <ArrowRight className="w-4 h-4" />
+          <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
         </Link>
       </div>
     );
   }
 
   return (
-    <main className="flex-1 overflow-y-auto">
-      <div className="container mx-auto px-4 py-8 max-w-7xl">
-      <header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+    <main className="flex-1 overflow-y-auto bg-background/30 px-6">
+      <div className="max-w-7xl mx-auto py-8">
+      <header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-6">
         <div>
-          <h1 className="text-3xl font-bold text-foreground tracking-tight">Weekly Meal Plan</h1>
-          <p className="text-muted-foreground text-sm mt-1">Plan your nutrition for a healthier week, {profile?.profile?.fullName || 'User'}!</p>
+          <h1 className="text-4xl font-bold text-foreground tracking-tight">Weekly Meal Plan</h1>
+          <p className="text-secondary/60 font-bold text-[10px] uppercase tracking-widest mt-2 opacity-80">Plan your nutrition for a healthier week, {profile?.profile?.fullName || 'User'}!</p>
         </div>
         <div className="flex items-center gap-4 w-full md:w-auto">
-          <div className="relative flex-1 md:w-80">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
+          <div className="relative flex-1 md:w-80 group">
+            <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-secondary w-4 h-4 transition-colors" />
             <input 
-              className="w-full pl-12 pr-4 py-3 rounded-full border-none bg-white text-foreground shadow-soft focus:ring-2 focus:ring-primary/50 placeholder-gray-400 transition-all text-sm font-medium" 
-              placeholder="Search for recipes or ingredients" 
+              className="w-full pl-12 pr-6 py-4 rounded-2xl border border-border/40 bg-white text-foreground shadow-soft focus:ring-4 focus:ring-primary/20 focus:border-transparent placeholder-gray-300 transition-all text-sm font-bold" 
+              placeholder="Search recipes or ingredients..." 
               type="text"
             />
           </div>
           <button 
             onClick={() => setShowConfig(true)}
-            className="bg-black text-white px-6 py-3 rounded-full font-bold flex items-center gap-2 shadow-lg hover:shadow-xl transition-all whitespace-nowrap active:scale-95"
+            className="bg-secondary text-white px-8 py-4 rounded-2xl font-bold flex items-center gap-3 shadow-lg shadow-secondary/20 hover:bg-secondary/90 transition-all whitespace-nowrap active:scale-95 text-[10px] uppercase tracking-widest"
           >
-            <Sparkles className="text-primary w-4 h-4" />
+            <Sparkles className="w-4 h-4" />
             <span>Generate Plan</span>
           </button>
         </div>
@@ -436,99 +436,83 @@ export default function MealPlannerPage() {
         {/* Left Column */}
         <div className="col-span-12 lg:col-span-8 flex flex-col gap-8">
           {/* Hero Banner */}
-          <div className="bg-gradient-to-r from-teal-500 to-emerald-500 rounded-[2.5rem] p-10 text-white relative overflow-hidden shadow-soft flex flex-col justify-between min-h-[300px]">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-10 rounded-full -mr-16 -mt-16 blur-3xl"></div>
-            <div className="absolute bottom-0 left-20 w-40 h-40 bg-yellow-300 opacity-20 rounded-full blur-3xl"></div>
+          <div className="bg-gradient-to-br from-[#D2691E] to-[#8B4513] rounded-[3rem] p-10 text-white relative overflow-hidden shadow-2xl flex flex-col justify-between min-h-[320px] border border-white/10">
+            <div className="absolute top-0 right-0 w-96 h-96 bg-primary/20 rounded-full -mr-32 -mt-32 blur-[100px] animate-pulse"></div>
+            <div className="absolute bottom-0 left-20 w-64 h-64 bg-secondary/30 rounded-full blur-[120px]"></div>
             
-            <div className="relative z-10 flex justify-between items-start">
-              <div>
-                
-                <h2 className="text-3xl font-bold max-w-sm leading-[1.1] mb-2 tracking-tightest">{displayTitle}</h2>
-                <p className="text-white/80 font-medium max-w-sm">{displaySubtitle}</p>
+            <div className="relative z-10 flex flex-col lg:flex-row justify-between items-start gap-10">
+              <div className="max-w-md">
+                <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl px-4 py-1.5 inline-block mb-6">
+                  <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary">Intelligence Engine</span>
+                </div>
+                <h2 className="text-4xl font-bold leading-tight mb-4 tracking-tighter italic font-operetta">{displayTitle}</h2>
+                <p className="text-white/70 font-medium text-lg">{displaySubtitle}</p>
               </div>
               
-              <div className="hidden sm:block lg:flex lg:gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:flex lg:gap-4 w-full lg:w-auto">
                 {/* Calorie Goal */}
-                <div className="bg-white/60 backdrop-blur-md p-6 rounded-[2rem] border border-white/10 shadow-xl">
-                  <div className="text-[10px] font-bold text-secondary uppercase tracking-[0.2em]  mb-2 text-center">Calories</div>
-                  <div className="text-xl font-bold text-center text-secondary">{Math.round(consumedNutrition.calories)}/{profile?.profile?.energyGoal || 2500}</div>
-                  <div className="text-xl text-secondary font-bold text-center mb-2">kcal</div>
-                  <div className="w-24 h-2 bg-black/20 rounded-full mt-2 overflow-hidden p-0.5">
-                    <div className="bg-white h-full rounded-full" style={{ width: `${Math.min(100, (consumedNutrition.calories / (profile?.profile?.energyGoal || 2500)) * 100)}%` }}></div>
+                <div className="bg-white/10 backdrop-blur-xl p-6 rounded-[2.5rem] border border-white/10 shadow-xl flex flex-col items-center justify-center group/metric hover:bg-white/20 transition-all">
+                  <div className="text-[9px] font-bold text-primary uppercase tracking-[0.2em] mb-3 text-center opacity-80">Calories</div>
+                  <div className="text-xl font-bold text-center tracking-tight mb-1">{Math.round(consumedNutrition.calories)}</div>
+                  <div className="text-[10px] text-white/40 font-bold text-center mb-4 italic uppercase tracking-widest">Goal: {profile?.profile?.energyGoal || 2500}</div>
+                  <div className="w-20 h-1.5 bg-white/10 rounded-full relative overflow-hidden">
+                    <div className="bg-primary h-full rounded-full transition-all duration-1000" style={{ width: `${Math.min(100, (consumedNutrition.calories / (profile?.profile?.energyGoal || 2500)) * 100)}%` }}></div>
                   </div>
-                  <div className="text-[14px] text-center text-secondary font-bold mt-2">{Math.round((consumedNutrition.calories / (profile?.profile?.energyGoal || 2500)) * 100)}%</div>
                 </div>
 
                 {/* Protein Goal */}
-                <div className="bg-white/50 backdrop-blur-md p-6 rounded-[2rem] border border-white/10 shadow-xl">
-                  <div className="text-[10px] font-bold text-secondary uppercase tracking-[0.2em] mb-2 text-center">Protein</div>
-                  <div className="text-xl font-bold text-center text-secondary">{Math.round(consumedNutrition.protein)}/{profile?.profile?.proteinGoal || 180}</div>
-                  <div className="text-xl text-secondary font-bold text-center mb-2">g</div>                  
-                  <div className="w-24 h-2 bg-black/20 rounded-full mt-2 overflow-hidden p-0.5">
-                    <div className="bg-white h-full rounded-full" style={{ width: `${Math.min(100, (consumedNutrition.protein / (profile?.profile?.proteinGoal || 180)) * 100)}%` }}></div>
+                <div className="bg-white/10 backdrop-blur-xl p-6 rounded-[2.5rem] border border-white/10 shadow-xl flex flex-col items-center justify-center group/metric hover:bg-white/20 transition-all">
+                  <div className="text-[9px] font-bold text-primary uppercase tracking-[0.2em] mb-3 text-center opacity-80">Protein</div>
+                  <div className="text-xl font-bold text-center tracking-tight mb-1">{Math.round(consumedNutrition.protein)}g</div>
+                  <div className="text-[10px] text-white/40 font-bold text-center mb-4 italic uppercase tracking-widest">Goal: {profile?.profile?.proteinGoal || 180}g</div>
+                  <div className="w-20 h-1.5 bg-white/10 rounded-full relative overflow-hidden">
+                    <div className="bg-primary h-full rounded-full transition-all duration-1000" style={{ width: `${Math.min(100, (consumedNutrition.protein / (profile?.profile?.proteinGoal || 180)) * 100)}%` }}></div>
                   </div>
-                  <div className="text-[14px] text-center text-secondary font-bold  mt-2">{Math.round((consumedNutrition.protein / (profile?.profile?.proteinGoal || 180)) * 100)}%</div>
                 </div>
 
                 {/* Carbs Goal */}
-                <div className="bg-white/40 backdrop-blur-md p-6 rounded-[2rem] border border-white/10 shadow-xl">
-                  <div className="text-[10px] font-bold text-secondary uppercase tracking-[0.2em]  mb-2 text-center">Carbs</div>
-                  <div className="text-xl font-bold text-center text-secondary">{Math.round(consumedNutrition.carbs)}/{Math.round((profile?.profile?.energyGoal || 2500) * 0.45 / 4)}</div>
-                  <div className="text-xl text-secondary font-bold text-center mb-2">g</div>                  
-                  <div className="w-24 h-2 bg-black/20 rounded-full mt-2 overflow-hidden p-0.5">
-                    <div className="bg-white h-full rounded-full" style={{ width: `${Math.min(100, (consumedNutrition.carbs / (Math.round((profile?.profile?.energyGoal || 2500) * 0.45 / 4))) * 100)}%` }}></div>
+                <div className="bg-white/10 backdrop-blur-xl p-6 rounded-[2.5rem] border border-white/10 shadow-xl flex flex-col items-center justify-center group/metric hover:bg-white/20 transition-all">
+                  <div className="text-[9px] font-bold text-primary uppercase tracking-[0.2em] mb-3 text-center opacity-80">Carbs</div>
+                  <div className="text-xl font-bold text-center tracking-tight mb-1">{Math.round(consumedNutrition.carbs)}g</div>
+                  <div className="text-[10px] text-white/40 font-bold text-center mb-4 italic uppercase tracking-widest">Goal: {Math.round((profile?.profile?.energyGoal || 2500) * 0.45 / 4)}g</div>
+                  <div className="w-20 h-1.5 bg-white/10 rounded-full relative overflow-hidden">
+                    <div className="bg-primary h-full rounded-full transition-all duration-1000" style={{ width: `${Math.min(100, (consumedNutrition.carbs / (Math.round((profile?.profile?.energyGoal || 2500) * 0.45 / 4))) * 100)}%` }}></div>
                   </div>
-                  <div className="text-[14px] text-center  text-secondary font-bold mt-2">{Math.round((consumedNutrition.carbs / (Math.round((profile?.profile?.energyGoal || 2500) * 0.45 / 4))) * 100)}%</div>
-                </div>
-
-                {/* Fats Goal */}
-                <div className="bg-white/30 backdrop-blur-md p-6 rounded-[2rem] border border-white/10 shadow-xl">
-                  <div className="text-[10px] font-bold text-white uppercase tracking-[0.2em] mb-2 text-center">Fats</div>
-                  <div className="text-xl font-bold text-center text-white">{Math.round(consumedNutrition.fat)}/{Math.round((profile?.profile?.energyGoal || 2500) * 0.25 / 9)}</div>
-                  <div className="text-xl text-white font-bold text-center mb-2">g</div>                  
-                  <div className="w-24 h-2 bg-black/20 rounded-full mt-2 overflow-hidden p-0.5">
-                    <div className="bg-white h-full rounded-full" style={{ width: `${Math.min(100, (consumedNutrition.fat / (Math.round((profile?.profile?.energyGoal || 2500) * 0.25 / 9))) * 100)}%` }}></div>
-                  </div>
-                  <div className="text-[14px] font-bold text-center mt-2">{Math.round((consumedNutrition.fat / (Math.round((profile?.profile?.energyGoal || 2500) * 0.25 / 9))) * 100)}%</div>
                 </div>
 
                 {/* Hydration Goal */}
-                <div className="bg-white/20 backdrop-blur-md p-6 rounded-[2rem] border border-white/10 shadow-xl">
-                  <div className="text-[10px] font-bold text-white uppercase tracking-[0.2em] mb-2 text-center">Hydration</div>
-                  <div className="text-xl font-bold text-center text-white">{(hydrationData?.amount || 0).toFixed(1)}/{hydrationData?.goal || 2.5}</div>
-                  <div className="text-xl text-white font-bold text-center mb-2">L</div>                  
-                  <div className="w-24 h-2 bg-black/20 rounded-full mt-2 overflow-hidden p-0.5">
-                    <div className="bg-white h-full rounded-full" style={{ width: `${Math.min(100, ((hydrationData?.amount || 0) / (hydrationData?.goal || 2.5)) * 100)}%` }}></div>
+                <div className="bg-white/10 backdrop-blur-xl p-6 rounded-[2.5rem] border border-white/10 shadow-xl flex flex-col items-center justify-center group/metric hover:bg-white/20 transition-all">
+                  <div className="text-[9px] font-bold text-primary uppercase tracking-[0.2em] mb-3 text-center opacity-80">Hydration</div>
+                  <div className="text-xl font-bold text-center tracking-tight mb-1">{(hydrationData?.amount || 0).toFixed(1)}L</div>
+                  <div className="text-[10px] text-white/40 font-bold text-center mb-4 italic uppercase tracking-widest">Goal: {hydrationData?.goal || 2.5}L</div>
+                  <div className="w-20 h-1.5 bg-white/10 rounded-full relative overflow-hidden">
+                    <div className="bg-primary h-full rounded-full transition-all duration-1000" style={{ width: `${Math.min(100, ((hydrationData?.amount || 0) / (hydrationData?.goal || 2.5)) * 100)}%` }}></div>
                   </div>
-                  <div className="text-[14px] font-bold text-center mt-2">{Math.round(((hydrationData?.amount || 0) / (hydrationData?.goal || 2.5)) * 100)}%</div>
                 </div>
               </div>
             </div>
 
-            <div className="relative z-10 flex items-end justify-between mt-auto pt-8">
-              
+            <div className="relative z-10 flex items-end justify-between mt-auto pt-10">
               <button 
                 onClick={() => setViewMode(viewMode === 'current' ? 'saved' : 'current')}
-                className="bg-black text-white px-8 py-4 rounded-full font-bold flex items-center gap-3 hover:scale-105 transition-transform shadow-2xl active:scale-95 text-xs uppercase tracking-widest"
+                className="bg-white text-secondary px-8 py-5 rounded-2xl font-bold flex items-center gap-3 hover:bg-primary/20 hover:text-white border border-white/20 transition-all shadow-xl active:scale-95 text-[10px] uppercase tracking-[0.2em]"
               >
-                <span>{viewMode === 'current' ? 'View Saved Plans' : 'View Current Plan'}</span>
-                <div className="bg-white rounded-full p-1.5">
-                  <ArrowRight className="w-3.5 h-3.5 text-black" />
-                </div>
+                <span>{viewMode === 'current' ? 'View Saved Plans' : 'Return to Current Plan'}</span>
+                <ChevronRight className={`w-4 h-4 transition-transform ${viewMode === 'current' ? '' : 'rotate-180'}`} />
               </button>
             </div>
           </div>
 
           {/* Meal Section Content (Loading/Saved/Current) */}
           {loading ? (
-            <div className="bg-white rounded-[2.5rem] border border-gray-100 p-20 flex flex-col items-center justify-center space-y-6 shadow-soft">
+            <div className="bg-white rounded-[3rem] border border-primary/20 p-20 flex flex-col items-center justify-center space-y-8 shadow-soft animate-pulse">
               <div className="relative">
-                <div className="w-20 h-20 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-                <Sparkles className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 text-primary animate-pulse" />
+                <div className="w-24 h-24 border-4 border-primary border-t-transparent rounded-[2.5rem] animate-spin" />
+                <Sparkles className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 text-secondary" />
               </div>
-              <div className="text-center">
-                <p className="font-bold text-2xl mb-2 text-black tracking-tight">AI is crafting your plan...</p>
-                <p className="text-muted-foreground font-medium max-w-xs">Optimizing for metabolic health and current market prices.</p>
+              <div className="text-center space-y-3">
+                <p className="font-bold text-3xl text-foreground tracking-tight">AI is crafting your plan...</p>
+                <p className="text-secondary/60 font-bold text-[10px] uppercase tracking-widest max-w-xs mx-auto">Optimizing for metabolic health and current bazaar prices.</p>
               </div>
             </div>
           ) : viewMode === 'saved' ? (
@@ -536,17 +520,17 @@ export default function MealPlannerPage() {
               {savedPlans.length > 0 ? (
                 <div className="grid grid-cols-1 gap-6">
                   {savedPlans.map((plan) => (
-                    <div key={plan.id} className="bg-white border border-gray-100 rounded-[2rem] p-8 hover:shadow-xl transition-all group relative overflow-hidden">
-                      <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 blur-2xl"></div>
-                      <div className="flex justify-between items-center relative z-10">
-                        <div>
-                          <h3 className="text-xl font-bold text-black">Meal Plan from {new Date(plan.createdAt).toLocaleDateString()}</h3>
-                          <div className="flex items-center gap-4 mt-2">
-                            <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground bg-gray-50 px-3 py-1 rounded-full border border-gray-100">
-                              {Array.isArray(plan.meals) ? plan.meals.length : 0} meals
+                    <div key={plan.id} className="bg-white border border-border/40 rounded-[2.5rem] p-10 hover:shadow-2xl hover:border-secondary/30 transition-all duration-500 group relative overflow-hidden shadow-soft">
+                      <div className="absolute top-0 right-0 w-40 h-40 bg-primary/10 rounded-full -mr-20 -mt-20 blur-3xl group-hover:bg-primary/20 transition-all"></div>
+                      <div className="flex flex-col md:flex-row justify-between items-center gap-6 relative z-10">
+                        <div className="flex-1">
+                          <h3 className="text-2xl font-bold text-foreground tracking-tight">Weekly Plan: {new Date(plan.createdAt).toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })}</h3>
+                          <div className="flex flex-wrap items-center gap-3 mt-4">
+                            <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground bg-background px-4 py-2 rounded-xl border border-border/40">
+                              {Array.isArray(plan.meals) ? plan.meals.length : 0} Personalized Meals
                             </span>
-                            <span className="text-[10px] font-bold uppercase tracking-widest text-primary bg-primary/10 px-3 py-1 rounded-full border border-primary/20">
-                              ৳{plan.budget} budget
+                            <span className="text-[9px] font-bold uppercase tracking-widest text_secondary bg-primary/20 px-4 py-2 rounded-xl border border-primary/20">
+                              ৳{plan.budget} Smart Budget
                             </span>
                           </div>
                         </div>
@@ -560,53 +544,55 @@ export default function MealPlannerPage() {
                             });
                             setViewMode('current');
                           }}
-                          className="px-8 py-3 bg-black text-white rounded-full text-xs font-bold uppercase tracking-widest hover:bg-primary hover:text-black transition-all shadow-lg active:scale-95"
+                          className="w-full md:w-auto px-10 py-5 bg-secondary text-white rounded-2xl text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-secondary/90 transition-all shadow-lg shadow-secondary/20 active:scale-95"
                         >
-                          Load Plan
+                          Restore Plan
                         </button>
                       </div>
                     </div>
                   ))}
                 </div>
               ) : (
-                <div className="bg-white rounded-[2.5rem] border-2 border-dashed border-gray-100 p-20 text-center">
-                   <Calendar className="w-16 h-16 text-gray-200 mx-auto mb-6" />
-                   <h3 className="text-xl font-bold text-black">No saved plans yet</h3>
-                   <p className="text-muted-foreground font-medium max-w-xs mx-auto mt-2">Generate and save a plan to see it archived here for future reference.</p>
+                <div className="bg-white rounded-[4rem] border border-dashed border-primary/30 p-24 text-center shadow-soft">
+                   <div className="w-24 h-24 bg-primary/10 rounded-[2rem] flex items-center justify-center mx-auto mb-8 border border-primary/20">
+                     <Calendar className="w-10 h-10 text-secondary/40" />
+                   </div>
+                   <h3 className="text-3xl font-bold text-foreground tracking-tight">No Saved Protocols</h3>
+                   <p className="text-muted-foreground font-medium max-w-xs mx-auto mt-4 leading-relaxed">Your generated nutritional strategies will appear here for historical tracking.</p>
                 </div>
               )}
             </div>
           ) : mealPlan ? (
              <div className="space-y-8">
-               <div className="bg-white rounded-[2.5rem] p-10 shadow-soft border border-gray-50/50 flex flex-col md:flex-row justify-between items-center gap-8 relative overflow-hidden">
-                 <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full -mr-32 -mt-32 blur-3xl"></div>
-                 <div className="relative z-10 flex-1">
-                   <h3 className="text-2xl font-bold text-black flex items-center gap-3 mb-4">
-                     <Info className="w-6 h-6 text-primary" />
-                     NutriAI Insights
-                   </h3>
-                   <p className="text-muted-foreground font-medium leading-relaxed italic border-l-4 border-primary pl-6 py-2">
-                      {displayPlanSummary}
-                   </p>
-                 </div>
-                 <div className="relative z-10 flex flex-col items-center gap-4">
-                   <div className="bg-black text-white px-8 py-4 rounded-[1.5rem] shadow-2xl flex flex-col items-center">
-                     <span className="text-[10px] font-bold uppercase tracking-[0.2em] opacity-60 mb-1">Estimated Cost</span>
-                     <span className="text-3xl font-bold">৳{mealPlan.totalEstimatedCost}</span>
-                   </div>
-                   <button
-                      onClick={() => savePlan(mealPlan)}
-                      className="flex items-center gap-3 px-8 py-3 bg-gray-50 border border-gray-100 text-black rounded-full hover:bg-black hover:text-white transition-all font-bold text-xs uppercase tracking-widest shadow-sm active:scale-95"
-                    >
-                      <ShoppingBag className="w-4 h-4" />
-                      Save Plan
-                    </button>
-                 </div>
-               </div>
+              <div className="bg-white rounded-[2.5rem] p-10 shadow-soft border border-primary/20 flex flex-col md:flex-row justify-between items-center gap-8 relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full -mr-32 -mt-32 blur-[80px]"></div>
+                <div className="relative z-10 flex-1">
+                  <h3 className="text-2xl font-bold text-foreground flex items-center gap-3 mb-4 tracking-tight">
+                    <Brain className="w-8 h-8 text-secondary" />
+                    NutriAI Insights
+                  </h3>
+                  <p className="text-muted-foreground font-medium leading-relaxed italic border-l-4 border-primary pl-6 py-2">
+                     {displayPlanSummary}
+                  </p>
+                </div>
+                <div className="relative z-10 flex flex-col items-center gap-4">
+                  <div className="bg-secondary text-white px-10 py-6 rounded-[2rem] shadow-lg shadow-secondary/20 flex flex-col items-center">
+                    <span className="text-[10px] font-bold uppercase tracking-[0.2em] opacity-80 mb-1">Estimated Cost</span>
+                    <span className="text-4xl font-bold">৳{mealPlan.totalEstimatedCost}</span>
+                  </div>
+                  <button
+                     onClick={() => savePlan(mealPlan)}
+                     className="flex items-center gap-3 px-8 py-4 bg-white border border-primary/20 text-secondary rounded-2xl hover:bg-primary/10 transition-all font-bold text-[10px] uppercase tracking-widest shadow-soft active:scale-95"
+                   >
+                     <ShoppingBag className="w-4 h-4" />
+                     Save Plan
+                   </button>
+                </div>
+              </div>
 
                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                  {mealPlan.meals.map((meal, idx) => (
-                   <div key={idx} className="bg-white rounded-[2.5rem] border border-gray-50/50 overflow-hidden shadow-soft hover:shadow-xl transition-all group">
+                   <div key={idx} className="bg-white rounded-[2.5rem] border border-border/40 overflow-hidden shadow-soft hover:shadow-xl transition-all group">
                      <div className="p-8 border-b border-gray-50 bg-gray-50/50 flex justify-between items-center">
                        <div>
                          <div className="flex items-center gap-3 mb-2">
@@ -754,23 +740,23 @@ export default function MealPlannerPage() {
                </div>
              </div>
           ) : rawResponse ? (
-            <div className="bg-white rounded-[2.5rem] border border-gray-50 p-10 prose prose-slate max-w-none shadow-soft whitespace-pre-wrap font-medium text-black/80 leading-relaxed">
+            <div className="bg-white rounded-[3rem] border border-border/40 p-10 prose prose-slate max-w-none shadow-soft whitespace-pre-wrap font-bold text-foreground/80 leading-relaxed">
               {rawResponse}
             </div>
           ) : (
-            <div className="bg-white rounded-[2.5rem] border-2 border-dashed border-gray-100 p-20 flex flex-col items-center justify-center text-center space-y-8">
-              <div className="p-8 bg-gray-50 rounded-full shadow-inner">
-                <Utensils className="w-20 h-20 text-gray-200" />
+            <div className="bg-white rounded-[4rem] border border-dashed border-primary/30 p-20 flex flex-col items-center justify-center text-center space-y-10 shadow-soft animate-in fade-in duration-700">
+              <div className="w-32 h-32 bg-primary/10 rounded-[2.5rem] flex items-center justify-center shadow-inner border border-primary/20">
+                <Utensils className="w-16 h-16 text-secondary/40" />
               </div>
               <div>
-                <h2 className="text-3xl font-bold text-black tracking-tight mb-4">No Active Meal Plan</h2>
-                <p className="text-muted-foreground font-medium max-w-md mx-auto">
+                <h2 className="text-4xl font-bold text-foreground tracking-tight mb-4">No Active Meal Plan</h2>
+                <p className="text-muted-foreground font-medium max-w-md mx-auto text-lg leading-relaxed">
                   Get a personalized, price-smart meal plan optimized for your metabolism and local bazaar prices.
                 </p>
               </div>
               <button
                 onClick={() => setShowConfig(true)}
-                className="px-12 py-5 bg-black text-white rounded-full font-bold text-xs uppercase tracking-widest hover:bg-primary hover:text-black transition-all shadow-2xl active:scale-95 flex items-center gap-3"
+                className="px-12 py-5 bg-secondary text-white rounded-2xl font-bold text-[10px] uppercase tracking-widest hover:bg-secondary/90 transition-all shadow-lg shadow-secondary/20 active:scale-95 flex items-center gap-4"
               >
                 <Sparkles className="w-5 h-5" />
                 Get Started Now
@@ -785,41 +771,44 @@ export default function MealPlannerPage() {
 
       {/* Configuration Modal */}
       {showConfig && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-card w-full max-w-md rounded-[2.5rem] border border-gray-100 p-10 shadow-2xl animate-in zoom-in-95 duration-200 bg-white">
-            <div className="flex items-center gap-4 mb-8">
-              <div className="p-3 bg-primary/10 rounded-2xl">
-                <Sparkles className="w-6 h-6 text-primary" />
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-foreground/30 backdrop-blur-md animate-in fade-in duration-300">
+          <div className="bg-white w-full max-w-md rounded-[3rem] border border-primary/20 p-10 shadow-2xl animate-in zoom-in-95 duration-500">
+            <div className="flex items-center gap-5 mb-10">
+              <div className="w-14 h-14 bg-primary/20 rounded-[1.25rem] flex items-center justify-center shadow-inner border border-primary/20">
+                <Sparkles className="w-7 h-7 text-secondary" />
               </div>
-              <h2 className="text-3xl font-bold text-black tracking-tight">Plan Setup</h2>
+              <div>
+                <h2 className="text-3xl font-bold text-foreground tracking-tight">Plan Setup</h2>
+                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest opacity-60">Personalize your AI generation</p>
+              </div>
             </div>
 
             <div className="space-y-8">
-              <div>
-                <label className="block text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground mb-3 flex items-center gap-2">
+              <div className="space-y-3">
+                <label className="block text-[10px] font-bold uppercase tracking-widest text-secondary ml-2 flex items-center gap-2">
                   <DollarSign className="w-3.5 h-3.5" />
                   Total Budget (BDT)
                 </label>
                 <div className="relative">
-                  <span className="absolute left-6 top-1/2 -translate-y-1/2 font-bold text-black text-lg">৳</span>
+                  <span className="absolute left-6 top-1/2 -translate-y-1/2 font-bold text-secondary text-lg">৳</span>
                   <input
                     type="number"
                     value={config.budget}
                     onChange={(e) => setConfig({ ...config, budget: parseInt(e.target.value) })}
-                    className="w-full pl-12 pr-6 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-primary outline-none transition-all font-bold text-lg text-black"
+                    className="w-full pl-12 pr-6 py-5 bg-gray-50 border border-border/40 rounded-2xl focus:ring-4 focus:ring-primary/20 focus:bg-white focus:border-transparent outline-none transition-all font-bold text-xl text-foreground"
                   />
                 </div>
               </div>
 
-              <div>
-                <label className="block text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground mb-3 flex items-center gap-2">
+              <div className="space-y-3">
+                <label className="block text-[10px] font-bold uppercase tracking-widest text-secondary ml-2 flex items-center gap-2">
                   <Calendar className="w-3.5 h-3.5" />
                   Time Period
                 </label>
                 <select
                   value={config.timePeriod}
                   onChange={(e) => setConfig({ ...config, timePeriod: e.target.value })}
-                  className="w-full px-6 py-4 bg-gray-50 border-none rounded-2xl outline-none font-bold text-black focus:ring-2 focus:ring-primary appearance-none cursor-pointer"
+                  className="w-full px-6 py-5 bg-gray-50 border border-border/40 rounded-2xl outline-none font-bold text-foreground focus:ring-4 focus:ring-primary/20 focus:bg-white focus:border-transparent appearance-none cursor-pointer transition-all"
                 >
                   <optgroup label="Single Meals">
                     <option value="breakfast">Breakfast Only</option>
@@ -833,8 +822,8 @@ export default function MealPlannerPage() {
                 </select>
               </div>
 
-              <div>
-                <label className="block text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground mb-3 flex items-center gap-2">
+              <div className="space-y-3">
+                <label className="block text-[10px] font-bold uppercase tracking-widest text-secondary ml-2 flex items-center gap-2">
                   <MessageSquare className="w-3.5 h-3.5" />
                   Notes / Focus
                 </label>
@@ -842,21 +831,22 @@ export default function MealPlannerPage() {
                   value={config.notes}
                   onChange={(e) => setConfig({ ...config, notes: e.target.value })}
                   placeholder="e.g. High protein, low carb, or avoiding nuts..."
-                  className="w-full px-6 py-4 bg-gray-50 border-none rounded-2xl outline-none focus:ring-2 focus:ring-primary h-32 resize-none text-sm font-medium text-black"
+                  className="w-full px-6 py-5 bg-gray-50 border border-border/40 rounded-2xl outline-none focus:ring-4 focus:ring-primary/20 focus:bg-white focus:border-transparent h-32 resize-none text-sm font-bold text-foreground transition-all placeholder:text-gray-300"
                 />
               </div>
 
-              <div className="flex gap-4 pt-4">
+              <div className="flex gap-4 pt-6">
                 <button
                   onClick={() => setShowConfig(false)}
-                  className="flex-1 py-4 bg-gray-100 text-black font-bold uppercase tracking-widest text-[10px] rounded-full hover:bg-gray-200 transition-all"
+                  className="flex-1 py-5 bg-white text-muted-foreground border border-border/40 font-bold uppercase tracking-widest text-[10px] rounded-2xl hover:bg-gray-50 hover:text-foreground transition-all"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={generatePlan}
-                  className="flex-1 py-4 bg-black text-white font-bold uppercase tracking-widest text-[10px] rounded-full hover:bg-primary hover:text-black shadow-xl transition-all active:scale-95"
+                  className="flex-1 py-5 bg-secondary text-white font-bold uppercase tracking-widest text-[10px] rounded-2xl hover:bg-secondary/90 shadow-lg shadow-secondary/20 transition-all active:scale-95 flex items-center justify-center gap-2"
                 >
+                  <Sparkles className="w-4 h-4" />
                   Generate
                 </button>
               </div>
@@ -867,154 +857,162 @@ export default function MealPlannerPage() {
 
       {/* Meal Detail Modal */}
       {activeMeal && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/80 backdrop-blur-xl">
-          <div className="bg-white w-full max-w-3xl max-h-[90vh] rounded-[3rem] overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-300 flex flex-col border border-white/20">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-foreground/30 backdrop-blur-md animate-in fade-in duration-300">
+          <div className="bg-white w-full max-w-3xl max-h-[90vh] rounded-[3rem] overflow-hidden shadow-2xl animate-in zoom-in-95 duration-500 flex flex-col border border-primary/20">
             {/* Modal Header */}
-            <div className="p-10 pb-6 flex justify-between items-start">
+            <div className="p-10 pb-6 flex justify-between items-start bg-background/30 border-b border-border/20">
               <div>
-                <div className="flex items-center gap-3 mb-2">
-                  <span className="text-[10px] font-bold text-black uppercase tracking-[0.2em] bg-primary/10 px-3 py-1 rounded-full border border-primary/20">
+                <div className="flex items-center gap-3 mb-3">
+                  <span className="text-[10px] font-bold text-secondary uppercase tracking-[0.2em] bg-white px-4 py-1.5 rounded-xl border border-primary/20 shadow-sm">
                     {activeMeal.type}
                   </span>
                 </div>
-                <h2 className="text-4xl font-bold text-black tracking-tight leading-tight">{activeMeal.name}</h2>
+                <h2 className="text-4xl font-bold text-foreground tracking-tight leading-tight">{activeMeal.name}</h2>
               </div>
               <button 
                 onClick={() => setActiveMeal(null)}
-                className="w-12 h-12 bg-gray-50 flex items-center justify-center text-muted-foreground hover:bg-black hover:text-white rounded-full transition-all active:scale-95"
+                className="w-12 h-12 bg-white flex items-center justify-center text-muted-foreground hover:text-secondary hover:bg-primary/20 rounded-2xl transition-all active:scale-90 shadow-soft border border-border/40"
               >
                 <X className="w-6 h-6" />
               </button>
             </div>
 
             {/* Tabs */}
-            <div className="flex bg-gray-50 p-1.5 mx-10 rounded-2xl mb-8">
+            <div className="flex bg-gray-50 p-1.5 mx-10 rounded-[1.5rem] mb-10 border border-border/40 shadow-inner">
               <button
                 onClick={() => setModalTab('nutrition')}
-                className={`flex-1 py-3 text-[10px] font-bold uppercase tracking-widest rounded-[1rem] transition-all flex items-center justify-center gap-2 ${
-                  modalTab === 'nutrition' ? 'bg-white text-black shadow-lg shadow-black/5' : 'text-muted-foreground hover:text-black'
+                className={`flex-1 py-4 text-[10px] font-bold uppercase tracking-widest rounded-2xl transition-all flex items-center justify-center gap-3 ${
+                  modalTab === 'nutrition' ? 'bg-white text-secondary shadow-lg border border-primary/20' : 'text-muted-foreground hover:text-secondary'
                 }`}
               >
                 <Brain className="w-4 h-4" /> Nutrition
               </button>
               <button
                 onClick={() => setModalTab('recipe')}
-                className={`flex-1 py-3 text-[10px] font-bold uppercase tracking-widest rounded-[1rem] transition-all flex items-center justify-center gap-2 ${
-                  modalTab === 'recipe' ? 'bg-white text-black shadow-lg shadow-black/5' : 'text-muted-foreground hover:text-black'
+                className={`flex-1 py-4 text-[10px] font-bold uppercase tracking-widest rounded-2xl transition-all flex items-center justify-center gap-3 ${
+                  modalTab === 'recipe' ? 'bg-white text-secondary shadow-lg border border-primary/20' : 'text-muted-foreground hover:text-secondary'
                 }`}
               >
                 <ChefHat className="w-4 h-4" /> Cooking Guide
               </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto px-10 pb-10">
+            <div className="flex-1 overflow-y-auto px-10 pb-12 scrollbar-hide">
               {modalTab === 'nutrition' ? (
-                <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <div className="space-y-12 animate-in fade-in slide-in-from-bottom-6 duration-500">
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
-                    <div className="p-6 bg-gray-50 rounded-[2rem] border border-gray-100 text-center">
-                      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] mb-2">Calories</p>
-                      <p className="text-2xl font-bold text-black">{activeMeal.nutrition.calories}</p>
+                    <div className="p-8 bg-orange-50/50 rounded-[2.5rem] border border-orange-100/50 text-center shadow-soft">
+                      <p className="text-[9px] font-bold text-orange-800 uppercase tracking-widest mb-3 opacity-60">Calories</p>
+                      <p className="text-3xl font-bold text-foreground">{activeMeal.nutrition.calories}</p>
                     </div>
-                    <div className="p-6 bg-gray-50 rounded-[2rem] border border-gray-100 text-center">
-                      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] mb-2">Protein</p>
-                      <p className="text-2xl font-bold text-black">{activeMeal.nutrition.protein}</p>
+                    <div className="p-8 bg-primary/10 rounded-[2.5rem] border border-primary/20 text-center shadow-soft">
+                      <p className="text-[9px] font-bold text-secondary uppercase tracking-widest mb-3 opacity-60">Protein</p>
+                      <p className="text-3xl font-bold text-foreground">{activeMeal.nutrition.protein}g</p>
                     </div>
-                    <div className="p-6 bg-gray-50 rounded-[2rem] border border-gray-100 text-center">
-                      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] mb-2">Carbs</p>
-                      <p className="text-2xl font-bold text-black">{activeMeal.nutrition.carbs}</p>
+                    <div className="p-8 bg-amber-50/50 rounded-[2.5rem] border border-amber-100/50 text-center shadow-soft">
+                      <p className="text-[9px] font-bold text-amber-800 uppercase tracking-widest mb-3 opacity-60">Carbs</p>
+                      <p className="text-3xl font-bold text-foreground">{activeMeal.nutrition.carbs}g</p>
                     </div>
-                    <div className="p-6 bg-gray-50 rounded-[2rem] border border-gray-100 text-center">
-                      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] mb-2">Fat</p>
-                      <p className="text-2xl font-bold text-black">{activeMeal.nutrition.fat}</p>
+                    <div className="p-8 bg-yellow-50/50 rounded-[2.5rem] border border-yellow-100/50 text-center shadow-soft">
+                      <p className="text-[9px] font-bold text-yellow-800 uppercase tracking-widest mb-3 opacity-60">Fat</p>
+                      <p className="text-3xl font-bold text-foreground">{activeMeal.nutrition.fat}g</p>
                     </div>
                   </div>
 
-                  <div className="space-y-6">
-                    <h3 className="text-xl font-bold flex items-center gap-3">
-                       <ShoppingBag className="w-6 h-6 text-primary" />
+                  <div className="space-y-8">
+                    <h3 className="text-2xl font-bold text-foreground flex items-center gap-4 tracking-tight">
+                       <div className="w-10 h-10 bg-primary/20 rounded-xl flex items-center justify-center border border-primary/20">
+                         <ShoppingBag className="w-5 h-5 text-secondary" />
+                       </div>
                        Included Ingredients
                     </h3>
                     <div className="flex flex-wrap gap-3">
                       {activeMeal?.items && activeMeal.items.length > 0 ? (
                         activeMeal.items.map((item, i) => (
-                          <span key={i} className="px-6 py-2.5 bg-white rounded-full border border-gray-100 shadow-sm text-sm font-bold tracking-tight hover:border-black transition-colors">
+                          <span key={i} className="px-8 py-4 bg-white rounded-2xl border border-border/40 shadow-soft text-sm font-bold tracking-tight hover:border-secondary transition-all cursor-default">
                             {item}
                           </span>
                         ))
                       ) : (
-                        <p className="text-sm text-muted-foreground font-medium italic bg-gray-50 p-6 rounded-2xl border border-gray-100 w-full text-center">Standard healthy ingredients suitable for {activeMeal?.type}</p>
+                        <p className="text-sm text-muted-foreground font-medium italic bg-background/30 p-8 rounded-[2rem] border border-border/40 w-full text-center">Standard healthy ingredients suitable for {activeMeal?.type}</p>
                       )}
                     </div>
                   </div>
                 </div>
               ) : (
-                <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <div className="animate-in fade-in slide-in-from-bottom-6 duration-500">
                   {selectedRecipe ? (
                     <div className="space-y-12">
-                      <div className="bg-primary/5 p-8 rounded-[2rem] border border-primary/20">
-                        <p className="text-xl font-medium text-black leading-relaxed italic">
+                      <div className="bg-primary/10 p-10 rounded-[3rem] border border-primary/20 shadow-inner">
+                        <p className="text-2xl font-medium text-foreground leading-relaxed italic opacity-80 font-operetta">
                           "{selectedRecipe.description}"
                         </p>
                       </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-                        <div className="space-y-6">
-                          <h3 className="text-xl font-bold flex items-center gap-3">
-                            <ShoppingBag className="w-6 h-6 text-primary" />
-                            Ingredients
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+                        <div className="space-y-8">
+                          <h3 className="text-2xl font-bold text-foreground flex items-center gap-4 tracking-tight">
+                            <div className="w-10 h-10 bg-primary/20 rounded-xl flex items-center justify-center border border-primary/20">
+                              <ShoppingBag className="w-5 h-5 text-secondary" />
+                            </div>
+                            Detailed Ingredients
                           </h3>
-                          <div className="space-y-3">
+                          <div className="space-y-4">
                             {selectedRecipe.ingredients.map((ing: any, i: number) => (
-                              <div key={i} className="flex justify-between items-center p-4 bg-gray-50 rounded-2xl border border-gray-100 group hover:bg-white hover:shadow-xl transition-all">
-                                <span className="font-bold text-black">{ing.item}</span>
-                                <span className="text-xs font-bold uppercase tracking-widest text-primary bg-primary/10 px-3 py-1 rounded-full">{ing.amount}</span>
+                              <div key={i} className="flex justify-between items-center p-5 bg-background rounded-2xl border border-border/40 group hover:bg-white hover:shadow-xl hover:border-primary/20 transition-all duration-300">
+                                <span className="font-bold text-foreground">{ing.item}</span>
+                                <span className="text-[10px] font-bold uppercase tracking-widest text-secondary bg-primary/20 px-4 py-1.5 rounded-xl border border-primary/20">{ing.amount}</span>
                               </div>
                             ))}
                           </div>
                         </div>
 
-                        <div className="space-y-6">
-                          <h3 className="text-xl font-bold flex items-center gap-3">
-                            <ListChecks className="w-6 h-6 text-primary" />
-                            Step-by-Step
+                        <div className="space-y-8">
+                          <h3 className="text-2xl font-bold text-foreground flex items-center gap-4 tracking-tight">
+                            <div className="w-10 h-10 bg-primary/20 rounded-xl flex items-center justify-center border border-primary/20">
+                              <ListChecks className="w-5 h-5 text-secondary" />
+                            </div>
+                            Step-by-Step Guide
                           </h3>
-                          <div className="space-y-6">
+                          <div className="space-y-8">
                             {selectedRecipe.instructions.map((step: string, i: number) => (
-                              <div key={i} className="flex gap-6 group">
-                                <span className="flex-shrink-0 w-8 h-8 bg-black text-white text-[10px] font-bold rounded-full flex items-center justify-center group-hover:bg-primary group-hover:text-black transition-colors shadow-lg">
+                              <div key={i} className="flex gap-8 group">
+                                <span className="flex-shrink-0 w-10 h-10 bg-secondary text-white text-[10px] font-bold rounded-2xl flex items-center justify-center group-hover:bg-primary group-hover:text-secondary transition-all duration-500 shadow-lg shadow-secondary/10">
                                   {i + 1}
                                 </span>
-                                <p className="text-sm leading-relaxed text-muted-foreground font-medium group-hover:text-black transition-colors">{step}</p>
+                                <p className="text-base leading-relaxed text-muted-foreground font-medium group-hover:text-foreground transition-colors duration-300">{step}</p>
                               </div>
                             ))}
                           </div>
                         </div>
                       </div>
 
-                      <div className="bg-black text-white p-8 rounded-[2.5rem] shadow-2xl relative overflow-hidden">
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-primary/20 rounded-full -mr-16 -mt-16 blur-3xl"></div>
-                        <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary mb-3">Chef's Secret Tips</h4>
-                        <p className="text-sm font-medium leading-relaxed text-gray-300">{selectedRecipe.chefTips}</p>
+                      <div className="bg-secondary text-white p-10 rounded-[3.5rem] shadow-2xl relative overflow-hidden group">
+                        <div className="absolute top-0 right-0 w-64 h-64 bg-primary/30 rounded-full -mr-32 -mt-32 blur-3xl opacity-50 group-hover:opacity-100 transition-opacity duration-1000"></div>
+                        <div className="relative z-10">
+                           <h4 className="text-[10px] font-bold uppercase tracking-[0.3em] text-primary mb-4 opacity-80">Chef's Secret Intelligence</h4>
+                           <p className="text-lg font-medium leading-relaxed italic text-white/90">{selectedRecipe.chefTips}</p>
+                        </div>
                       </div>
                     </div>
                   ) : (
-                    <div className="flex flex-col items-center justify-center py-20 text-center space-y-8">
-                      <div className="p-10 bg-gray-50 rounded-full shadow-inner relative group">
-                        <div className="absolute inset-0 bg-primary/20 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                        <Utensils className="w-20 h-20 text-gray-200 relative z-10" />
+                    <div className="flex flex-col items-center justify-center py-20 text-center space-y-12">
+                      <div className="w-32 h-32 bg-background rounded-[2.5rem] shadow-inner relative group border border-border/40 flex items-center justify-center overflow-hidden">
+                        <div className="absolute inset-0 bg-primary/20 blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
+                        <Utensils className="w-16 h-16 text-secondary/30 relative z-10 group-hover:scale-110 transition-transform duration-500" />
                       </div>
-                      <div>
-                        <h3 className="text-3xl font-bold text-black tracking-tight mb-3">Ready to Cook?</h3>
-                        <p className="text-muted-foreground font-medium max-w-xs mx-auto">
+                      <div className="max-w-xs">
+                        <h3 className="text-3xl font-bold text-foreground tracking-tight mb-4">Ready to Cook?</h3>
+                        <p className="text-muted-foreground font-medium leading-relaxed">
                           NutriAI will generate a custom culinary guide tailored to your selected items.
                         </p>
                       </div>
                       <button
                         onClick={() => activeMeal && fetchRecipe(activeMeal.name, activeMeal.items)}
                         disabled={isRecipeLoading}
-                        className="px-12 py-5 bg-black text-white font-bold rounded-full hover:bg-primary hover:text-black transition-all shadow-xl flex items-center gap-3 active:scale-95 uppercase tracking-widest text-xs"
+                        className="px-12 py-5 bg-secondary text-white font-bold rounded-2xl hover:bg-secondary/90 transition-all shadow-lg shadow-secondary/20 flex items-center gap-4 active:scale-95 uppercase tracking-widest text-[10px] group"
                       >
-                        {isRecipeLoading ? <Sparkles className="w-5 h-5 animate-spin" /> : <Sparkles className="w-5 h-5 shadow-sm" />}
+                        {isRecipeLoading ? <Sparkles className="w-5 h-5 animate-spin" /> : <Sparkles className="w-5 h-5 group-hover:rotate-12 transition-transform" />}
                         Generate Cooking Protocol
                       </button>
                     </div>
@@ -1028,12 +1026,12 @@ export default function MealPlannerPage() {
 
       {/* Persistent Loading Overlay */}
       {isRecipeLoading && !selectedRecipe && (
-        <div className="fixed inset-0 z-[70] flex flex-col items-center justify-center bg-black/60 backdrop-blur-md">
+        <div className="fixed inset-0 z-[70] flex flex-col items-center justify-center bg-foreground/60 backdrop-blur-md">
           <div className="relative">
-            <div className="w-24 h-24 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-            <ChefHat className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 text-primary animate-pulse" />
+            <div className="w-32 h-32 border-4 border-primary border-t-transparent rounded-[2.5rem] animate-spin" />
+            <ChefHat className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 text-primary animate-pulse" />
           </div>
-          <p className="mt-8 text-white font-bold tracking-[0.3em] uppercase text-xs animate-pulse">Consulting NutriAI Chef...</p>
+          <p className="mt-10 text-white font-bold tracking-[0.4em] uppercase text-[10px] animate-pulse">Consulting NutriAI Chef...</p>
         </div>
       )}
       </div>
