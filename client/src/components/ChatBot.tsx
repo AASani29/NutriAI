@@ -279,22 +279,22 @@ export const ChatBot: React.FC = () => {
     if (!isOpen) {
         return (
             <div
-                className={`fixed bottom-8 right-8 w-auto min-w-[260px] bg-white rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.1)] border ${mode === 'ask' ? 'border-primary/20' : 'border-emerald-200'} overflow-hidden z-50 flex justify-between items-center p-3 cursor-pointer hover:shadow-xl transition-all transform hover:-translate-y-1 group`}
+                className={`fixed bottom-8 right-8 w-auto min-w-[260px] bg-white rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.1)] border border-gray-100 overflow-hidden z-50 flex justify-between items-center p-3 cursor-pointer hover:shadow-xl transition-all transform hover:-translate-y-1 group`}
                 onClick={() => setIsOpen(true)}
             >
                 <div className="flex items-center gap-3">
                     <div className="relative">
                         <img src="/chatbot.png" alt="Bot" className="w-10 h-10 rounded-xl bg-primary/5 p-1.5 object-contain" />
-                        <div className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white ${mode === 'ask' ? 'bg-primary' : 'bg-emerald-500'}`}></div>
+                        <div className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white ${mode === 'ask' ? 'bg-primary' : 'bg-secondary'}`}></div>
                     </div>
                     <div>
-                        <h4 className="font-black text-slate-800 text-sm tracking-tight">NutriAI Copilot</h4>
-                        <p className={`text-[10px] font-black uppercase tracking-widest opacity-70 ${mode === 'ask' ? 'text-primary' : 'text-emerald-500'}`}>
-                            {mode === 'ask' ? 'Nutritionist Mode' : 'Agent Mode'}
+                        <h4 className="font-bold text-slate-800 text-sm tracking-tight">NutriAI Copilot</h4>
+                        <p className={`text-[10px] font-bold uppercase tracking-widest opacity-60 ${mode === 'ask' ? 'text-primary' : 'text-secondary'}`}>
+                            {mode === 'ask' ? 'Nutritionist' : 'Task Agent'}
                         </p>
                     </div>
                 </div>
-                <div className={`ml-6 mr-1 p-2 rounded-lg transition-colors ${mode === 'ask' ? 'bg-primary/10 text-primary' : 'bg-emerald-100 text-emerald-600'}`}>
+                <div className={`ml-6 mr-1 p-2 rounded-lg bg-gray-50 text-slate-400 group-hover:text-secondary transition-colors`}>
                     <Send className="w-4 h-4 rotate-45" />
                 </div>
             </div>
@@ -311,17 +311,17 @@ export const ChatBot: React.FC = () => {
                 }`}
         >
             {/* Header */}
-            <div className="bg-gradient-to-r from-slate-900 to-slate-800 p-4 border-b border-white/10 flex flex-col gap-3 shrink-0">
-                <div className="flex justify-between items-center text-white">
+            <div className="bg-white p-5 border-b border-gray-100 flex flex-col gap-4 shrink-0">
+                <div className="flex justify-between items-center">
                     <div className="flex items-center gap-3">
-                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${mode === 'ask' ? 'bg-primary' : 'bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.3)]'}`}>
-                            {mode === 'ask' ? <Brain className="w-5 h-5 text-white" /> : <Zap className="w-5 h-5 text-white" />}
+                        <div className={`w-11 h-11 rounded-2xl flex items-center justify-center transition-all ${mode === 'ask' ? 'bg-primary/10 text-secondary' : 'bg-secondary/10 text-secondary'}`}>
+                            {mode === 'ask' ? <Brain className="w-5 h-5" /> : <Zap className="w-5 h-5" />}
                         </div>
                         <div className="flex flex-col">
-                            <h2 className="font-bold text-sm tracking-tight">NutriAI Copilot</h2>
+                            <h2 className="font-bold text-base tracking-tight text-slate-900">NutriAI Copilot</h2>
                             <div className="flex items-center gap-1.5">
-                                <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${mode === 'ask' ? 'bg-primary' : 'bg-emerald-400'}`}></span>
-                                <p className="text-[10px] font-medium text-slate-300 uppercase tracking-wider">{mode === 'ask' ? 'Expert Nutritionist' : 'Task Agent'}</p>
+                                <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${mode === 'ask' ? 'bg-primary' : 'bg-secondary'}`}></span>
+                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{mode === 'ask' ? 'Expert Nutritionist' : 'Task Agent'}</p>
                             </div>
                         </div>
                     </div>
@@ -329,14 +329,14 @@ export const ChatBot: React.FC = () => {
                     <div className="flex items-center gap-2">
                         <button 
                             onClick={() => setIsExpanded(!isExpanded)} 
-                            className="hover:bg-white/10 p-2 rounded-xl transition-all text-slate-300 hover:text-white"
+                            className="hover:bg-gray-50 p-2 rounded-xl transition-all text-slate-400 hover:text-slate-900"
                             title={isExpanded ? "Collapse" : "Expand"}
                         >
                             {isExpanded ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
                         </button>
                         <button 
                             onClick={() => setIsOpen(false)} 
-                            className="hover:bg-red-500/20 p-2 rounded-xl transition-all text-slate-300 hover:text-white"
+                            className="hover:bg-red-50 p-2 rounded-xl transition-all text-slate-400 hover:text-red-500"
                         >
                             <X className="w-4 h-4" />
                         </button>
@@ -344,20 +344,20 @@ export const ChatBot: React.FC = () => {
                 </div>
 
                 {/* Mode Selector Toggle */}
-                <div className="flex bg-slate-100 p-1 rounded-xl gap-1">
+                <div className={`flex bg-gray-100 p-1 rounded-2xl gap-1 border border-gray-200 transition-all ${isExpanded ? 'max-w-md mx-auto w-full' : ''}`}>
                     <button
                         onClick={() => setMode('ask')}
-                        className={`flex-1 flex items-center justify-center gap-2 py-1.5 rounded-lg text-xs font-bold transition-all ${mode === 'ask' ? 'bg-white text-primary shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                        className={`flex-1 flex items-center justify-center gap-2 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all ${isExpanded ? 'py-3' : 'py-1.5'} ${mode === 'ask' ? 'bg-secondary text-white shadow-lg shadow-secondary/20' : 'text-slate-500 hover:text-slate-800'}`}
                     >
                         <Brain className="w-3.5 h-3.5" />
-                        Ask (RAG)
+                        Expert
                     </button>
                     <button
                         onClick={() => setMode('agent')}
-                        className={`flex-1 flex items-center justify-center gap-2 py-1.5 rounded-lg text-xs font-bold transition-all ${mode === 'agent' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                        className={`flex-1 flex items-center justify-center gap-2 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all ${isExpanded ? 'py-3' : 'py-1.5'} ${mode === 'agent' ? 'bg-secondary text-white shadow-lg shadow-secondary/20' : 'text-slate-500 hover:text-slate-800'}`}
                     >
                         <Zap className="w-3.5 h-3.5" />
-                        Agent (MCP)
+                        Agent
                     </button>
                 </div>
             </div>
@@ -369,8 +369,8 @@ export const ChatBot: React.FC = () => {
                         <div className="w-20 h-20 bg-primary/5 rounded-2xl flex items-center justify-center mx-auto mb-6">
                             <img src="/chatbot.png" alt="Logo" className="w-10 h-10 object-contain" />
                         </div>
-                        <h4 className="text-slate-900 font-bold text-lg mb-2 tracking-tight">How can I help you?</h4>
-                        <p className="text-xs text-slate-500 leading-relaxed">
+                        <h4 className="text-foreground font-bold text-lg mb-2 tracking-tight">How can I help you?</h4>
+                        <p className="text-xs text-muted-foreground leading-relaxed">
                             I can help with inventory, meal planning, and nutrition insights.
                         </p>
                     </div>
@@ -384,9 +384,9 @@ export const ChatBot: React.FC = () => {
                             className={`flex flex-col gap-2 ${msg.role === 'user' ? 'items-end' : 'items-start'}`}
                         >
                             <div
-                                className={`max-w-[85%] rounded-2xl px-5 py-3.5 text-base leading-relaxed shadow-sm prose prose-neutral max-w-none ${msg.role === 'user'
-                                    ? 'bg-primary text-white prose-invert'
-                                    : 'bg-white/80 backdrop-blur-md border border-slate-100 text-slate-800'
+                                className={`max-w-[85%] rounded-[1.25rem] px-5 py-4 text-[14px] leading-relaxed shadow-sm prose prose-neutral max-w-none ${msg.role === 'user'
+                                    ? 'bg-primary/10 border border-primary/20 text-secondary font-bold'
+                                    : 'bg-white border border-gray-100 text-slate-800 font-medium'
                                     }`}
                             >
                                 <ReactMarkdown>
@@ -397,23 +397,23 @@ export const ChatBot: React.FC = () => {
                     );
                 })}
                 {(isLoading || isProcessingMedia) && (
-                    <div className="flex gap-1.5 items-center bg-slate-50 w-fit px-4 py-3 rounded-2xl">
-                        <span className="w-1.5 h-1.5 bg-primary/40 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
-                        <span className="w-1.5 h-1.5 bg-primary/40 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
-                        <span className="w-1.5 h-1.5 bg-primary/40 rounded-full animate-bounce"></span>
+                    <div className="flex gap-1.5 items-center bg-gray-50 w-fit px-4 py-3 rounded-2xl">
+                        <span className="w-1.5 h-1.5 bg-secondary/40 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
+                        <span className="w-1.5 h-1.5 bg-secondary/40 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
+                        <span className="w-1.5 h-1.5 bg-secondary/40 rounded-full animate-bounce"></span>
                     </div>
                 )}
                 <div ref={messagesEndRef} />
             </div>
 
             {/* Input Area */}
-            <form onSubmit={handleSubmit} className="p-4 bg-white border-t border-gray-50 shrink-0">
-                <div className="flex items-center gap-2 bg-slate-50 p-1.5 rounded-xl border border-gray-100 focus-within:bg-white focus-within:ring-2 focus-within:ring-primary/10 transition-all">
+            <form onSubmit={handleSubmit} className="p-4 bg-white border-t border-gray-100 shrink-0">
+                <div className="flex items-center gap-2 bg-gray-50 p-1.5 rounded-2xl border border-gray-100 focus-within:bg-white focus-within:ring-4 focus-within:ring-primary/10 transition-all">
                     <button
                         type="button"
                         onClick={triggerImageUpload}
                         disabled={isLoading || isProcessingMedia || isRecording}
-                        className="p-2 text-slate-400 hover:text-primary transition-colors"
+                        className="p-2 text-muted-foreground hover:text-secondary transition-colors"
                     >
                         <ImageIcon className="w-5 h-5" />
                     </button>
@@ -423,7 +423,7 @@ export const ChatBot: React.FC = () => {
                         type="button"
                         onClick={isRecording ? stopRecording : startRecording}
                         disabled={isLoading || isProcessingMedia}
-                        className={`p-2 rounded-lg transition-all ${isRecording ? 'bg-red-500 text-white animate-pulse' : 'text-slate-400 hover:text-primary'}`}
+                        className={`p-2 rounded-xl transition-all ${isRecording ? 'bg-red-500 text-white animate-pulse' : 'text-muted-foreground hover:text-secondary'}`}
                     >
                         {isRecording ? <StopCircle className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
                     </button>
@@ -433,14 +433,14 @@ export const ChatBot: React.FC = () => {
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
                         placeholder="Type a message..."
-                        className="flex-1 bg-transparent border-none focus:ring-0 text-slate-800 text-sm py-1"
+                        className="flex-1 bg-transparent border-none focus:ring-0 text-foreground font-bold text-sm py-1 placeholder:text-gray-300"
                         disabled={isLoading || isProcessingMedia || isRecording}
                     />
 
                     <button
                         type="submit"
                         disabled={!input.trim() || isLoading || isProcessingMedia || isRecording}
-                        className="p-2 bg-primary text-white rounded-lg hover:bg-primary-dark disabled:opacity-30 transition-all"
+                        className="p-2 bg-secondary text-white rounded-xl hover:bg-secondary/90 disabled:opacity-30 transition-all shadow-lg active:scale-95"
                     >
                         <Send className="w-4 h-4" />
                     </button>
