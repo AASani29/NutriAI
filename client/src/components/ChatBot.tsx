@@ -68,42 +68,41 @@ export const ChatBot: React.FC = () => {
     };
 
     // Fetch chat history on mount
+    // Fetch chat history or refresh on mode change
     useEffect(() => {
         const fetchHistory = async () => {
             if (!user?.id || !getToken) return;
             
+            setIsLoading(true);
+            setMessages([]); // Clear previous mode's messages immediately
             try {
                 const token = await getToken();
-                const response = await fetch(`${API_URL}/chat/history?userId=${user.id}`, {
+                // Pass current mode to fetch specific history
+                const response = await fetch(`${API_URL}/chat/history?userId=${user.id}&mode=${mode}`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 
                 if (response.ok) {
                     const data = await response.json();
-                    if (data.history && Array.isArray(data.history)) {
-                        setMessages(data.history);
-                        if (data.sessionId) setSessionId(data.sessionId);
-                        /* 
-                           Note: We are NOT restoring the mode here to 'agent' automatically 
-                           if the user just opened the chat, as they might want to start fresh 
-                           or be in default 'ask' mode. But if we wanted to restore:
-                           // if (data.mode) setMode(data.mode);
-                           Decided to keep default 'ask' or let user switch, 
-                           but history is loaded. 
-                           Actually, for continuity, let's restore if it exists.
-                        */
-                        if (data.mode) setMode(data.mode);
-                    }
+                    
+                    // Always update messages - if empty array returned (new mode), it effectively clears
+                    setMessages(data.history || []);
+                    
+                    if (data.sessionId) setSessionId(data.sessionId);
+                    else setSessionId(null); // Clear session ID if none returned (new session)
                 }
             } catch (error) {
                 console.error("Failed to load chat history", error);
+                setMessages([]); // Fail safe
+            } finally {
+                setIsLoading(false);
             }
         };
 
         if (isOpen && user?.id) {
             fetchHistory();
         }
-    }, [isOpen, user?.id]);
+    }, [isOpen, user?.id, mode]); // Add mode dependency
 
     useEffect(() => {
         scrollToBottom();
