@@ -4,6 +4,7 @@ import { imageService } from '../modules/images/image-service';
 import { InventoryService } from '../modules/inventories/inventory-service';
 import prisma from '../config/database';
 import { usdaFoodService } from '../services/usda-food-service';
+import { aiAnalyticsService } from '../services/aiAnalyticsService';
 
 const inventoryService = new InventoryService();
 
@@ -68,17 +69,43 @@ export const imageWorker = new Worker(
           const enrichedItems = await Promise.all(result.extractedItems.map(async (item: any) => {
             try {
               console.log(`🔍 [Image Worker] Searching USDA for OCR item: ${item.name}`);
+
+              // Run USDA search efficiently in parallel with other enrichments if needed
               const usdaResults = await usdaFoodService.searchFood(item.name, 1);
+
+              let enrichedItem = { ...item };
+
               if (usdaResults.length > 0) {
                 console.log(`✨ [Image Worker] Found nutrients for ${item.name}`);
-                return {
-                  ...item,
+                enrichedItem = {
+                  ...enrichedItem,
                   nutrition: usdaResults[0].nutrients,
                   usdaName: usdaResults[0].description
                 };
               }
+
+              // Only estimate price if NOT already present (e.g. from Receipt OCR)
+              if (!enrichedItem.basePrice) {
+                try {
+                  console.log(`💰 [Image Worker] Estimating price for ${item.name}...`);
+                  // Defaulting to 1 unit/kg if not specified, or use the quantity found
+                  const qty = item.quantity || 1;
+                  const unit = item.unit || 'unit';
+
+                  const priceData = await aiAnalyticsService.estimatePrice(item.name, qty, unit);
+
+                  if (priceData && priceData.estimatedPrice) {
+                    console.log(`✅ [Image Worker] Price estimated: ${priceData.estimatedPrice} BDT`);
+                    enrichedItem.basePrice = priceData.estimatedPrice;
+                  }
+                } catch (priceErr) {
+                  console.warn(`⚠️ [Image Worker] Price estimation failed for ${item.name}:`, priceErr);
+                }
+              }
+
+              return enrichedItem;
             } catch (err) {
-              console.error(`⚠️ [Image Worker] Failed to fetch nutrients for ${item.name}:`, err);
+              console.error(`⚠️ [Image Worker] Failed to enrich item ${item.name}:`, err);
             }
             return item;
           }));
