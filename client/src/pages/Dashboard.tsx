@@ -356,7 +356,7 @@ export default function Dashboard() {
               <Package className="w-6 h-6 text-black" />
             </div>
 
-            <div>
+            <div className="">
               <p className="text-sm text-muted-foreground">Items Tracked</p>
               <div className="flex items-center gap-2">
                 <p className="text-2xl font-bold text-foreground">

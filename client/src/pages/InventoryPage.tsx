@@ -127,7 +127,7 @@ export default function InventoryPage() {
           <p className="text-muted-foreground font-medium mb-8">Unable to fetch sync records from the server.</p>
           <button
             onClick={() => refetch()}
-            className="w-full py-4 bg-primary text-white rounded-xl font-black text-xs uppercase tracking-widest hover:bg-primary-dark transition-all shadow-lg shadow-primary/20"
+            className="w-full py-4 bg-styled-card text-white rounded-xl font-black text-xs uppercase tracking-widest hover:bg-styled-card-dark transition-all shadow-lg shadow-primary/20"
           >
             Retry Connection
           </button>
@@ -172,7 +172,7 @@ export default function InventoryPage() {
           
 
           {/* Status Card */}
-          <div className="text-secondary rounded-[2.5rem] p-8 border border-slate-100 flex flex-col justify-between">
+          <div className="text-secondary rounded-[2.5rem] bg-styled-card p-8 border border-slate-100 flex flex-col justify-between">
             <div>
               <div className="flex justify-between items-center mb-10">
                 <h3 className="font-black text-sm text-slate-400 uppercase tracking-widest">Inventory Health</h3>
@@ -204,10 +204,10 @@ export default function InventoryPage() {
 
         {/* Filter Bar */}
         <div className="flex items-center gap-3 py-2 px-4">
-          <button className="px-6 py-2 rounded-xl bg-primary text-secondary font-black text-[10px] uppercase tracking-widest shadow-lg shadow-primary/20">All Pantries</button>
-          <button className="px-6 py-2 rounded-xl bg-white text-slate-400 hover:text-primary font-black text-[10px] uppercase tracking-widest transition-all">Active</button>
-          <button className="px-6 py-2 rounded-xl bg-white text-slate-400 hover:text-primary font-black text-[10px] uppercase tracking-widest transition-all">Archived</button>
-          <button className="ml-auto w-10 h-10 flex items-center justify-center rounded-xl text-secondary text-slate-400 hover:text-primary transition-all">
+          <button className="px-6 py-2 rounded-xl bg-styled-card text-secondary font-black text-[10px] uppercase tracking-widest shadow-lg shadow-primary/20">All Pantries</button>
+          <button className="px-6 py-2 rounded-xl bg-white text-slate-400 hover:text-secondary font-black text-[10px] uppercase tracking-widest transition-all">Active</button>
+          <button className="px-6 py-2 rounded-xl bg-white text-slate-400 hover:text-secondary font-black text-[10px] uppercase tracking-widest transition-all">Archived</button>
+          <button className="ml-auto w-10 h-10 flex items-center justify-center rounded-xl text-secondary text-slate-400 hover:text-secondary transition-all">
             <Settings2 className="w-5 h-5" />
           </button>
         </div>
@@ -222,17 +222,17 @@ export default function InventoryPage() {
             <div
               key={inventory.id}
               onClick={() => navigate(`/inventory/${inventory.id}`)}
-              className="group  shadow-xl bg-primary rounded-[2.5rem] p-8 border border-slate-100 hover:border-primary/40 hover:shadow-[0_20px_50px_rgba(172,156,6,0.08)] transition-all duration-500 cursor-pointer flex flex-col relative overflow-hidden"
+              className="group  shadow-xl bg-styled-card rounded-[2.5rem] p-8 border border-slate-100 hover:border-primary/40 hover:shadow-[0_20px_50px_rgba(172,156,6,0.08)] transition-all duration-500 cursor-pointer flex flex-col relative overflow-hidden"
             >
               {/* Background Accents */}
-              <div className="absolute top-0 right-0 w-32 h-32 text-secondary rounded-bl-[3rem] -z-10 group-hover:bg-primary/5 transition-colors"></div>
+              <div className="absolute top-0 right-0 w-32 h-32 text-secondary rounded-bl-[3rem] -z-10 group-hover:bg-styled-card/5 transition-colors"></div>
               
               <div className="flex justify-between items-start mb-8">
                 <div className="w-16 h-16 rounded-2xl text-secondary flex items-center justify-center text-primary group-hover:scale-110 transition-transform duration-500 shadow-sm border border-slate-100/50">
                   {getInventoryIcon(inventory.name)}
                 </div>
                 <div className="text-right">
-                  <div className="text-[10px] font-black text-slate-300 uppercase tracking-widest mb-1">Status</div>
+                  <div className="text-[10px] font-black text-secondary uppercase tracking-widest mb-1">Status</div>
                   <div className="flex items-center gap-2 justify-end">
                     <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div>
                     <span className="text-[10px] font-black text-slate-900 uppercase tracking-widest">Active</span>
@@ -249,19 +249,19 @@ export default function InventoryPage() {
               </div>
 
               <div className="mb-8">
-                <h4 className="font-black text-2xl text-slate-900 tracking-tight group-hover:text-primary transition-colors mb-1">{inventory.name}</h4>
+                <h4 className="font-black text-2xl text-slate-900 tracking-tight group-hover:text-secondary transition-colors mb-1">{inventory.name}</h4>
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest opacity-60 line-clamp-1">{inventory.description || 'Global Storage Unit'}</p>
               </div>
 
               <div className="grid grid-cols-2 gap-4 mb-8">
-                <div className="text-secondary rounded-2xl p-4 border border-slate-100/50 group-hover:bg-white transition-colors">
+                <div className="text-secondary rounded-2xl p-4 border border-slate-100/50 bg-white">
                   <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Quantity</span>
                   <div className="flex items-baseline gap-1">
                     <span className="text-xl font-black text-slate-900">{inventory.itemCount || 0}</span>
                     <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Items</span>
                   </div>
                 </div>
-                <div className="text-secondary rounded-2xl p-4 border border-slate-100/50 group-hover:bg-white transition-colors">
+                <div className="text-secondary rounded-2xl p-4 border border-slate-100/50 bg-white">
                   <span className="text-[10px] font-black text-red-400 uppercase tracking-widest block mb-1">Alerts</span>
                   <div className="flex items-baseline gap-1">
                     <span className="text-xl font-black text-red-500">{inventory.expiringCount || 0}</span>
@@ -277,14 +277,14 @@ export default function InventoryPage() {
                 </div>
                 <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
                   <div 
-                    className="bg-primary h-full rounded-full transition-all duration-1000 group-hover:shadow-[0_0_10px_rgba(172,156,6,0.3)]" 
+                    className="bg-styled-card h-full rounded-full transition-all duration-1000 group-hover:shadow-[0_0_10px_rgba(172,156,6,0.3)]" 
                     style={{ width: (inventory.expiringCount || 0) > 0 ? '85%' : '100%' }}
                   ></div>
                 </div>
               </div>
 
               {/* Hover Access Bar */}
-              <div className="absolute bottom-0 left-0 w-full h-1.5 bg-primary transform translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+              <div className="absolute bottom-0 left-0 w-full h-1.5 bg-styled-card transform translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
             </div>
           ))}
         </div>
@@ -336,7 +336,7 @@ export default function InventoryPage() {
                     {selectedUsers.map(user => (
                       <div
                         key={user.id}
-                        className="flex items-center gap-2 bg-primary/10 text-slate-800 px-3 py-2 rounded-lg text-sm font-medium"
+                        className="flex items-center gap-2 bg-styled-card/10 text-slate-800 px-3 py-2 rounded-lg text-sm font-medium"
                       >
                         {user.imageUrl ? (
                           <img
@@ -410,16 +410,6 @@ export default function InventoryPage() {
                   )}
                 </div>
                 <p className="text-xs text-slate-400 mt-2">Search and select users to share this pantry with them.</p>
-              </div>
-
-              <div>
-                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Additional Emails (Optional)</label>
-                <input
-                  name="shareWith"
-                  placeholder="e.g. alex@example.com, jamie@example.com"
-                  className="w-full px-5 py-4 border border-slate-100 rounded-xl text-secondary text-slate-800 font-black focus:ring-4 focus:ring-primary/10 transition-all outline-none"
-                />
-                <p className="text-xs text-slate-400 mt-2">Comma-separate additional emails if needed.</p>
               </div>
             </div>
 

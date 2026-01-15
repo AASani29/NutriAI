@@ -4,9 +4,9 @@ export default {
     theme: {
       extend: {
         colors: {
-          primary: '#f8fafa',
+          primary: '#e6f4fb',
           secondary: '#1b5f79',
-          background: '#EAF6FA',
+          background: '#eff3f6',
         },
         fontFamily: {
         operetta: ['"operetta"', 'sans-serif'], // fallback is important

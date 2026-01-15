@@ -451,14 +451,14 @@ export default function DailyLogPage() {
                           type="date"
                           value={dateRange.startDate.toISOString().split('T')[0]}
                           onChange={handleStartDateChange}
-                          className="bg-transparent text-xs font-bold focus:outline-none w-full cursor-pointer hover:text-primary transition-colors"
+                          className="bg-transparent text-xs font-bold focus:outline-none w-full cursor-pointer hover:text-secondary transition-colors"
                         />
                         <span className="text-muted-foreground font-black opacity-30">—</span>
                         <input
                           type="date"
                           value={dateRange.endDate.toISOString().split('T')[0]}
                           onChange={handleEndDateChange}
-                          className="bg-transparent text-xs font-bold focus:outline-none w-full cursor-pointer hover:text-primary transition-colors text-right"
+                          className="bg-transparent text-xs font-bold focus:outline-none w-full cursor-pointer hover:text-secondary transition-colors text-right"
                         />
                       </div>
                     </div>
@@ -527,7 +527,7 @@ export default function DailyLogPage() {
                       </div>
                       <button
                         onClick={clearFilters}
-                        className="text-[10px] font-black uppercase tracking-[0.2em] text-black hover:text-primary transition-colors underline underline-offset-4"
+                        className="text-[10px] font-black uppercase tracking-[0.2em] text-black hover:text-secondary transition-colors underline underline-offset-4"
                       >
                         Clear All
                       </button>
@@ -548,7 +548,7 @@ export default function DailyLogPage() {
                     <p className="text-red-700 font-black uppercase tracking-widest text-xs">Failed to load meals</p>
                     <button
                       onClick={() => window.location.reload()}
-                      className="mt-4 text-black font-black hover:text-primary underline underline-offset-8 transition-all"
+                      className="mt-4 text-black font-black hover:text-secondary underline underline-offset-8 transition-all"
                     >
                       Retry Connection
                     </button>
@@ -557,7 +557,7 @@ export default function DailyLogPage() {
                   <div className="text-center py-16 bg-gray-50/50 rounded-[2rem] border-2 border-dashed border-gray-100">
                     <Utensils className="w-16 h-16 text-gray-200 mx-auto mb-4" />
                     <p className="text-muted-foreground font-black uppercase tracking-widest text-xs">No meals logged for this period</p>
-                    <button className="mt-4 text-black font-black hover:text-primary underline underline-offset-8 transition-all">Log your first meal</button>
+                    <button className="mt-4 text-black font-black hover:text-secondary underline underline-offset-8 transition-all">Log your first meal</button>
                   </div>
                 ) : (
                   Object.entries(logsByDate)
@@ -580,7 +580,7 @@ export default function DailyLogPage() {
                               <div className="flex-1 min-w-0">
                                 <div className="flex justify-between items-start mb-2">
                                   <div>
-                                    <h4 className="font-black text-lg text-black leading-none mb-1 group-hover:text-primary transition-colors">{log.itemName}</h4>
+                                    <h4 className="font-black text-lg text-black leading-none mb-1 group-hover:text-secondary transition-colors">{log.itemName}</h4>
                                     <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest flex items-center gap-2">
                                       <Clock className="w-3 h-3 text-primary" />
                                       {formatTime(log.consumedAt)} • {log.foodItem?.category || 'Uncategorized'}
@@ -646,7 +646,7 @@ export default function DailyLogPage() {
 
                 {/* Add Snack Card */}
                 <div className="flex items-center p-6 rounded-[2rem] bg-gray-50 border-2 border-dashed border-gray-100 group cursor-pointer hover:border-black transition-all mt-8">
-                  <div className="w-16 h-16 rounded-2xl flex items-center justify-center bg-white text-gray-300 group-hover:scale-110 group-hover:bg-black group-hover:text-primary transition-all shadow-sm">
+                  <div className="w-16 h-16 rounded-2xl flex items-center justify-center bg-white text-gray-300 group-hover:scale-110 group-hover:bg-primary group-hover:text-secondary transition-all shadow-sm">
                     <Utensils className="w-8 h-8" />
                   </div>
                   <div className="flex-1 flex items-center justify-between ml-6">
