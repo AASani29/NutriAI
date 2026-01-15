@@ -39,17 +39,52 @@ export class UserAnalyticsService {
             throw new Error('User not found');
         }
 
-        // Calculate waste reduction percentage
-        const wasteReductionPercentage = await this.calculateWasteReduction(userId);
+        // 1. Get user's inventories ONCE
+        const userInventories = await prisma.inventory.findMany({
+            where: {
+                OR: [
+                    { createdById: userId },
+                    { members: { some: { userId } } },
+                ],
+                isDeleted: false
+            },
+            select: { id: true },
+        });
 
-        // Calculate spending patterns
-        const { averageDailySpending, averageWeeklySpending } = await this.calculateSpendingPatterns(userId);
+        const inventoryIds = userInventories.map(inv => inv.id);
 
-        // Get inventory composition
-        const { topCategories, itemCount } = await this.analyzeInventoryComposition(userId);
+        if (inventoryIds.length === 0) {
+            return {
+                wasteReductionPercentage: 100,
+                averageDailySpending: 0,
+                averageWeeklySpending: 0,
+                budgetRange: user.profile?.budgetRange || null,
+                dietaryPreference: user.profile?.dietaryPreference || null,
+                allergies: user.profile?.allergies || null,
+                healthConditions: user.profile?.healthConditions || null,
+                topFoodCategories: [],
+                inventoryItemCount: 0,
+                consumptionFrequency: 0,
+                spendingTier: 'moderate',
+                primaryConcerns: ['nutrition'],
+            };
+        }
 
-        // Calculate consumption frequency
-        const consumptionFrequency = await this.calculateConsumptionFrequency(userId);
+        // 2. Parallel calculations with shared inventoryIds
+        const [
+            wasteReductionPercentage,
+            spendingPatterns,
+            inventoryComposition,
+            consumptionFrequency
+        ] = await Promise.all([
+            this.calculateWasteReduction(inventoryIds),
+            this.calculateSpendingPatterns(inventoryIds),
+            this.analyzeInventoryComposition(inventoryIds),
+            this.calculateConsumptionFrequency(inventoryIds)
+        ]);
+
+        const { averageDailySpending, averageWeeklySpending } = spendingPatterns;
+        const { topCategories, itemCount } = inventoryComposition;
 
         // Determine spending tier
         const spendingTier = this.determineSpendingTier(
@@ -84,32 +119,16 @@ export class UserAnalyticsService {
      * Calculate waste reduction percentage based on consumption logs
      * Formula: (consumed items / (consumed + expired items)) * 100
      */
-    private async calculateWasteReduction(userId: string): Promise<number> {
+    private async calculateWasteReduction(inventoryIds: string[]): Promise<number> {
         const thirtyDaysAgo = new Date();
         thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-
-        // Get user's inventories
-        const userInventories = await prisma.inventory.findMany({
-            where: {
-                OR: [
-                    { createdById: userId },
-                    { members: { some: { userId } } },
-                ],
-            },
-            select: { id: true },
-        });
-
-        const inventoryIds = userInventories.map(inv => inv.id);
-
-        if (inventoryIds.length === 0) {
-            return 100; // Default to 100% if no data
-        }
 
         // Count consumed items
         const consumedCount = await prisma.consumptionLog.count({
             where: {
                 inventoryId: { in: inventoryIds },
                 consumedAt: { gte: thirtyDaysAgo },
+                isDeleted: false
             },
         });
 
@@ -125,6 +144,7 @@ export class UserAnalyticsService {
                 consumptionLogs: {
                     none: {},
                 },
+                isDeleted: false
             },
         });
 
@@ -139,29 +159,12 @@ export class UserAnalyticsService {
     /**
      * Calculate average daily and weekly spending from consumption logs
      */
-    private async calculateSpendingPatterns(userId: string): Promise<{
+    private async calculateSpendingPatterns(inventoryIds: string[]): Promise<{
         averageDailySpending: number;
         averageWeeklySpending: number;
     }> {
         const thirtyDaysAgo = new Date();
         thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-
-        // Get user's inventories
-        const userInventories = await prisma.inventory.findMany({
-            where: {
-                OR: [
-                    { createdById: userId },
-                    { members: { some: { userId } } },
-                ],
-            },
-            select: { id: true },
-        });
-
-        const inventoryIds = userInventories.map(inv => inv.id);
-
-        if (inventoryIds.length === 0) {
-            return { averageDailySpending: 0, averageWeeklySpending: 0 };
-        }
 
         // Sum total costs from consumption logs
         const consumptionLogs = await prisma.consumptionLog.findMany({
@@ -169,6 +172,7 @@ export class UserAnalyticsService {
                 inventoryId: { in: inventoryIds },
                 consumedAt: { gte: thirtyDaysAgo },
                 cost: { not: null },
+                isDeleted: false
             },
             select: {
                 cost: true,
@@ -188,27 +192,10 @@ export class UserAnalyticsService {
     /**
      * Analyze inventory composition to identify top food categories
      */
-    private async analyzeInventoryComposition(userId: string): Promise<{
+    private async analyzeInventoryComposition(inventoryIds: string[]): Promise<{
         topCategories: string[];
         itemCount: number;
     }> {
-        // Get user's inventories
-        const userInventories = await prisma.inventory.findMany({
-            where: {
-                OR: [
-                    { createdById: userId },
-                    { members: { some: { userId } } },
-                ],
-            },
-            select: { id: true },
-        });
-
-        const inventoryIds = userInventories.map(inv => inv.id);
-
-        if (inventoryIds.length === 0) {
-            return { topCategories: [], itemCount: 0 };
-        }
-
         // Get current inventory items with their food item categories
         const inventoryItems = await prisma.inventoryItem.findMany({
             where: {
@@ -248,31 +235,15 @@ export class UserAnalyticsService {
     /**
      * Calculate how many items user consumes per week on average
      */
-    private async calculateConsumptionFrequency(userId: string): Promise<number> {
+    private async calculateConsumptionFrequency(inventoryIds: string[]): Promise<number> {
         const thirtyDaysAgo = new Date();
         thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-
-        // Get user's inventories
-        const userInventories = await prisma.inventory.findMany({
-            where: {
-                OR: [
-                    { createdById: userId },
-                    { members: { some: { userId } } },
-                ],
-            },
-            select: { id: true },
-        });
-
-        const inventoryIds = userInventories.map(inv => inv.id);
-
-        if (inventoryIds.length === 0) {
-            return 0;
-        }
 
         const consumptionCount = await prisma.consumptionLog.count({
             where: {
                 inventoryId: { in: inventoryIds },
                 consumedAt: { gte: thirtyDaysAgo },
+                isDeleted: false
             },
         });
 

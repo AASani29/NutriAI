@@ -1,7 +1,8 @@
-
 import { Request, Response } from 'express';
 import Groq from 'groq-sdk';
 import { mcpClientService } from '../../services/mcp-client-service';
+import prisma from '../../config/database';
+import { healthAdvisorService } from '../health-advisor/health-advisor-service';
 
 const GROQ_API_KEY = process.env.GROQ_API_KEY;
 
@@ -14,8 +15,11 @@ const groq = new Groq({
 });
 
 export class ChatController {
+    /**
+     * Main chat handler supporting Copilot modes.
+     */
     async handleChat(req: Request, res: Response): Promise<void> {
-        const { message, history = [], userId } = req.body;
+        const { message, sessionId, mode = 'ask', userId } = req.body;
 
         if (!userId) {
             res.status(400).json({ error: 'userId is required' });
@@ -23,142 +27,204 @@ export class ChatController {
         }
 
         try {
-            // 1. Get Tools from MCP
-            const toolsList = await mcpClientService.listTools();
-            const tools = toolsList.tools.map((tool: any) => {
-                const parameters = { ...tool.inputSchema };
-                delete parameters.$schema;
-                return {
-                    type: "function" as const,
-                    function: {
-                        name: tool.name,
-                        description: tool.description,
-                        parameters: parameters,
+            // 1. Resolve or create Chat Session
+            let session;
+            if (sessionId) {
+                session = await prisma.chatSession.findUnique({
+                    where: { id: sessionId },
+                    include: { messages: { orderBy: { createdAt: 'asc' }, take: 10 } }
+                });
+            }
+
+            if (!session) {
+                const dbUser = await prisma.user.findUnique({ where: { clerkId: userId } });
+                if (!dbUser) {
+                    res.status(404).json({ error: 'User not found in database' });
+                    return;
+                }
+                session = await (prisma.chatSession as any).create({
+                    data: {
+                        userId: dbUser.id,
+                        mode: mode,
                     },
-                };
+                    include: { messages: true }
+                });
+            }
+
+            // 2. Save User Message
+            await prisma.chatMessage.create({
+                data: {
+                    sessionId: session.id,
+                    role: 'user',
+                    content: message
+                }
             });
 
-            // 2. Prepare Messages
-            const systemContext = `(System: The user's ID is "${userId}". You must use this ID for all tool calls that require 'userId'. 
-IMPORTANT: When adding items or logging consumption, if the user doesn't provide specific nutritional data (calories, protein, etc.), price, or category, you MUST estimate them and pass to tool parameters. 
-NOTE: All financial/price estimates MUST be in BDT (Bangladeshi Taka). Use exchange rate: 1 USD = 122 BDT.
-Do not ask the user for data unless necessary.
-CRITICAL: Use ONLY standard JSON tool calling. Do NOT use XML tags like <function> or any other format.)`;
+            let finalResponse = "";
 
-            const messages: any[] = [
-                { role: 'system', content: systemContext },
-                ...history.map((h: any) => ({
-                    role: h.role === 'model' ? 'assistant' : 'user', // Map 'model' to 'assistant' for Groq
-                    content: h.content,
-                })),
-                { role: 'user', content: message },
-            ];
+            // 3. Routing based on mode
+            if (mode === 'ask') {
+                console.log(`🧠 Ask Mode: Routing to HealthAdvisorService for user ${userId}`);
+                const adviceResult = await healthAdvisorService.getHealthAdvice(userId, message);
+                finalResponse = adviceResult.advice || "I couldn't generate advice at this moment.";
+            } else {
+                console.log(`🤖 Agent Mode: Using MCP Tool-Calling logic for user ${userId}`);
+                // Re-fetch messages if we want full history, but for now we use the ones loaded
+                finalResponse = await this.handleAgentMode(userId, message, (session as any).messages || []);
+            }
 
-            // 3. Initial Chat Completion
-            let completion = await groq.chat.completions.create({
+            // 4. Save Assistant Response
+            await prisma.chatMessage.create({
+                data: {
+                    sessionId: session.id,
+                    role: 'assistant',
+                    content: finalResponse
+                }
+            });
+
+            // 5. Final Response
+            res.json({ 
+                response: finalResponse,
+                sessionId: session.id
+            });
+
+        } catch (error: any) {
+            console.error('Chat processing error:', error);
+            res.status(500).json({
+                error: 'Failed to process chat message',
+                details: error.message
+            });
+        }
+    }
+
+    /**
+     * Handles the Agent mode which involves MCP tool-calling.
+     */
+    private async handleAgentMode(userId: string, message: string, history: any[]): Promise<string> {
+        // 1. Get Tools from MCP
+        const toolsList = await mcpClientService.listTools();
+        const tools = toolsList.tools.map((tool: any) => {
+            const parameters = { ...tool.inputSchema };
+            delete parameters.$schema;
+            return {
+                type: "function" as const,
+                function: {
+                    name: tool.name,
+                    description: tool.description,
+                    parameters: parameters,
+                },
+            };
+        });
+
+        const systemContext = `You are the NutriAI Task Agent. Your goal is to help the user manage their inventory and logs.
+        The user's ID is "${userId}". Use this ID for all tool calls. 
+        If nutritional data or prices are missing, estimate them (Prices in BDT). 
+        Always be helpful and concise.`;
+
+        const messages: any[] = [
+            { role: 'system', content: systemContext },
+            ...history.map((h: any) => ({
+                role: h.role === 'assistant' ? 'assistant' : 'user',
+                content: h.content,
+            })),
+            { role: 'user', content: message },
+        ];
+
+        // Initial Chat Completion
+        let completion = await groq.chat.completions.create({
+            messages: messages,
+            model: 'llama-3.3-70b-versatile',
+            tools: tools,
+            tool_choice: 'auto',
+        });
+
+        let responseMessage = completion.choices[0].message;
+
+        // Handle Tool Calls Loop
+        while (responseMessage.tool_calls) {
+            messages.push(responseMessage);
+
+            for (const toolCall of responseMessage.tool_calls) {
+                const functionName = toolCall.function.name;
+                const functionArgs = JSON.parse(toolCall.function.arguments);
+
+                console.log(`🤖 Agent triggered tool: ${functionName}`);
+                const toolResult = await mcpClientService.callTool(functionName, functionArgs);
+
+                let contentString = "";
+                if (toolResult.content && Array.isArray(toolResult.content)) {
+                    contentString = (toolResult.content as any).map((c: any) => c.text).join("\n");
+                } else {
+                    contentString = JSON.stringify(toolResult);
+                }
+
+                messages.push({
+                    tool_call_id: toolCall.id,
+                    role: "tool",
+                    name: functionName,
+                    content: contentString,
+                });
+            }
+
+            completion = await groq.chat.completions.create({
                 messages: messages,
                 model: 'llama-3.3-70b-versatile',
                 tools: tools,
                 tool_choice: 'auto',
             });
 
-            let responseMessage = completion.choices[0].message;
+            responseMessage = completion.choices[0].message;
+        }
 
-            // 4. Handle Tool Calls Loop
-            while (
-                responseMessage.tool_calls || 
-                (responseMessage.content && typeof responseMessage.content === 'string' && responseMessage.content.trim().startsWith('{') && responseMessage.content.includes('"function"'))
-            ) {
-                // Fallback: Check for JSON in content if no native tool calls
-                if (!responseMessage.tool_calls && responseMessage.content) {
-                    try {
-                        // Attempt to extract JSON if it's wrapped in markdown code blocks
-                        let contentToParse = responseMessage.content;
-                        if (contentToParse.includes('```json')) {
-                            contentToParse = contentToParse.split('```json')[1].split('```')[0].trim();
-                        } else if (contentToParse.includes('```')) {
-                            contentToParse = contentToParse.split('```')[1].split('```')[0].trim();
-                        }
+        return responseMessage.content || "I have completed the requested tasks.";
+    }
 
-                        const potentialJson = JSON.parse(contentToParse);
-                        if (potentialJson.function && potentialJson.parameters) {
-                             console.log('🕵️ Detected hallucinated JSON tool call in content, converting to native call...');
-                             responseMessage.tool_calls = [{
-                                 id: 'call_fallback_' + Date.now(),
-                                 type: 'function',
-                                 function: {
-                                     name: potentialJson.function,
-                                     arguments: JSON.stringify(potentialJson.parameters)
-                                 }
-                             }];
-                             responseMessage.content = null; // Clear content so it doesn't show to user
-                        }
-                    } catch (e) {
-                        // Not valid JSON or expected format, stop loop
-                        break;
-                    }
-                }
+    /**
+     * Retrieves the latest chat session history for a user.
+     */
+    async getHistory(req: Request, res: Response): Promise<void> {
+        const { userId } = req.query;
 
-                if (!responseMessage.tool_calls) break;
+        if (!userId || typeof userId !== 'string') {
+            res.status(400).json({ error: 'userId is required' });
+            return;
+        }
 
-                // Determine if we need to loop again (Groq might return multiple tool calls)
-                // Add the assistant's message with tool_calls to the conversation history
-                messages.push(responseMessage);
+        try {
+            const user = await prisma.user.findUnique({
+                where: { clerkId: userId }
+            });
 
-                for (const toolCall of responseMessage.tool_calls) {
-                    const functionName = toolCall.function.name;
-                    let functionArgs = JSON.parse(toolCall.function.arguments);
-
-                    // Hack: Groq sometimes wraps arguments in an array [ { ... } ]
-                    if (Array.isArray(functionArgs)) {
-                        console.warn('⚠️ Groq returned array arguments, un-wrapping...');
-                        functionArgs = functionArgs[0];
-                    }
-
-                    console.log(`🤖 Chatbot triggering tool: ${functionName}`, functionArgs);
-
-                    // Execute Tool via MCP
-                    const toolResult = await mcpClientService.callTool(functionName, functionArgs);
-
-                    // Parse result content if it is a stringified JSON (common in MCP, but we need string for Groq)
-                    let contentString = "";
-                    if (toolResult.content && Array.isArray(toolResult.content)) {
-                        contentString = (toolResult.content as any).map((c: any) => c.text).join("\n");
-                    } else {
-                        contentString = JSON.stringify(toolResult);
-                    }
-
-                    console.log(`✅ Tool executed result length:`, contentString.length);
-
-                    messages.push({
-                        tool_call_id: toolCall.id,
-                        role: "tool",
-                        name: functionName,
-                        content: contentString,
-                    });
-                }
-
-                // Get next completion from Groq with tool outputs
-                completion = await groq.chat.completions.create({
-                    messages: messages,
-                    model: 'llama-3.3-70b-versatile',
-                    tools: tools,
-                    tool_choice: 'auto', // Continue allowing tools
-                });
-
-                responseMessage = completion.choices[0].message;
+            if (!user) {
+                res.status(404).json({ error: 'User not found' });
+                return;
             }
 
-            // 5. Final Response
-            res.json({ response: responseMessage.content });
+            // Find the most recent session for this user
+            const session = await prisma.chatSession.findFirst({
+                where: { userId: user.id },
+                orderBy: { lastActivity: 'desc' },
+                include: { 
+                    messages: { 
+                        orderBy: { createdAt: 'asc' } 
+                    } 
+                }
+            });
+
+            if (!session) {
+                res.json({ history: [], sessionId: null, mode: 'ask' });
+                return;
+            }
+
+            res.json({ 
+                history: session.messages, 
+                sessionId: session.id,
+                mode: (session as any).mode || 'ask'
+            });
 
         } catch (error: any) {
-            console.error('Chat processing error:', error);
-            res.status(500).json({
-                error: 'Failed to process chat message',
-                details: error.message,
-                stack: error.stack
-            });
+            console.error('Failed to fetch chat history:', error);
+            res.status(500).json({ error: 'Failed to fetch chat history' });
         }
     }
 }

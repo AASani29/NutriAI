@@ -1,10 +1,12 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [pgvector(map: "vector")]
 }
 
 model User {
@@ -35,6 +37,7 @@ model User {
   sdgScores           SdgScore[]
   sharingLogs         SharingLog[]         @relation("UserSharingLogs")
   profile             UserProfile?
+  healthMemories      UserHealthMemory[]
 }
 
 model HydrationLog {
@@ -305,6 +308,7 @@ model MealPlan {
 model ChatSession {
   id           String        @id @default(cuid())
   userId       String
+  mode         String        @default("ask") // "ask" or "agent"
   startedAt    DateTime      @default(now())
   lastActivity DateTime      @default(now())
   messages     ChatMessage[]
@@ -420,6 +424,31 @@ enum ListingStatus {
   CLAIMED
   COMPLETED
   CANCELLED
+}
+model HealthKnowledge {
+  id        String                      @id @default(uuid())
+  content   String
+  category  String                      // e.g., "Nutrition", "Diet", "Medical"
+  tags      String[]
+  metadata  Json?                       // Source info, author, etc.
+  embedding Unsupported("vector(768)")? // Gemini text-embedding-004 is 768 dimensions
+  createdAt DateTime                   @default(now())
+  updatedAt DateTime                   @updatedAt
+
+  @@map("health_knowledge")
+}
+
+model UserHealthMemory {
+  id        String                      @id @default(uuid())
+  userId    String
+  user      User                        @relation(fields: [userId], references: [id])
+  content   String                      // The specific health-related insight or pattern
+  source    String                      // "consumption", "profile", "activity"
+  embedding Unsupported("vector(768)")?
+  createdAt DateTime                   @default(now())
+  updatedAt DateTime                   @updatedAt
+
+  @@map("user_health_memory")
 }
 
 model Recipe {

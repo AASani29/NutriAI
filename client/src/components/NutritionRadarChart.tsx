@@ -160,7 +160,7 @@ export default function NutritionRadarChart({
                   borderRadius: "8px",
                   padding: "8px 12px",
                 }}
-                formatter={(value: number) => value.toFixed(1)}
+                formatter={(value: any) => (typeof value === 'number' ? value.toFixed(1) : value)}
               />
             </RadarChart>
           </ResponsiveContainer>
@@ -196,7 +196,7 @@ export default function NutritionRadarChart({
               >
                 <p className="text-xs text-gray-600 mb-1">{stat.label}</p>
                 <p className={`text-sm font-bold text-${stat.color}-700`}>
-                  {stat.actual.toFixed(1)}g / {stat.recommended}g
+                  {typeof stat.actual === 'number' ? stat.actual.toFixed(1) : 0}g / {stat.recommended || 0}g
                 </p>
                 <div className="mt-2 w-full bg-gray-200 rounded-full h-2">
                   <div
