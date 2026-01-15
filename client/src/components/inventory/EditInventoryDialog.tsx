@@ -14,6 +14,7 @@ interface EditInventoryDialogProps {
       role: string;
     }>;
     isArchived?: boolean;
+    accessRole?: 'owner' | 'member';
   };
   onClose: () => void;
   onUpdate: (updatedData: any) => Promise<void>;
@@ -241,59 +242,61 @@ export function EditInventoryDialog({
           </div>
         )}
 
-        {/* Archive Section */}
-        <div className="mb-8">
-          <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">
-            Archive Status
-          </label>
-          <div className="p-4 bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between">
-            <div>
-              <p className="font-black text-sm text-slate-900">
-                {inventory.isArchived ? 'Archived' : 'Active'}
-              </p>
-              <p className="text-xs text-slate-500 mt-1">
-                {inventory.isArchived
-                  ? 'This pantry is archived and hidden from your main view.'
-                  : 'This pantry is active and visible.'}
-              </p>
+        {/* Archive Section - Only show for owners */}
+        {inventory.accessRole === 'owner' && (
+          <div className="mb-8">
+            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">
+              Archive Status
+            </label>
+            <div className="p-4 bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between">
+              <div>
+                <p className="font-black text-sm text-slate-900">
+                  {inventory.isArchived ? 'Archived' : 'Active'}
+                </p>
+                <p className="text-xs text-slate-500 mt-1">
+                  {inventory.isArchived
+                    ? 'This pantry is archived and hidden from your main view.'
+                    : 'This pantry is active and visible.'}
+                </p>
+              </div>
+              {inventory.isArchived ? (
+                <button
+                  type="button"
+                  onClick={async () => {
+                    setError(null);
+                    try {
+                      await onUnarchive();
+                    } catch (err: any) {
+                      setError(err?.message || 'Failed to unarchive pantry');
+                    }
+                  }}
+                  disabled={isLoading}
+                  className="flex items-center gap-2 px-4 py-2 bg-slate-200 text-slate-700 hover:bg-slate-300 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg font-black text-xs uppercase tracking-widest transition-all"
+                >
+                  <ArchiveX className="w-4 h-4" />
+                  {isLoading ? 'Processing...' : 'Unarchive'}
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={async () => {
+                    setError(null);
+                    try {
+                      await onArchive();
+                    } catch (err: any) {
+                      setError(err?.message || 'Failed to archive pantry');
+                    }
+                  }}
+                  disabled={isLoading}
+                  className="flex items-center gap-2 px-4 py-2 bg-amber-100 text-amber-700 hover:bg-amber-200 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg font-black text-xs uppercase tracking-widest transition-all"
+                >
+                  <Archive className="w-4 h-4" />
+                  {isLoading ? 'Processing...' : 'Archive'}
+                </button>
+              )}
             </div>
-            {inventory.isArchived ? (
-              <button
-                type="button"
-                onClick={async () => {
-                  setError(null);
-                  try {
-                    await onUnarchive();
-                  } catch (err: any) {
-                    setError(err?.message || 'Failed to unarchive pantry');
-                  }
-                }}
-                disabled={isLoading}
-                className="flex items-center gap-2 px-4 py-2 bg-slate-200 text-slate-700 hover:bg-slate-300 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg font-black text-xs uppercase tracking-widest transition-all"
-              >
-                <ArchiveX className="w-4 h-4" />
-                {isLoading ? 'Processing...' : 'Unarchive'}
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={async () => {
-                  setError(null);
-                  try {
-                    await onArchive();
-                  } catch (err: any) {
-                    setError(err?.message || 'Failed to archive pantry');
-                  }
-                }}
-                disabled={isLoading}
-                className="flex items-center gap-2 px-4 py-2 bg-amber-100 text-amber-700 hover:bg-amber-200 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg font-black text-xs uppercase tracking-widest transition-all"
-              >
-                <Archive className="w-4 h-4" />
-                {isLoading ? 'Processing...' : 'Archive'}
-              </button>
-            )}
           </div>
-        </div>
+        )}
 
         {/* Action Buttons */}
         <div className="flex gap-4 mt-8">

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useInventory } from '../hooks/useInventory';
-import { AlertCircle, Plus, Search, Package, AlertTriangle, ArrowRight, CheckCircle2, MoreHorizontal, Settings2, Database, Warehouse, X, User, ChevronDown } from 'lucide-react';
+import { AlertCircle, Plus, Search, Package, AlertTriangle, ArrowRight, CheckCircle2, MoreHorizontal, Settings2, Database, Warehouse, X, User, ChevronDown, ArchiveX } from 'lucide-react';
 import { useAuth } from '@clerk/clerk-react';
 import { EditInventoryDialog } from '../components/inventory/EditInventoryDialog';
 
@@ -320,8 +320,12 @@ export default function InventoryPage() {
           ) : filteredInventories.map((inventory) => (
             <div
               key={inventory.id}
-              onClick={() => navigate(`/inventory/${inventory.id}`)}
-              className="group  shadow-xl bg-styled-card rounded-[2.5rem] p-8 border border-slate-100 hover:border-primary/40 hover:shadow-[0_20px_50px_rgba(172,156,6,0.08)] transition-all duration-500 cursor-pointer flex flex-col relative overflow-hidden"
+              onClick={() => !inventory.isArchived && navigate(`/inventory/${inventory.id}`)}
+              className={`group shadow-xl bg-styled-card rounded-[2.5rem] p-8 border border-slate-100 transition-all duration-500 flex flex-col relative overflow-hidden ${
+                inventory.isArchived
+                  ? 'opacity-60 cursor-not-allowed'
+                  : 'hover:border-primary/40 hover:shadow-[0_20px_50px_rgba(172,156,6,0.08)] cursor-pointer'
+              }`}
             >
               {/* Background Accents */}
               <div className="absolute top-0 right-0 w-32 h-32 text-secondary rounded-bl-[3rem] -z-10 group-hover:bg-styled-card/5 transition-colors"></div>
@@ -331,14 +335,38 @@ export default function InventoryPage() {
                   {getInventoryIcon(inventory.name)}
                 </div>
                 <div className="flex items-center gap-3">
-                  {/* Edit Menu Button */}
+                  {/* Edit Menu Button or Unarchive Button - Only show for owners */}
                   {inventory.accessRole === 'owner' && (
-                    <button
-                      onClick={(e) => handleEditInventory(inventory, e)}
-                      className=" group-hover:opacity-100 transition-opacity p-2 hover:bg-white/50 rounded-lg"
-                    >
-                      <MoreHorizontal className="w-5 h-5 text-slate-600" />
-                    </button>
+                    inventory.isArchived ? (
+                      // Show Unarchive button for archived inventories
+                      <button
+                        onClick={async (e) => {
+                          e.stopPropagation();
+                          setEditingInventory(inventory);
+                          try {
+                            await unarchiveInventoryMutation.mutateAsync(inventory.id);
+                            setEditingInventory(null);
+                            setFilterTab('active');
+                          } catch (err) {
+                            console.error('Error unarchiving inventory:', err);
+                            setEditingInventory(null);
+                          }
+                        }}
+                        disabled={unarchiveInventoryMutation.isPending}
+                        className="flex items-center gap-2 px-3 py-2 bg-slate-200 text-slate-700 hover:bg-slate-300 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg font-black text-xs uppercase tracking-widest transition-all z-10"
+                      >
+                        <ArchiveX className="w-4 h-4" />
+                        {unarchiveInventoryMutation.isPending && editingInventory?.id === inventory.id ? 'Unarchiving...' : 'Unarchive'}
+                      </button>
+                    ) : (
+                      // Show three-dot menu for active inventories
+                      <button
+                        onClick={(e) => handleEditInventory(inventory, e)}
+                        className="transition-opacity p-2 hover:bg-white/50 rounded-lg z-10 group-hover:opacity-100"
+                      >
+                        <MoreHorizontal className="w-5 h-5 text-slate-600" />
+                      </button>
+                    )
                   )}
                   {/* Status Badge */}
                   <div className="text-right">
@@ -364,8 +392,8 @@ export default function InventoryPage() {
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest opacity-60 line-clamp-1">{inventory.description || 'Global Storage Unit'}</p>
               </div>
 
-              {/* Shared Users Dropdown - Only show if there are members and user is owner */}
-              {inventory.accessRole === 'owner' && inventory.members && inventory.members.length > 0 && (
+              {/* Shared Users Dropdown - Only show if there are members, user is owner, and not archived */}
+              {inventory.accessRole === 'owner' && inventory.members && inventory.members.length > 0 && !inventory.isArchived && (
                 <div className="mb-8 relative">
                   <button
                     onClick={(e) => {
