@@ -182,6 +182,35 @@ export default function MealPlannerPage() {
     };
   }, [profile, consumedNutrition]);
 
+  // Banner text follows AI insight; meal plan summary is not used to override it
+  const displayTitle = aiInsight.title;
+  const displaySubtitle = aiInsight.subtitle;
+
+  // Explain why these meals are suggested based on current macro gaps
+  const displayPlanSummary = useMemo(() => {
+    const energyGoal = profile?.profile?.energyGoal || 2500;
+    const proteinGoal = profile?.profile?.proteinGoal || 180;
+    const carbsGoal = Math.round(energyGoal * 0.45 / 4);
+    const fatsGoal = Math.round(energyGoal * 0.25 / 9);
+
+    const calorieGap = Math.max(0, Math.round(energyGoal - consumedNutrition.calories));
+    const proteinGap = Math.max(0, Math.round(proteinGoal - consumedNutrition.protein));
+    const carbsGap = Math.max(0, Math.round(carbsGoal - consumedNutrition.carbs));
+    const fatsGap = Math.max(0, Math.round(fatsGoal - consumedNutrition.fat));
+
+    const gaps = [
+      { name: 'protein', amount: proteinGap },
+      { name: 'carbs', amount: carbsGap },
+      { name: 'fats', amount: fatsGap },
+      { name: 'calories', amount: calorieGap },
+    ].sort((a, b) => b.amount - a.amount);
+
+    const topGap = gaps[0];
+    const secondaryGap = gaps[1];
+
+    return `These meals target your biggest needs: ${topGap.name} (about ${topGap.amount} left) and ${secondaryGap.name} (about ${secondaryGap.amount} left). Suggestions prioritize foods rich in these nutrients to close today’s gaps while keeping overall calories on track.`;
+  }, [profile, consumedNutrition]);
+
   const hasHealthMetrics = profile?.profile?.height && profile?.profile?.weight;
 
   const fetchSavedPlans = async () => {
@@ -243,6 +272,7 @@ export default function MealPlannerPage() {
            if (parsed.isMealPlan && parsed.meals) {
              setMealPlan(parsed);
              localStorage.setItem('current_meal_plan', JSON.stringify(parsed));
+             setViewMode('current'); // Switch to current view to show the generated plan
            } else {
              console.warn('Parsed object is not a valid meal plan structure:', parsed);
              setRawResponse(content);
@@ -371,8 +401,8 @@ export default function MealPlannerPage() {
             <div className="relative z-10 flex justify-between items-start">
               <div>
                 
-                <h2 className="text-3xl font-black max-w-sm leading-[1.1] mb-2 tracking-tightest">{aiInsight.title}</h2>
-                <p className="text-white/80 font-medium max-w-sm">{aiInsight.subtitle}</p>
+                <h2 className="text-3xl font-black max-w-sm leading-[1.1] mb-2 tracking-tightest">{displayTitle}</h2>
+                <p className="text-white/80 font-medium max-w-sm">{displaySubtitle}</p>
               </div>
               
               <div className="hidden sm:block lg:flex lg:gap-4">
@@ -514,7 +544,7 @@ export default function MealPlannerPage() {
                      NutriAI Insights
                    </h3>
                    <p className="text-muted-foreground font-medium leading-relaxed italic border-l-4 border-primary pl-6 py-2">
-                     "{mealPlan.summary}"
+                      {displayPlanSummary}
                    </p>
                  </div>
                  <div className="relative z-10 flex flex-col items-center gap-4">
@@ -568,7 +598,7 @@ export default function MealPlannerPage() {
                        </div>
 
                        <div className="space-y-4 pt-2">
-                         {meal.option1 ? (
+                         {meal.option1 && meal.option1.items && meal.option1.items.length > 0 ? (
                            <div className="p-6 bg-primary/5 rounded-[2rem] border border-primary/20 relative overflow-hidden group/opt hover:bg-primary/10 transition-colors">
                              <div className="absolute top-0 right-0 bg-black text-[8px] text-white px-4 py-1.5 rounded-bl-2xl font-black uppercase tracking-[0.2em]">
                                STOCK CONFIRMED
