@@ -346,7 +346,7 @@ export default function DailyLogPage() {
       <div className="container mx-auto px-4 py-8 max-w-7xl space-y-8">
         <header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
           <div>
-            <h1 className="text-4xl font-black text-black tracking-tight">Consumption Log</h1>
+            <h1 className="text-4xl font-black text-black tracking-tight">Daily Log</h1>
             <p className="text-muted-foreground font-medium mt-1">Track your daily intake and maintain a healthy balance.</p>
           </div>
           <div className="flex items-center gap-4 w-full md:w-auto">
