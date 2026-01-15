@@ -18,6 +18,7 @@ import { useMemo, useState, useRef, useEffect } from 'react';
 import { useInventory, type ConsumptionLog } from '../hooks/useInventory';
 import { useProfile } from '../context/ProfileContext';
 import { useApi } from '../hooks/useApi';
+import { useNavigate } from 'react-router-dom';
 
 export default function DailyLogPage() {
   // Stable default date range using useMemo to prevent cache misses
@@ -81,6 +82,8 @@ export default function DailyLogPage() {
       setDateRange(prev => ({ ...prev, endDate: date }));
     }
   };
+
+  const navigate= useNavigate();
 
   const clearFilters = () => {
     setFilters({ inventoryId: '', category: '' });
@@ -500,17 +503,7 @@ export default function DailyLogPage() {
             <p className="text-muted-foreground font-medium mt-1">Track your daily intake and maintain a healthy balance.</p>
           </div>
           <div className="flex items-center gap-4 w-full md:w-auto">
-            <div className="relative flex-1 md:flex-none">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
-              <input
-                className="pl-12 pr-4 py-3 rounded-full border-none bg-white text-gray-700 placeholder-gray-400 shadow-soft focus:ring-2 focus:ring-black w-full md:w-80 font-bold"
-                placeholder="Search food..."
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
-            <button className="bg-black text-white px-8 py-3 rounded-full font-black flex items-center gap-2 hover:opacity-90 transition-all active:scale-95 whitespace-nowrap shadow-lg shadow-black/10">
+            <button className="bg-black text-white px-8 py-3 rounded-full font-black flex items-center gap-2 hover:opacity-90 transition-all active:scale-95 whitespace-nowrap shadow-lg shadow-black/10" onClick={()=>navigate('/inventory')}>
               <Plus className="w-5 h-5 text-primary font-black" />
               Log Meal
             </button>
@@ -530,20 +523,28 @@ export default function DailyLogPage() {
               <div className="relative z-10 w-full md:w-1/2">
                 <h2 className="text-5xl font-black text-black mb-4 leading-tight">Eat Smarter,<br /><span className="text-primary-dark">Live Better!</span></h2>
                 <div className="space-y-4 mb-8">
-                  <p className="text-muted-foreground font-medium max-w-sm leading-relaxed">
-                    You've consumed <span className="text-black font-black">{Math.round(consumedCalories)} kcal</span> today.
-                    That's <span className="text-black font-black flex items-center gap-1 inline-flex">
-                      <TrendingUp className="w-4 h-4 text-primary" />
-                      {Math.round(caloriePercentage)}%
-                    </span> of your daily goal.
-                  </p>
-                  <p className="text-muted-foreground font-medium max-w-sm leading-relaxed">
-                    You've burned <span className="text-black font-black">{calculateCaloriesBurned} kcal</span> today.
-                    Net balance: <span className="text-black font-black flex items-center gap-1 inline-flex">
-                      {calculateCaloriesBurned - consumedCalories > 0 ? <TrendingUp className="w-4 h-4 text-green-500" /> : <TrendingUp className="w-4 h-4 text-red-500 rotate-180" />}
-                      {Math.abs(calculateCaloriesBurned - consumedCalories)} kcal
-                    </span>
-                  </p>
+                   <div className="relative w-56 h-56">
+                    <svg className="w-full h-full transform -rotate-90">
+                      <circle className="text-gray-100" cx="112" cy="112" fill="transparent" r="98" stroke="currentColor" strokeWidth="16"></circle>
+                      <circle 
+                        className="text-[#8EC5DB] transition-all duration-1000 ease-out" 
+                        cx="112" 
+                        cy="112" 
+                        fill="transparent" 
+                        r="98" 
+                        stroke="currentColor" 
+                        strokeDasharray={615.75} 
+                        strokeDashoffset={615.75 - (615.75 * Math.min(100, (calculateCaloriesBurned / dailyBurnGoal) * 100)) / 100}
+                        strokeLinecap="round" 
+                        strokeWidth="16"
+                      ></circle>
+                    </svg>
+                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                      <span className="text-4xl font-black text-[#8EC5DB] tracking-tighter">{calculateCaloriesBurned}</span>
+                      <span className="text-[10px] uppercase font-black tracking-[0.2em] text-muted-foreground mt-1">kcal Burned</span>
+                    </div>
+                  </div>
+
                 </div>
                 <div className="flex items-center gap-6">
                   <button className="bg-black text-white px-8 py-4 rounded-full font-black hover:bg-primary hover:text-black transition-all flex items-center gap-3 group shadow-xl shadow-black/10 active:scale-95">
@@ -566,6 +567,7 @@ export default function DailyLogPage() {
                     <span className="text-[10px] uppercase font-black tracking-[0.2em] text-muted-foreground mt-1">kcal Left</span>
                   </div>
                   <div className="absolute -top-2 -right-2 bg-primary/20 backdrop-blur-md border border-primary/50 text-black px-4 py-2 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg">Carbs {Math.round((totalMacros.carbs * 4 / (consumedCalories || 1)) * 100)}%</div>
+ <div className="absolute -bottom-2 -right-2 bg-orange-500/20 backdrop-blur-md border border-orange-500/50 text-black px-4 py-2 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg">Fats {Math.round((totalMacros.fat * 9 / (consumedCalories || 1)) * 100)}%</div>
                   <div className="absolute bottom-4 -left-6 bg-black text-white px-4 py-2 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl">Protein {Math.round((totalMacros.protein * 4 / (consumedCalories || 1)) * 100)}%</div>
                 </div>
               </div>
@@ -804,7 +806,7 @@ export default function DailyLogPage() {
                 )}
 
                 {/* Add Snack Card */}
-                <div className="flex items-center p-6 rounded-[2rem] bg-gray-50 border-2 border-dashed border-gray-100 group cursor-pointer hover:border-black transition-all mt-8">
+                <div onClick={()=>navigate('/inventory')} className="flex items-center p-6 rounded-[2rem] bg-gray-50 border-2 border-dashed border-gray-100 group cursor-pointer hover:border-black transition-all mt-8">
                   <div className="w-16 h-16 rounded-2xl flex items-center justify-center bg-white text-gray-300 group-hover:scale-110 group-hover:bg-primary group-hover:text-secondary transition-all shadow-sm">
                     <Utensils className="w-8 h-8" />
                   </div>
