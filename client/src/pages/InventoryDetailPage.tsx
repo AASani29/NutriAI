@@ -347,7 +347,7 @@ export default function InventoryDetailPage() {
             className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-slate-100 text-slate-800 px-6 py-4 rounded-xl hover:bg-slate-200 transition-all font-black text-[10px] uppercase tracking-widest"
           >
             <span className="material-icons-round text-lg">photo_camera</span>
-            <span>Scan Receipt</span>
+            <span>Upload Image</span>
           </button>
 
           <button
@@ -829,7 +829,7 @@ function AddItemModal({ onClose, onAdd, onScan }: {
           className="w-full mb-4 py-3 bg-primary/20 text-black font-bold rounded-xl flex items-center justify-center gap-2 border border-primary/30 hover:bg-primary/30 transition-colors"
         >
           <span className="material-icons-outlined">photo_camera</span>
-          Scan Receipt (OCR)
+          Upload Image
         </button>
 
         <div className="relative my-4">

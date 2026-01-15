@@ -264,7 +264,7 @@ export const OCRUpload: React.FC<OCRUploadProps> = ({
               ? 'Uploading...'
               : processing
                 ? 'Processing...'
-                : 'Scan Receipt'}
+                : 'Upload Image'}
           </button>
         </div>
       </div>

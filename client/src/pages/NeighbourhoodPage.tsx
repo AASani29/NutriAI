@@ -337,7 +337,7 @@ export default function NeighbourhoodPage() {
                     <span>Wk 2</span>
                     <span>Wk 3</span>
                     <span>Wk 4</span>
-                    <span className="text-primary">Now</span>
+                    <span className="text-secondary">Now</span>
                   </div>
                 </div>
               </div>

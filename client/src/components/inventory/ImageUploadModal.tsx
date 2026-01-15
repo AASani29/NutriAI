@@ -135,7 +135,7 @@ export default function ImageUploadModal({
             </div>
             <div>
               <h2 className="text-xl font-bold text-foreground">
-                Scan Receipt or Food Items
+                Upload Receipt or Food Items
               </h2>
               <p className="text-sm text-foreground/70">
                 Upload will process in the background

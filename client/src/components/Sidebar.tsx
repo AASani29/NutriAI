@@ -32,15 +32,7 @@ const navItems = [
 
     info: "Track inventory items,expiring foods,todays activities and top recommendations all for you",
   },
-  {
-    label: "AI Intelligence",
-    to: "/intelligence",
-    icon: Brain,
-    color: "text-purple-500",
-    bgColor: "bg-purple-50",
-    activeColor: "bg-primary text-secondary",
-    info:'Consumption insights, waste predictions, nutrition gap analysis, environmental impact reports, and personalized recommendations'
-  },
+  
   {
     label: "Inventory",
     to: "/inventory",
@@ -115,7 +107,7 @@ export default function Sidebar({
             )}
           >
             <img
-              src="/logo.png"
+              src="/colored-logo.png"
               alt="NutriAI Logo"
               className="h-13 w-auto object-contain"
             />
@@ -127,7 +119,7 @@ export default function Sidebar({
               "flex items-center justify-center rounded-2xl transition-all duration-300 hover:scale-105 active:scale-95 overflow-hidden",
               isExpanded
                 ? "w-10 h-10 bg-slate-100 text-slate-500 hover:bg-slate-200"
-                : "w-12 h-12 bg-primary shadow-lg mx-auto"
+                : "w-12 h-12 bg-secondary shadow-lg mx-auto"
             )}
           >
             {isExpanded ? (
