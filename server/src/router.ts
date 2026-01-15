@@ -44,6 +44,10 @@ router.use('/intelligence', intelligenceRouter);
 // Weather and alerts routes
 router.use('/weather', weatherRouter);
 
+// Recipe routes
+import recipeRouter from './modules/recipes/recipe-router';
+router.use('/recipes', recipeRouter);
+
 // Admin routes (require admin role)
 router.use('/admin', adminRouter);
 

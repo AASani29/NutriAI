@@ -421,3 +421,26 @@ enum ListingStatus {
   COMPLETED
   CANCELLED
 }
+
+model Recipe {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  cuisine     String?
+  prepTime    Int?
+  cookTime    Int?
+  servings    Int?
+  
+  ingredients Json     // array of { name, quantity, unit, notes }
+  instructions Json    // array of strings or { step: number, text: string }
+  nutrition   Json?    // { calories, protein, carbs, fat }
+  
+  sourceUrl   String?
+  sourceType  String   @default("AI_SCOUT") // "USER", "AI_SCOUT", "API"
+  externalId  String?  // ID from TheMealDB or other APIs
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([name])
+}
