@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { useProfile } from '../context/ProfileContext';
 import { useApi } from '../hooks/useApi';
+import { useInventory } from '../hooks/useInventory';
 import { Link } from 'react-router-dom';
 
 interface MealPlan {
@@ -54,7 +55,9 @@ interface MealPlan {
 export default function MealPlannerPage() {
   const { profile } = useProfile();
   const api = useApi();
+  const { useGetConsumptionLogs } = useInventory();
   const [loading, setLoading] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(new Date());
   const [showConfig, setShowConfig] = useState(false);
   const [mealPlan, setMealPlan] = useState<MealPlan | null>(() => {
     const saved = localStorage.getItem('current_meal_plan');
@@ -75,26 +78,96 @@ export default function MealPlannerPage() {
     notes: '',
   });
 
-  // Generate personalized AI insights based on health metrics
+  // Normalize selected date to full-day window to match backend filters
+  const startOfDay = useMemo(() => {
+    const d = new Date(selectedDate);
+    d.setHours(0, 0, 0, 0);
+    return d;
+  }, [selectedDate]);
+
+  const endOfDay = useMemo(() => {
+    const d = new Date(selectedDate);
+    d.setHours(23, 59, 59, 999);
+    return d;
+  }, [selectedDate]);
+
+  // Fetch consumption logs for the full selected day
+  const { data: consumptionResult } = useGetConsumptionLogs({
+    startDate: startOfDay,
+    endDate: endOfDay
+  }) || { data: null };
+
+  const consumptionLogs = consumptionResult?.consumptionLogs || [];
+
+  // Calculate consumed nutrition from consumption logs
+  const consumedNutrition = useMemo(() => {
+    let calories = 0;
+    let protein = 0;
+    let carbs = 0;
+    let fat = 0;
+
+    if (Array.isArray(consumptionLogs)) {
+      consumptionLogs.forEach((log: any) => {
+        calories += log.calories || 0;
+        protein += log.protein || 0;
+        carbs += log.carbohydrates || 0;
+        fat += log.fat || 0;
+      });
+    }
+
+    return { calories, protein, carbs, fat };
+  }, [consumptionLogs]);
+
+  // Generate personalized AI insights based on health metrics and lowest nutrient
   const aiInsight = useMemo(() => {
     const userGoals = profile?.profile;
     const weight = userGoals?.weight || 70;
-    const height = userGoals?.height || 170;
     const proteinGoal = userGoals?.proteinGoal || 180;
+    const energyGoal = userGoals?.energyGoal || 2500;
     
-    // Generate insight based on current health profile
-    let recommendation = 'Balanced nutrition';
-    let subtitle = 'Crafted for your optimal wellness.';
+    // Calculate percentages for each nutrient
+    const carbsGoal = Math.round(energyGoal * 0.45 / 4);
+    const fatsGoal = Math.round(energyGoal * 0.25 / 9);
     
-    if (proteinGoal > 150) {
-      recommendation = 'Protein-rich meals';
-      subtitle = 'Building strength, one meal at a time.';
-    } else if (weight > 85) {
-      recommendation = 'Nutrient-dense, calorie-aware meals';
-      subtitle = 'Smart choices for sustainable health.';
-    } else {
-      recommendation = 'Balanced macro meals';
-      subtitle = 'Fuel your day the right way.';
+    const caloriePercent = (consumedNutrition.calories / energyGoal) * 100;
+    const proteinPercent = (consumedNutrition.protein / proteinGoal) * 100;
+    const carbsPercent = (consumedNutrition.carbs / carbsGoal) * 100;
+    const fatsPercent = (consumedNutrition.fat / fatsGoal) * 100;
+    
+    // Find the lowest percentage
+    const percentages = [
+      { name: 'Calories', percent: caloriePercent },
+      { name: 'Protein', percent: proteinPercent },
+      { name: 'Carbs', percent: carbsPercent },
+      { name: 'Fats', percent: fatsPercent }
+    ];
+    
+    const lowestNutrient = percentages.reduce((min, curr) => 
+      curr.percent < min.percent ? curr : min
+    );
+    
+    // Generate insight based on lowest nutrient
+    let recommendation = '';
+    let subtitle = '';
+    
+    switch(lowestNutrient.name) {
+      case 'Protein':
+        recommendation = 'Protein-rich meals';
+        subtitle = 'Building strength, one meal at a time.';
+        break;
+      case 'Carbs':
+        recommendation = 'Carb-focused meals';
+        subtitle = 'Fuel your energy levels for the week ahead.';
+        break;
+      case 'Fats':
+        recommendation = 'Healthy fat-rich meals';
+        subtitle = 'Support your hormones and nutrient absorption.';
+        break;
+      case 'Calories':
+      default:
+        recommendation = 'Calorie-dense, nutrient-rich meals';
+        subtitle = 'Boost your daily energy intake.';
+        break;
     }
 
     return {
@@ -107,7 +180,7 @@ export default function MealPlannerPage() {
         steps: 45
       }
     };
-  }, [profile]);
+  }, [profile, consumedNutrition]);
 
   const hasHealthMetrics = profile?.profile?.height && profile?.profile?.weight;
 
@@ -298,59 +371,64 @@ export default function MealPlannerPage() {
             <div className="relative z-10 flex justify-between items-start">
               <div>
                 
-                <h2 className="text-4xl font-black max-w-md leading-[1.1] mb-2 tracking-tight">{aiInsight.title}</h2>
+                <h2 className="text-3xl font-black max-w-sm leading-[1.1] mb-2 tracking-tightest">{aiInsight.title}</h2>
                 <p className="text-white/80 font-medium max-w-sm">{aiInsight.subtitle}</p>
               </div>
               
               <div className="hidden sm:block lg:flex lg:gap-4">
                 {/* Calorie Goal */}
                 <div className="bg-white/60 backdrop-blur-md p-6 rounded-[2rem] border border-white/10 shadow-xl">
-                  <div className="text-[10px] font-black text-secondary uppercase tracking-[0.2em] opacity-100 mb-2 text-center">Calorie Goal</div>
-                  <div className="text-2xl font-black text-center text-secondary">{profile?.profile?.energyGoal || 2500}<span className="text-xs opacity-80">kcal</span></div>
-                  <div className="w-24 h-2 bg-black/20 rounded-full mt-3 overflow-hidden p-0.5">
-                    <div className="bg-white h-full rounded-full" style={{ width: `65%` }}></div>
+                  <div className="text-[10px] font-black text-secondary uppercase tracking-[0.2em] opacity-100 mb-2 text-center">Calories</div>
+                  <div className="text-xl font-black text-center text-secondary">{Math.round(consumedNutrition.calories)}/{profile?.profile?.energyGoal || 2500}</div>
+                  <div className="text-xl text-secondary font-black text-center mb-2">kcal</div>
+                  <div className="w-24 h-2 bg-black/20 rounded-full mt-2 overflow-hidden p-0.5">
+                    <div className="bg-white h-full rounded-full" style={{ width: `${Math.min(100, (consumedNutrition.calories / (profile?.profile?.energyGoal || 2500)) * 100)}%` }}></div>
                   </div>
-                  <div className="text-[14px] text-center text-secondary font-bold opacity-70 mt-2">65%</div>
+                  <div className="text-[14px] text-center text-secondary font-bold opacity-70 mt-2">{Math.round((consumedNutrition.calories / (profile?.profile?.energyGoal || 2500)) * 100)}%</div>
                 </div>
 
                 {/* Protein Goal */}
                 <div className="bg-white/50 backdrop-blur-md p-6 rounded-[2rem] border border-white/10 shadow-xl">
-                  <div className="text-[10px] font-black text-secondary uppercase tracking-[0.2em] opacity-80 mb-2 text-center">Protein Goal</div>
-                  <div className="text-2xl font-black text-center text-secondary">{profile?.profile?.proteinGoal || 180}<span className="text-xs opacity-80">g</span></div>
-                  <div className="w-24 h-2 bg-black/20 rounded-full mt-3 overflow-hidden p-0.5">
-                    <div className="bg-white h-full rounded-full" style={{ width: `60%` }}></div>
+                  <div className="text-[10px] font-black text-secondary uppercase tracking-[0.2em] opacity-80 mb-2 text-center">Protein</div>
+                  <div className="text-xl font-black text-center text-secondary">{Math.round(consumedNutrition.protein)}/{profile?.profile?.proteinGoal || 180}</div>
+                  <div className="text-xl text-secondary font-black text-center mb-2">g</div>                  
+                  <div className="w-24 h-2 bg-black/20 rounded-full mt-2 overflow-hidden p-0.5">
+                    <div className="bg-white h-full rounded-full" style={{ width: `${Math.min(100, (consumedNutrition.protein / (profile?.profile?.proteinGoal || 180)) * 100)}%` }}></div>
                   </div>
-                  <div className="text-[14px] text-center text-secondary font-bold opacity-70 mt-2">60%</div>
+                  <div className="text-[14px] text-center text-secondary font-bold opacity-70 mt-2">{Math.round((consumedNutrition.protein / (profile?.profile?.proteinGoal || 180)) * 100)}%</div>
                 </div>
 
                 {/* Carbs Goal */}
                 <div className="bg-white/40 backdrop-blur-md p-6 rounded-[2rem] border border-white/10 shadow-xl">
-                  <div className="text-[10px] font-black text-secondary uppercase tracking-[0.2em] opacity-80 mb-2 text-center">Carbs Goal</div>
-                  <div className="text-2xl font-black text-center text-secondary">{Math.round((profile?.profile?.energyGoal || 2500) * 0.45 / 4)}<span className="text-xs opacity-80">g</span></div>
-                  <div className="w-24 h-2 bg-black/20 rounded-full mt-3 overflow-hidden p-0.5">
-                    <div className="bg-white h-full rounded-full" style={{ width: `55%` }}></div>
+                  <div className="text-[10px] font-black text-secondary uppercase tracking-[0.2em] opacity-80 mb-2 text-center">Carbs</div>
+                  <div className="text-xl font-black text-center text-secondary">{Math.round(consumedNutrition.carbs)}/{Math.round((profile?.profile?.energyGoal || 2500) * 0.45 / 4)}</div>
+                  <div className="text-xl text-secondary font-black text-center mb-2">g</div>                  
+                  <div className="w-24 h-2 bg-black/20 rounded-full mt-2 overflow-hidden p-0.5">
+                    <div className="bg-white h-full rounded-full" style={{ width: `${Math.min(100, (consumedNutrition.carbs / (Math.round((profile?.profile?.energyGoal || 2500) * 0.45 / 4))) * 100)}%` }}></div>
                   </div>
-                  <div className="text-[14px] text-center opacity-70 text-secondary font-bold mt-2">55%</div>
+                  <div className="text-[14px] text-center opacity-70 text-secondary font-bold mt-2">{Math.round((consumedNutrition.carbs / (Math.round((profile?.profile?.energyGoal || 2500) * 0.45 / 4))) * 100)}%</div>
                 </div>
 
                 {/* Fats Goal */}
                 <div className="bg-white/30 backdrop-blur-md p-6 rounded-[2rem] border border-white/10 shadow-xl">
-                  <div className="text-[10px] font-black text-secondary uppercase tracking-[0.2em] opacity-80 mb-2 text-center">Fats Goal</div>
-                  <div className="text-2xl font-black text-center">{Math.round((profile?.profile?.energyGoal || 2500) * 0.25 / 9)}<span className="text-xs opacity-80">g</span></div>
-                  <div className="w-24 h-2 bg-black/20 rounded-full mt-3 overflow-hidden p-0.5">
-                    <div className="bg-white h-full rounded-full" style={{ width: `50%` }}></div>
+                  <div className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-2 text-center">Fats</div>
+                  <div className="text-xl font-black text-center text-primary">{Math.round(consumedNutrition.fat)}/{Math.round((profile?.profile?.energyGoal || 2500) * 0.25 / 9)}</div>
+                  <div className="text-xl text-primary font-black text-center mb-2">g</div>                  
+                  <div className="w-24 h-2 bg-black/20 rounded-full mt-2 overflow-hidden p-0.5">
+                    <div className="bg-white h-full rounded-full" style={{ width: `${Math.min(100, (consumedNutrition.fat / (Math.round((profile?.profile?.energyGoal || 2500) * 0.25 / 9))) * 100)}%` }}></div>
                   </div>
-                  <div className="text-[14px] font-bold text-center opacity-70 mt-2">50%</div>
+                  <div className="text-[14px] font-bold text-center mt-2">{Math.round((consumedNutrition.fat / (Math.round((profile?.profile?.energyGoal || 2500) * 0.25 / 9))) * 100)}%</div>
                 </div>
 
                 {/* Hydration Goal */}
                 <div className="bg-white/20 backdrop-blur-md p-6 rounded-[2rem] border border-white/10 shadow-xl">
-                  <div className="text-[10px] font-black text-secondary uppercase tracking-[0.2em] opacity-80 mb-2 text-center">Hydration Goal</div>
-                  <div className="text-2xl font-black text-center">2.5<span className="text-xs opacity-80">L</span></div>
-                  <div className="w-24 h-2 bg-black/20 rounded-full mt-3 overflow-hidden p-0.5">
-                    <div className="bg-white h-full rounded-full" style={{ width: `60%` }}></div>
+                  <div className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-2 text-center">Hydration</div>
+                  <div className="text-xl font-black text-center text-primary">0/2.5</div>
+                  <div className="text-xl text-primary font-black text-center mb-2">L</div>                  
+                  <div className="w-24 h-2 bg-black/20 rounded-full mt-2 overflow-hidden p-0.5">
+                    <div className="bg-white h-full rounded-full" style={{ width: `0%` }}></div>
                   </div>
-                  <div className="text-[14px] font-bold text-center opacity-70 mt-2">60%</div>
+                  <div className="text-[14px] font-bold text-center mt-2">0%</div>
                 </div>
               </div>
             </div>

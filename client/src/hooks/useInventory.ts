@@ -443,6 +443,10 @@ export function useInventory() {
         queryClient.invalidateQueries({
           queryKey: ['inventory-items', inventoryId],
         });
+        // Invalidate all consumption logs queries to ensure real-time updates
+        queryClient.invalidateQueries({
+          queryKey: ['consumption-logs'],
+        });
       },
     });
   };
@@ -518,13 +522,11 @@ export function useInventory() {
           return response;
         } catch (error) {
           console.error('Error fetching consumption logs:', error);
-          // Return empty structure on error
-          return { consumptionLogs: [], totalCount: 0, page: 1, totalPages: 1 };
+          throw error;
         }
       },
-      retry: 2,
-      staleTime: 5 * 60 * 1000, // 5 minutes
-      placeholderData: keepPreviousData,
+      staleTime: 0,
+      refetchOnMount: true,
     });
   };
 

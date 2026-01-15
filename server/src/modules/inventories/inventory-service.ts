@@ -777,11 +777,20 @@ export class InventoryService {
 
     if (data.inventoryId) {
       const inventory = await prisma.inventory.findFirst({
-        where: { id: data.inventoryId, createdById: user.id, isDeleted: false },
+        where: { id: data.inventoryId, isDeleted: false },
+        include: { members: true }
       });
 
       if (!inventory) {
-        throw new Error('Inventory not found or does not belong to user');
+        throw new Error('Inventory not found');
+      }
+
+      // Check if user is owner OR a member of the inventory
+      const isOwner = inventory.createdById === user.id;
+      const isMember = inventory.members?.some(m => m.userId === user.id && !m.isDeleted);
+
+      if (!isOwner && !isMember) {
+        throw new Error('You do not have access to this inventory');
       }
 
       if (data.inventoryItemId && !data.inventoryItemId.startsWith('temp-')) {
@@ -1170,12 +1179,36 @@ export class InventoryService {
       );
       console.log('🔍 [getConsumptionLogs] User inventories:', userInventories);
 
-      // Initialize whereClause first
+      // Also fetch inventories where user is a member
+      console.log('🔍 [getConsumptionLogs] Fetching inventories where user is a member...');
+      const memberInventories = await prisma.inventoryMember.findMany({
+        where: {
+          userId: user.id,
+          isDeleted: false,
+        },
+        select: { inventoryId: true },
+      });
+
+      const memberInventoryIds = memberInventories.map(m => m.inventoryId);
+      console.log(
+        '🔍 [getConsumptionLogs] Member inventories found:',
+        memberInventoryIds.length,
+      );
+
+      // Initialize whereClause first - Include inventories created by user OR user is a member
       const whereClause: any = {
         OR: [
           {
             inventory: {
               createdById: user.id,
+              isDeleted: false,
+            },
+          },
+          {
+            inventory: {
+              id: {
+                in: memberInventoryIds,
+              },
               isDeleted: false,
             },
           },
