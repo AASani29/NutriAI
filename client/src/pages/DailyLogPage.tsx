@@ -194,6 +194,21 @@ export default function DailyLogPage() {
     }
   };
 
+  // Auto-scroll to show today at the leftmost position
+  useEffect(() => {
+    if (scrollContainerRef.current && dailyHistory && dailyHistory.length > 0) {
+      // Find today's button position
+      const todayButton = scrollContainerRef.current.querySelector('[data-today="true"]');
+      if (todayButton) {
+        // Scroll so today is at the leftmost visible position
+        const containerRect = scrollContainerRef.current.getBoundingClientRect();
+        const buttonRect = todayButton.getBoundingClientRect();
+        const scrollLeft = scrollContainerRef.current.scrollLeft + buttonRect.left - containerRect.left;
+        scrollContainerRef.current.scrollLeft = Math.max(0, scrollLeft - 16); // 16px offset for padding
+      }
+    }
+  }, [dailyHistory]);
+
 
   // ... (Keep existing inventories query) ...
   const { data: inventories, isLoading: inventoriesLoading } =
@@ -732,6 +747,7 @@ export default function DailyLogPage() {
                             <button
                               key={day.date}
                               onClick={() => setSelectedDate(d)}
+                              data-today={isToday}
                               className={`group/day flex flex-col items-center gap-2 transition-all ${isSelected ? 'opacity-100 scale-110' : 'opacity-60 hover:opacity-100'}`}
                             >
                               <div className={`w-2 h-8 rounded-full bg-white/20 overflow-hidden relative ${isSelected ? 'shadow-[0_0_10px_rgba(255,255,255,0.5)]' : ''}`}>
