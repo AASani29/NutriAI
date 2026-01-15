@@ -17,6 +17,7 @@ import {
 import { useMemo, useState, useRef, useEffect } from 'react';
 import { useInventory, type ConsumptionLog } from '../hooks/useInventory';
 import { useProfile } from '../context/ProfileContext';
+import { useApi } from '../hooks/useApi';
 
 export default function DailyLogPage() {
   // Stable default date range using useMemo to prevent cache misses
@@ -52,13 +53,15 @@ export default function DailyLogPage() {
     useUpdateFitness
   } = useInventory();
 
-  const { profile } = useProfile();
+  const { profile, refreshProfile } = useProfile();
+  const api = useApi();
 
   // New Date States
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedMonth, setSelectedMonth] = useState(new Date()); // For monthly view navigation
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 10;
+  const [weightUpdateMutation, setWeightUpdateMutation] = useState(false);
 
   // Reset page when filters change
   useEffect(() => {
@@ -98,6 +101,31 @@ export default function DailyLogPage() {
   const { data: hydrationData, isLoading: hydrationLoading } = useGetHydration(selectedDate);
   const { data: fitnessData } = useGetFitness(selectedDate);
   const updateFitnessMutation = useUpdateFitness();
+
+  // Past 7 dates for weight history
+  const pastDates = useMemo(() => {
+    const dates = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      d.setHours(0, 0, 0, 0);
+      dates.push(d);
+    }
+    return dates;
+  }, []);
+
+  // Fetch fitness data for each of the past 7 days
+  const fitnessHistory = useMemo(() => {
+    return pastDates.map(date => {
+      const isToday = date.toDateString() === new Date().toDateString();
+      // For today, use current fitnessData. For other days, we'd need to fetch from backend
+      // For now, we'll store just today's data; in production you'd fetch each day
+      if (isToday && fitnessData?.weight) {
+        return { date, weight: fitnessData.weight, steps: fitnessData.steps };
+      }
+      return { date, weight: null, steps: null };
+    });
+  }, [pastDates, fitnessData]);
 
   // Fetch History for Monthly View OR Daily Strip (last 30 days)
   // Determine range based on viewMode
@@ -182,6 +210,61 @@ export default function DailyLogPage() {
 
   const hydrationAmount = hydrationData?.amount || 0;
   const hydrationGoal = hydrationData?.goal || 2.5;
+
+  // Calculate calories burned based on Mifflin-St Jeor and activity
+  const calculateCaloriesBurned = useMemo(() => {
+    if (!profile?.profile || !fitnessData) return 0;
+    
+    const weight = fitnessData.weight || profile.profile.weight || 70;
+    const age = 30; // Default age
+    const gender = 'male'; // Default gender
+    const steps = fitnessData.steps || 0;
+    
+    // Base BMR using Mifflin-St Jeor formula
+    let bmr = 0;
+    if (gender === 'male') {
+      bmr = (10 * weight) + (6.25 * 170) - (5 * age) + 5; // Assuming 170cm height
+    } else {
+      bmr = (10 * weight) + (6.25 * 160) - (5 * age) - 161; // Assuming 160cm height
+    }
+    
+    // Activity calories from steps (approximately 0.04 cal per step)
+    const activityCalories = steps * 0.04;
+    
+    // Daily total (BMR + activity)
+    return Math.round(bmr + activityCalories);
+  }, [profile, fitnessData]);
+
+  // Weight history (last 7 days) - Each day has its own weight data
+  const weightHistory = useMemo(() => {
+    return fitnessHistory.map((entry) => {
+      // Use logged weight if available, otherwise no data (don't fall back to profile for all days)
+      const weight = entry.weight || 0;
+      
+      return {
+        date: entry.date,
+        weight,
+        isToday: entry.date.toDateString() === new Date().toDateString()
+      };
+    });
+  }, [fitnessHistory]);
+
+  // Handle weight update with profile sync
+  const handleWeightUpdate = async (newWeight: number) => {
+    try {
+      setWeightUpdateMutation(true);
+      // Update fitness data
+      await updateFitnessMutation.mutateAsync({ weight: newWeight, date: selectedDate });
+      // Update profile
+      await api.updateProfile({ weight: newWeight });
+      // Refresh profile to get latest data
+      await refreshProfile(true);
+    } catch (err) {
+      console.error('Failed to update weight:', err);
+    } finally {
+      setWeightUpdateMutation(false);
+    }
+  };
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const handleScrollStats = (direction: 'left' | 'right') => {
@@ -394,13 +477,22 @@ export default function DailyLogPage() {
 
               <div className="relative z-10 w-full md:w-1/2">
                 <h2 className="text-5xl font-black text-black mb-4 leading-tight">Eat Smarter,<br /><span className="text-primary-dark">Live Better!</span></h2>
-                <p className="text-muted-foreground font-medium mb-8 max-w-sm leading-relaxed">
-                  You've consumed <span className="text-black font-black">{Math.round(consumedCalories)} kcal</span> today.
-                  That's <span className="text-black font-black flex items-center gap-1 inline-flex">
-                    <TrendingUp className="w-4 h-4 text-primary" />
-                    {Math.round(caloriePercentage)}%
-                  </span> of your daily goal.
-                </p>
+                <div className="space-y-4 mb-8">
+                  <p className="text-muted-foreground font-medium max-w-sm leading-relaxed">
+                    You've consumed <span className="text-black font-black">{Math.round(consumedCalories)} kcal</span> today.
+                    That's <span className="text-black font-black flex items-center gap-1 inline-flex">
+                      <TrendingUp className="w-4 h-4 text-primary" />
+                      {Math.round(caloriePercentage)}%
+                    </span> of your daily goal.
+                  </p>
+                  <p className="text-muted-foreground font-medium max-w-sm leading-relaxed">
+                    You've burned <span className="text-black font-black">{calculateCaloriesBurned} kcal</span> today.
+                    Net balance: <span className="text-black font-black flex items-center gap-1 inline-flex">
+                      {calculateCaloriesBurned - consumedCalories > 0 ? <TrendingUp className="w-4 h-4 text-green-500" /> : <TrendingUp className="w-4 h-4 text-red-500 rotate-180" />}
+                      {Math.abs(calculateCaloriesBurned - consumedCalories)} kcal
+                    </span>
+                  </p>
+                </div>
                 <div className="flex items-center gap-6">
                   <button className="bg-black text-white px-8 py-4 rounded-full font-black hover:bg-primary hover:text-black transition-all flex items-center gap-3 group shadow-xl shadow-black/10 active:scale-95">
                     View Analytics
@@ -910,7 +1002,7 @@ export default function DailyLogPage() {
                     Fitness
                   </h3>
                   <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mt-1">
-                    {fitnessData?.weight ? `Last weigh-in: ${fitnessData.weight}kg` : 'No weight logged'}
+                    {fitnessData?.weight || profile?.profile?.weight ? `Current Weight: ${fitnessData?.weight || profile?.profile?.weight}kg` : 'No weight logged'}
                   </p>
                 </div>
                 <div className="text-right">
@@ -918,8 +1010,43 @@ export default function DailyLogPage() {
                     {fitnessData?.steps || 0} <span className="text-xs text-muted-foreground font-medium uppercase tracking-widest">Steps</span>
                   </span>
                   <span className="text-[10px] font-black uppercase tracking-widest text-[#8EC5DB]">
-                    {fitnessData?.caloriesBurned || 0} kcal burned
+                    {calculateCaloriesBurned} kcal burned
                   </span>
+                </div>
+              </div>
+
+              {/* Weight History Chart */}
+              <div className="relative h-16 w-full my-6 bg-gray-50/50 rounded-2xl p-3 border border-gray-100">
+                <div className="flex justify-between items-end h-full gap-1">
+                  {weightHistory.map((day, idx) => {
+                    // Calculate min/max from weights that actually exist
+                    const validWeights = weightHistory.filter(d => d.weight > 0).map(d => d.weight);
+                    const maxWeight = validWeights.length > 0 ? Math.max(...validWeights) : (profile?.profile?.weight || 80);
+                    const minWeight = validWeights.length > 0 ? Math.min(...validWeights) : (maxWeight - 2);
+                    const range = Math.max(maxWeight - minWeight, 2);
+                    const displayWeight = day.weight;
+                    const height = displayWeight ? ((displayWeight - minWeight) / range) * 100 : 0;
+                    
+                    return (
+                      <div key={idx} className="flex-1 flex flex-col items-center gap-1 group/bar" title={displayWeight ? `${displayWeight}kg` : 'No data'}>
+                        <div className="w-full h-12 rounded-lg overflow-hidden bg-white border border-gray-100 flex items-end justify-center group-hover/bar:bg-primary/10 transition-colors">
+                          {displayWeight > 0 && (
+                            <div
+                              className={`w-3/4 rounded-t transition-all duration-300 ${
+                                day.isToday ? 'bg-primary shadow-lg' : 'bg-gray-300'
+                              }`}
+                              style={{ height: `${Math.max(15, height)}%` }}
+                            />
+                          )}
+                          {displayWeight === 0 && (
+                            <span className="text-[8px] text-gray-300 font-bold">-</span>
+                          )}
+                        </div>
+                        <span className="text-[8px] font-black text-muted-foreground">{day.date.getDate()}</span>
+                        {displayWeight > 0 && <span className="text-[7px] font-bold text-gray-500">{displayWeight}kg</span>}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
 
@@ -937,13 +1064,16 @@ export default function DailyLogPage() {
                 </svg>
               </div>
 
-              <div className="flex items-end justify-between mt-auto">
-                <div className="flex items-center gap-4">
+              <div className="flex items-end justify-between mt-auto gap-4">
+                <div className="flex items-center gap-4 flex-1">
                   <div>
-                    <span className="text-5xl font-black text-black tracking-tighter">
-                      {fitnessData?.weight || '--'}
-                      <span className="text-2xl text-muted-foreground font-medium tracking-tight">kg</span>
+                    <span className="text-4xl font-black text-black tracking-tighter">
+                      {fitnessData?.weight || profile?.profile?.weight || '--'}
+                      <span className="text-xl text-muted-foreground font-medium tracking-tight">kg</span>
                     </span>
+                    <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mt-1">
+                      {fitnessData?.weight ? 'Logged Today' : profile?.profile?.weight ? 'From Profile' : 'No Data'}
+                    </p>
                   </div>
                   <button
                     onClick={() => {
@@ -951,7 +1081,8 @@ export default function DailyLogPage() {
                       setTempSteps(fitnessData?.steps?.toString() || '');
                       setIsFitnessModalOpen(true);
                     }}
-                    className="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center hover:bg-black hover:text-white transition-all shadow-sm group-hover:shadow-md"
+                    disabled={weightUpdateMutation}
+                    className="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center hover:bg-black hover:text-white transition-all shadow-sm group-hover:shadow-md disabled:opacity-50"
                   >
                     <Plus className="w-5 h-5" />
                   </button>
@@ -1027,6 +1158,10 @@ export default function DailyLogPage() {
                   const pWeight = tempWeight && !isNaN(parseFloat(tempWeight)) ? parseFloat(tempWeight) : undefined;
                   const pSteps = tempSteps && !isNaN(parseInt(tempSteps)) ? parseInt(tempSteps) : undefined;
 
+                  if (pWeight) {
+                    handleWeightUpdate(pWeight);
+                  }
+
                   updateFitnessMutation.mutate({
                     weight: pWeight,
                     steps: pSteps,
@@ -1041,11 +1176,11 @@ export default function DailyLogPage() {
                     }
                   });
                 }}
-                disabled={updateFitnessMutation.isPending}
+                disabled={updateFitnessMutation.isPending || weightUpdateMutation}
                 className="w-full bg-black text-primary py-6 rounded-[2rem] font-black uppercase tracking-widest text-sm hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl shadow-black/20 mt-4 flex items-center justify-center gap-2 group disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {updateFitnessMutation.isPending ? 'Syncing...' : 'Save Daily Stats'}
-                {!updateFitnessMutation.isPending && <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />}
+                {updateFitnessMutation.isPending || weightUpdateMutation ? 'Syncing...' : 'Save Daily Stats'}
+                {!updateFitnessMutation.isPending && !weightUpdateMutation && <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />}
               </button>
             </div>
           </div>
