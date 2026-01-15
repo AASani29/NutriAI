@@ -129,7 +129,7 @@ export const MapPicker: React.FC<MapPickerProps> = ({
                 <button
                     type="button"
                     onClick={handleGetCurrentLocation}
-                    className="text-[10px] bg-primary text-black px-3 py-1 rounded-full hover:bg-black hover:text-white transition-all font-black uppercase tracking-widest"
+                    className="text-[10px] bg-primary text-black px-3 py-1 rounded-full hover:bg-black hover:text-white transition-all font-bold uppercase tracking-widest"
                 >
                     Use GPS
                 </button>

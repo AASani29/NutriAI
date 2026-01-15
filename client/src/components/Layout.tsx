@@ -29,12 +29,12 @@ export default function Layout() {
       
       {/* Spacer to push content away from fixed sidebar */}
       <div 
-        className={`flex-shrink-0 transition-all duration-300 ease-in-out ${
-          isExpanded ? 'w-64' : 'w-20 lg:w-24'
+        className={`flex-shrink-0 transition-all duration-300 ease-in-out overflow-hidden ${
+          isExpanded ? 'w-70' : 'w-20 lg:w-24'
         }`}
       />
       
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-hidden">
         <Outlet />
       </div>
     </div>

@@ -113,6 +113,46 @@ export class UserService {
       throw new Error('Failed to delete user');
     }
   }
+
+  async searchUsers(query: string, limit: number = 10): Promise<any[]> {
+    try {
+      if (!query || query.trim().length < 2) {
+        return [];
+      }
+
+      const users = await prisma.user.findMany({
+        where: {
+          isDeleted: false,
+          OR: [
+            { email: { contains: query, mode: 'insensitive' } },
+            {
+              profile: {
+                fullName: { contains: query, mode: 'insensitive' },
+              },
+            },
+          ],
+        },
+        include: {
+          profile: {
+            select: {
+              fullName: true,
+            },
+          },
+        },
+        take: limit,
+      });
+
+      return users.map(user => ({
+        id: user.id,
+        clerkId: user.clerkId,
+        email: user.email,
+        fullName: user.profile?.fullName,
+      }));
+    } catch (error) {
+      console.error('Error searching users:', error);
+      throw new Error('Failed to search users');
+    }
+  }
 }
 
 export const userService = new UserService();

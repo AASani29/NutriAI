@@ -34,7 +34,7 @@ export default function Footer() {
 
           {/* Product Links */}
           <div>
-            <h3 className="font-black text-foreground text-xs uppercase tracking-widest mb-8">Product</h3>
+            <h3 className="font-bold text-foreground text-xs uppercase tracking-widest mb-8">Product</h3>
             <ul className="space-y-4 text-sm text-muted-foreground font-medium">
               <li><Link to="/features" className="hover:text-black transition-colors">Features</Link></li>
               <li><Link to="/pricing" className="hover:text-black transition-colors">Pricing</Link></li>
@@ -46,7 +46,7 @@ export default function Footer() {
 
           {/* Resources Links */}
           <div>
-            <h3 className="font-black text-foreground text-xs uppercase tracking-widest mb-8">Resources</h3>
+            <h3 className="font-bold text-foreground text-xs uppercase tracking-widest mb-8">Resources</h3>
             <ul className="space-y-4 text-sm text-muted-foreground font-medium">
               <li><Link to="/blog" className="hover:text-black transition-colors">Blog</Link></li>
               <li><Link to="/recipes" className="hover:text-black transition-colors">Recipe Database</Link></li>
@@ -58,7 +58,7 @@ export default function Footer() {
 
           {/* Contact Info */}
           <div>
-            <h3 className="font-black text-foreground text-xs uppercase tracking-widest mb-8">Contact</h3>
+            <h3 className="font-bold text-foreground text-xs uppercase tracking-widest mb-8">Contact</h3>
             <ul className="space-y-4 text-sm text-muted-foreground font-medium">
               <li className="flex items-start gap-3">
                 <MapPin className="w-4 h-4 text-black mt-0.5" />

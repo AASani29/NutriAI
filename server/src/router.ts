@@ -9,6 +9,8 @@ import { resourcesRouter } from './modules/resources/resources-router';
 import { usersRouter } from './modules/users/users-router';
 import { sharingRouter } from './modules/sharing/sharing-router';
 import weatherRouter from './modules/weather/weather-router';
+import { nutritionRouter } from './modules/nutrition/nutrition-router';
+import healthAdvisorRouter from './modules/health-advisor/health-advisor-router';
 const router = express.Router();
 
 router.get('/', (req: Request, res: Response) => {
@@ -35,12 +37,18 @@ router.use('/users', usersRouter);
 router.use('/inventories', inventoryRouter);
 router.use('/images', imageRouter);
 router.use('/sharing', sharingRouter);
+router.use('/nutrition', nutritionRouter);
 
 // AI Intelligence routes (require authentication)
 router.use('/intelligence', intelligenceRouter);
+router.use('/health-advisor', healthAdvisorRouter);
 
 // Weather and alerts routes
 router.use('/weather', weatherRouter);
+
+// Recipe routes
+import recipeRouter from './modules/recipes/recipe-router';
+router.use('/recipes', recipeRouter);
 
 // Admin routes (require admin role)
 router.use('/admin', adminRouter);
@@ -48,6 +56,7 @@ router.use('/admin', adminRouter);
 import { chatController } from './modules/chat/chat-controller';
 
 // Chatbot route
+router.get('/chat/history', (req, res) => chatController.getHistory(req, res));
 router.post('/chat', (req, res) => chatController.handleChat(req, res));
 
 export default router;

@@ -5,6 +5,7 @@ import { aiQueue, aiQueueEvents, imageQueue, imageQueueEvents } from '../../conf
 import prisma from '../../config/database';
 import { inventoryService } from '../inventories/inventory-service';
 import { imageService } from '../images/image-service';
+import { usdaFoodService } from '../../services/usda-food-service';
 
 export class IntelligentDashboardController {
   // Save a meal plan
@@ -91,7 +92,7 @@ export class IntelligentDashboardController {
         return res.status(401).json({ error: 'Unauthorized' });
       }
 
-      const { mealName, items } = req.body;
+      const { mealName, items, isMarketPurchase } = req.body;
       if (!items || !Array.isArray(items)) {
         return res.status(400).json({ error: 'Items list is required' });
       }
@@ -104,6 +105,31 @@ export class IntelligentDashboardController {
       }
 
       const results = [];
+      
+      // If this is a market purchase (option2), add items to inventory first
+      if (isMarketPurchase) {
+        for (const itemName of items) {
+          try {
+            // Search USDA for the item to get nutritional info
+            const foodData = await usdaFoodService.searchFood(itemName, 1);
+            
+            // Add to inventory
+            await inventoryService.addInventoryItem(clerkId, inventoryId, {
+              customName: itemName,
+              quantity: 1,
+              unit: 'pcs',
+              nutritionPerUnit: foodData[0]?.nutrients || {},
+            });
+            
+            results.push({ item: itemName, status: 'added_to_inventory' });
+          } catch (error) {
+            console.error(`Failed to add ${itemName} to inventory:`, error);
+            results.push({ item: itemName, status: 'failed_to_add', error: (error as Error).message });
+          }
+        }
+      }
+      
+      // Now consume from inventory
       for (const itemName of items) {
         const inventoryItems = await prisma.inventoryItem.findMany({
           where: {
@@ -111,28 +137,28 @@ export class IntelligentDashboardController {
             OR: [
               { customName: { contains: itemName, mode: 'insensitive' } },
               { foodItem: { name: { contains: itemName, mode: 'insensitive' } } }
-            ]
+            ],
+            removed: false,
           }
         });
 
         if (inventoryItems.length > 0) {
           const item = inventoryItems[0];
-          // Log consumption for 1 unit (or some logic to determine amount)
           await inventoryService.logConsumption(clerkId, {
             inventoryId,
             inventoryItemId: item.id,
             itemName: item.customName || itemName,
-            quantity: 1, // Defaulting to 1 for now
+            quantity: 1,
             unit: item.unit || 'pcs'
           });
           results.push({ item: itemName, status: 'consumed_from_inventory', inventoryItemId: item.id });
         } else {
-          // MODIFIED: Log consumption even if not in inventory (Market Buy)
+          // Fallback: Log consumption even if not in inventory
           await inventoryService.logConsumption(clerkId, {
             inventoryId,
             itemName: itemName,
             quantity: 1,
-            unit: 'pcs' // Default for market items
+            unit: 'pcs'
           });
           results.push({ item: itemName, status: 'consumed_external' });
         }
@@ -141,7 +167,7 @@ export class IntelligentDashboardController {
       res.json({
         success: true,
         data: results,
-        message: `Processed consumption for ${mealName}. Logs generated for all items.`,
+        message: `Processed consumption for ${mealName}. ${isMarketPurchase ? 'Items added to inventory and consumed.' : 'Consumed from existing inventory.'}`,
       });
     } catch (error: any) {
       console.error('Consume meal error:', error);
@@ -308,15 +334,67 @@ export class IntelligentDashboardController {
         return res.status(401).json({ error: 'Unauthorized' });
       }
 
-      const { budget, timePeriod, preferences, notes } = req.body;
+      const { budget, timePeriod, preferences, notes, userStats } = req.body;
 
       let query = `Generate a price-smart meal plan for the period: ${timePeriod || 'one_day'}. `;
       if (budget) query += `The total budget for this entire period is ${budget} BDT. `;
+      
+      // Add comprehensive nutrition gap analysis to guide AI suggestions
+      if (userStats) {
+        query += `\n\n🔴 CRITICAL: NUTRIENT-TARGETED MEAL PLANNING 🔴\n`;
+        query += `\nYour Nutritional Status TODAY:\n`;
+        query += `✓ Calories consumed: ${Math.round(userStats.consumed?.calories || 0)}/${userStats.energyGoal} kcal (${Math.round((userStats.consumed?.calories || 0) / userStats.energyGoal * 100)}% - ${Math.round(userStats.remaining?.calories || 0)} kcal REMAINING)\n`;
+        query += `✓ Protein consumed: ${Math.round(userStats.consumed?.protein || 0)}/${userStats.proteinGoal}g (${Math.round((userStats.consumed?.protein || 0) / userStats.proteinGoal * 100)}% - ${Math.round(userStats.remaining?.protein || 0)}g REMAINING)\n`;
+        query += `✓ Carbs consumed: ${Math.round(userStats.consumed?.carbs || 0)}/${userStats.carbsGoal}g (${Math.round((userStats.consumed?.carbs || 0) / userStats.carbsGoal * 100)}% - ${Math.round(userStats.remaining?.carbs || 0)}g REMAINING)\n`;
+        query += `✓ Fats consumed: ${Math.round(userStats.consumed?.fat || 0)}/${userStats.fatsGoal}g (${Math.round((userStats.consumed?.fat || 0) / userStats.fatsGoal * 100)}% - ${Math.round(userStats.remaining?.fats || 0)}g REMAINING)\n`;
+        
+        // Calculate completion percentages - target the LOWEST percentage (biggest deficiency)
+        const proteinPercent = Math.round((userStats.consumed?.protein || 0) / userStats.proteinGoal * 100);
+        const carbsPercent = Math.round((userStats.consumed?.carbs || 0) / userStats.carbsGoal * 100);
+        const fatsPercent = Math.round((userStats.consumed?.fat || 0) / userStats.fatsGoal * 100);
+        
+        const gaps = [
+          { name: 'PROTEIN', consumed: Math.round(userStats.consumed?.protein || 0), goal: userStats.proteinGoal, percent: proteinPercent, remaining: Math.round(userStats.remaining?.protein || 0), foods: 'Eggs, Chicken, Fish, Lentils, Paneer, Yogurt, Tofu' },
+          { name: 'CARBS', consumed: Math.round(userStats.consumed?.carbs || 0), goal: userStats.carbsGoal, percent: carbsPercent, remaining: Math.round(userStats.remaining?.carbs || 0), foods: 'Rice, Bread, Oats, Potatoes, Sweet Potatoes, Fruits' },
+          { name: 'FATS', consumed: Math.round(userStats.consumed?.fat || 0), goal: userStats.fatsGoal, percent: fatsPercent, remaining: Math.round(userStats.remaining?.fats || 0), foods: 'Nuts, Seeds, Avocado, Olive Oil, Ghee, Cheese, Coconut Oil' }
+        ].sort((a, b) => a.percent - b.percent); // Sort by LOWEST percentage first (biggest deficiency)
+        
+        query += `\n🎯 NUTRIENT DEFICIENCY RANKING (sorted by completion %):\n`;
+        gaps.forEach((gap, i) => {
+          query += `${i + 1}. ${gap.name}: ${gap.percent}% complete (${gap.consumed}/${gap.goal}g - need ${gap.remaining}g more)\n`;
+        });
+        
+        query += `\n🔴 MANDATORY NUTRIENT TARGETING (YOU MUST FOLLOW THIS):\n`;
+        query += `1️⃣ PRIMARY FOCUS - MOST DEFICIENT (${gaps[0].percent}% complete): AGGRESSIVELY target ${gaps[0].name}\n`;
+        query += `   - This is your BIGGEST deficiency. Every meal MUST be rich in ${gaps[0].name}.\n`;
+        query += `   - MUST include these ingredients: ${gaps[0].foods}\n`;
+        query += `   - Do NOT create meals without strong ${gaps[0].name} content.\n`;
+        query += `   - Examples of ${gaps[0].name}-focused meals: `;
+        
+        if (gaps[0].name === 'PROTEIN') {
+          query += `Grilled Chicken + Rice, Egg Bhurji + Roti, Fish Curry, Paneer Tikka + Naan, Lentil Dal + Rice, Yogurt Bowl with Granola, Tofu Stir-fry\n`;
+        } else if (gaps[0].name === 'CARBS') {
+          query += `Vegetable Khichuri, Brown Rice + Dal, Oatmeal + Fruit, Sweet Potato + Lentils, Bread + Avocado, Rice Pudding, Potato Curry with Rice\n`;
+        } else if (gaps[0].name === 'FATS') {
+          query += `Nut Butter Toast, Avocado Salad, Cheese Omelette + Olive Oil, Seeds + Granola, Ghee-roasted Vegetables, Coconut Rice, Walnut Khichuri\n`;
+        }
+        
+        query += `2️⃣ SECONDARY FOCUS (${gaps[1].percent}% complete): Include ${gaps[1].name}-rich components alongside primary focus\n`;
+        query += `3️⃣ THIRD PRIORITY (${gaps[2].percent}% complete): Minimal focus. Only add as side component if needed.\n`;
+        
+        query += `\n⚡ STRICT RULES:\n`;
+        query += `⚡ Every meal MUST target the lowest percentage nutrient (${gaps[0].name} at ${gaps[0].percent}%).\n`;
+        query += `⚡ Do NOT create balanced meals - focus heavily on the deficiency.\n`;
+        query += `⚡ Ensure nutrition values in JSON accurately represent the meal.\n`;
+        query += `⚡ Prioritize ${gaps[0].name}-rich foods FIRST, then build the rest of the meal around it.\n`;
+      }
+      
       if (preferences)
         query += `Dietary preferences: ${JSON.stringify(preferences)}. `;
       if (notes)
         query += `IMPORTANT USER CONSIDERATION/NOTE: "${notes}". Adapt the meal choices according to this note. `;
-      query += `Use my inventory where possible. Return the result in the requested JSON format.`;
+      query += `\n\nCRITICAL INVENTORY RULE: For option1 (inventory option), ONLY include items that ACTUALLY exist in my inventory. Check my inventory items carefully. If an ingredient is NOT in my inventory, do NOT include it in option1.items array. If you cannot find enough inventory items to make a complete meal, leave option1 as null or with empty items array. Do NOT hallucinate inventory items.\n`;
+      query += `Return the result in the requested JSON format.`;
 
       const mealPlan = await aiAnalyticsService.generateIntelligentInsights(
         userId,

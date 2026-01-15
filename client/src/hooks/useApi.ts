@@ -20,6 +20,10 @@ export interface UserProfile {
     weightPreference: string | null;
     allergies: string | null;
     healthConditions: string | null;
+    proteinGoal: number | null;
+    carbGoal: number | null;
+    fatGoal: number | null;
+    energyGoal: number | null;
     latitude: number | null;
     longitude: number | null;
   } | null;
@@ -36,6 +40,10 @@ export interface UpdateProfileData {
   weightPreference?: string;
   allergies?: string;
   healthConditions?: string;
+  proteinGoal?: number;
+  carbGoal?: number;
+  fatGoal?: number;
+  energyGoal?: number;
   latitude?: number;
   longitude?: number;
 }
@@ -75,7 +83,7 @@ export function useApi() {
         method: 'PUT',
         body: JSON.stringify(data),
       }),
-    getOptimizedMealPlan: (data: { budget?: number; timePeriod?: string; preferences?: any; notes?: string }) =>
+    getOptimizedMealPlan: (data: { budget?: number; timePeriod?: string; preferences?: any; notes?: string; userStats?: any }) =>
       fetchWithAuth('/intelligence/meal-plan', {
         method: 'POST',
         body: JSON.stringify(data),
@@ -86,10 +94,10 @@ export function useApi() {
         body: JSON.stringify({ plan }),
       }),
     getSavedMealPlans: () => fetchWithAuth('/intelligence/meal-plans/saved'),
-    consumeMeal: (mealName: string, items: string[]) =>
+    consumeMeal: (mealName: string, items: string[], isMarketPurchase?: boolean) =>
       fetchWithAuth('/intelligence/meal-plans/consume', {
         method: 'POST',
-        body: JSON.stringify({ mealName, items }),
+        body: JSON.stringify({ mealName, items, isMarketPurchase }),
       }),
     getRecipe: (dishName: string, ingredients: string[]) =>
       fetchWithAuth('/intelligence/recipe', {

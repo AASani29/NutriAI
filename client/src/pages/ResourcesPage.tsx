@@ -101,7 +101,7 @@ export function ResourcesPage() {
             <div className="w-12 h-12 bg-black rounded-2xl flex items-center justify-center shadow-lg shadow-black/10">
               <BookOpen className="h-6 w-6 text-white" />
             </div>
-            <h1 className="text-4xl font-black text-foreground tracking-tight">Resources</h1>
+            <h1 className="text-4xl font-bold text-foreground tracking-tight">Resources</h1>
           </div>
           <p className="text-muted-foreground font-medium ml-1">
             Master the art of kitchen management, sustainability, and waste reduction.
@@ -175,13 +175,13 @@ export function ResourcesPage() {
                       <div className="w-10 h-10 bg-primary/20 rounded-xl flex items-center justify-center border border-primary/30">
                         <Sparkles className="h-5 w-5 text-black" />
                       </div>
-                      <h3 className="text-xl font-black text-foreground tracking-tight">Your Personalized Feed</h3>
+                      <h3 className="text-xl font-bold text-foreground tracking-tight">Your Personalized Feed</h3>
                     </div>
                     <p className="text-muted-foreground font-medium leading-relaxed max-w-2xl">
                       Optimized for your <span className="text-black font-bold">{recommendations.userProfile.wasteReductionPercentage}% waste reduction rate</span>
                       {recommendations.userProfile.budgetRange && <> and <span className="text-black font-bold">৳{recommendations.userProfile.budgetRange} monthly budget</span></>}.
                       {recommendations.userProfile.primaryConcerns.length > 0 && (
-                        <> Focusing on: <span className="text-primary-dark font-black uppercase tracking-wider text-xs">{recommendations.userProfile.primaryConcerns.join(', ')}</span>.</>
+                        <> Focusing on: <span className="text-primary-dark font-bold uppercase tracking-wider text-xs">{recommendations.userProfile.primaryConcerns.join(', ')}</span>.</>
                       )}
                     </p>
                   </div>
@@ -195,7 +195,7 @@ export function ResourcesPage() {
                     <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
                       <Newspaper className="h-4 w-4 text-black" />
                     </div>
-                    <h2 className="text-xl font-black text-foreground tracking-tight">Recommended Articles</h2>
+                    <h2 className="text-xl font-bold text-foreground tracking-tight">Recommended Articles</h2>
                     <span className="bg-gray-50 text-muted-foreground text-xs font-bold px-3 py-1 rounded-full border border-gray-100">{recommendations.articles.length}</span>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -213,7 +213,7 @@ export function ResourcesPage() {
                     <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
                       <VideoIcon className="h-4 w-4 text-black" />
                     </div>
-                    <h2 className="text-xl font-black text-foreground tracking-tight">Recommended Videos</h2>
+                    <h2 className="text-xl font-bold text-foreground tracking-tight">Recommended Videos</h2>
                     <span className="bg-gray-50 text-muted-foreground text-xs font-bold px-3 py-1 rounded-full border border-gray-100">{recommendations.videos.length}</span>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -249,7 +249,7 @@ export function ResourcesPage() {
         <div className="space-y-6">
           {/* Search Bar */}
           <div className="bg-white rounded-3xl shadow-soft border border-gray-100 p-8">
-            <h3 className="text-xl font-black text-foreground mb-6 tracking-tight">Search Knowledge Base</h3>
+            <h3 className="text-xl font-bold text-foreground mb-6 tracking-tight">Search Knowledge Base</h3>
             <SearchBar
               onSearch={handleSearch}
               onClear={handleClearSearch}
@@ -336,7 +336,7 @@ export function ResourcesPage() {
 
           {/* Static Resources */}
           <div className="bg-white rounded-3xl shadow-soft border border-gray-100 p-8">
-            <h3 className="text-xl font-black text-foreground mb-8 tracking-tight">Curated Learning Path</h3>
+            <h3 className="text-xl font-bold text-foreground mb-8 tracking-tight">Curated Learning Path</h3>
 
             <div className="flex flex-wrap gap-2 mb-8">
               {tags.map((tag: string) => (
@@ -345,7 +345,7 @@ export function ResourcesPage() {
                   type="button"
                   onClick={() => setSelectedTag(tag as string)}
                   className={
-                    `px-5 py-2 rounded-xl border text-sm font-black transition-all uppercase tracking-wider ` +
+                    `px-5 py-2 rounded-xl border text-sm font-bold transition-all uppercase tracking-wider ` +
                     (selectedTag === tag
                       ? 'bg-black text-white border-black shadow-lg shadow-black/10'
                       : 'bg-white text-muted-foreground border-gray-100 hover:bg-gray-50 hover:text-black')

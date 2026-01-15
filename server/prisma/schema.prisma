@@ -1,10 +1,12 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [pgvector(map: "vector")]
 }
 
 model User {
@@ -35,6 +37,7 @@ model User {
   sdgScores           SdgScore[]
   sharingLogs         SharingLog[]         @relation("UserSharingLogs")
   profile             UserProfile?
+  healthMemories      UserHealthMemory[]
 }
 
 model HydrationLog {
@@ -76,6 +79,10 @@ model UserProfile {
   healthConditions  String?
   latitude          Float?
   longitude         Float?
+  proteinGoal       Float?
+  carbGoal          Float?
+  fatGoal           Float?
+  energyGoal        Float?
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
   isDeleted         Boolean   @default(false)
@@ -113,6 +120,8 @@ model Inventory {
   description String?
   createdById String?
   isPrivate   Boolean           @default(true)
+  isArchived  Boolean           @default(false)
+  archivedAt  DateTime?
   createdAt   DateTime          @default(now())
   updatedAt   DateTime          @updatedAt
   isDeleted   Boolean           @default(false)
@@ -299,6 +308,7 @@ model MealPlan {
 model ChatSession {
   id           String        @id @default(cuid())
   userId       String
+  mode         String        @default("ask") // "ask" or "agent"
   startedAt    DateTime      @default(now())
   lastActivity DateTime      @default(now())
   messages     ChatMessage[]
@@ -414,4 +424,52 @@ enum ListingStatus {
   CLAIMED
   COMPLETED
   CANCELLED
+}
+model HealthKnowledge {
+  id        String                      @id @default(uuid())
+  content   String
+  category  String                      // e.g., "Nutrition", "Diet", "Medical"
+  tags      String[]
+  metadata  Json?                       // Source info, author, etc.
+  embedding Unsupported("vector(768)")? // Gemini text-embedding-004 is 768 dimensions
+  createdAt DateTime                   @default(now())
+  updatedAt DateTime                   @updatedAt
+
+  @@map("health_knowledge")
+}
+
+model UserHealthMemory {
+  id        String                      @id @default(uuid())
+  userId    String
+  user      User                        @relation(fields: [userId], references: [id])
+  content   String                      // The specific health-related insight or pattern
+  source    String                      // "consumption", "profile", "activity"
+  embedding Unsupported("vector(768)")?
+  createdAt DateTime                   @default(now())
+  updatedAt DateTime                   @updatedAt
+
+  @@map("user_health_memory")
+}
+
+model Recipe {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  cuisine     String?
+  prepTime    Int?
+  cookTime    Int?
+  servings    Int?
+  
+  ingredients Json     // array of { name, quantity, unit, notes }
+  instructions Json    // array of strings or { step: number, text: string }
+  nutrition   Json?    // { calories, protein, carbs, fat }
+  
+  sourceUrl   String?
+  sourceType  String   @default("AI_SCOUT") // "USER", "AI_SCOUT", "API"
+  externalId  String?  // ID from TheMealDB or other APIs
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([name])
 }

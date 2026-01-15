@@ -6,10 +6,21 @@ export interface Inventory {
   name: string;
   description?: string;
   isPrivate?: boolean;
+  isArchived?: boolean;
   createdAt: string;
   updatedAt: string;
   itemCount?: number;
   expiringCount?: number;
+  accessRole?: 'owner' | 'member';
+  ownerName?: string;
+  members?: InventoryMember[];
+}
+
+export interface InventoryMember {
+  id: string;
+  userId?: string | null;
+  memberName?: string | null;
+  role: string;
 }
 
 export interface InventoryItem {
@@ -145,9 +156,12 @@ export function useInventory() {
   // Create inventory
   const useCreateInventory = () => {
     return useMutation({
-      mutationFn: async (
-        inventory: Omit<Inventory, 'id' | 'createdAt' | 'updatedAt'>,
-      ) => {
+      mutationFn: async (inventory: {
+        name: string;
+        description?: string;
+        isPrivate?: boolean;
+        shareWith?: string[];
+      }) => {
         const response = await fetchWithAuth('/inventories', {
           method: 'POST',
           body: JSON.stringify(inventory),
@@ -299,6 +313,36 @@ export function useInventory() {
     });
   };
 
+  // Archive inventory
+  const useArchiveInventory = () => {
+    return useMutation({
+      mutationFn: async (id: string) => {
+        const response = await fetchWithAuth(`/inventories/${id}/archive`, {
+          method: 'PATCH',
+        });
+        return response.data || response;
+      },
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['inventories'] });
+      },
+    });
+  };
+
+  // Unarchive inventory
+  const useUnarchiveInventory = () => {
+    return useMutation({
+      mutationFn: async (id: string) => {
+        const response = await fetchWithAuth(`/inventories/${id}/unarchive`, {
+          method: 'PATCH',
+        });
+        return response.data || response;
+      },
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['inventories'] });
+      },
+    });
+  };
+
   // Remove item from inventory
   const useRemoveItemFromInventory = (inventoryId: string) => {
     return useMutation({
@@ -399,6 +443,10 @@ export function useInventory() {
         queryClient.invalidateQueries({
           queryKey: ['inventory-items', inventoryId],
         });
+        // Invalidate all consumption logs queries to ensure real-time updates
+        queryClient.invalidateQueries({
+          queryKey: ['consumption-logs'],
+        });
       },
     });
   };
@@ -474,13 +522,11 @@ export function useInventory() {
           return response;
         } catch (error) {
           console.error('Error fetching consumption logs:', error);
-          // Return empty structure on error
-          return { consumptionLogs: [], totalCount: 0, page: 1, totalPages: 1 };
+          throw error;
         }
       },
-      retry: 2,
-      staleTime: 5 * 60 * 1000, // 5 minutes
-      placeholderData: keepPreviousData,
+      staleTime: 0,
+      refetchOnMount: true,
     });
   };
 
@@ -610,6 +656,8 @@ export function useInventory() {
     useUpdateInventory,
     useUpdateInventoryItem,
     useDeleteInventory,
+    useArchiveInventory,
+    useUnarchiveInventory,
     useRemoveItemFromInventory,
     useLogConsumption,
     useGetConsumptionLogs,

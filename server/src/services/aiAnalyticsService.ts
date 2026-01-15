@@ -3,6 +3,7 @@ import prisma from '../config/database';
 import { inventoryService } from '../modules/inventories/inventory-service';
 import { usdaFoodService } from './usda-food-service';
 import { connection } from '../config/queue';
+import { tavilyService } from './tavily-service';
 
 
 class AIAnalyticsService {
@@ -858,13 +859,24 @@ class AIAnalyticsService {
     region?: string
   ): Promise<any> {
     try {
+      const regionQuery = region || (coordinates ? 'local' : 'Bangladesh');
+      const searchQuery = `current market price of ${quantity} ${unit} ${foodName} in ${regionQuery} BDT`;
+
+      // Get real-time search context
+      const searchContext = await tavilyService.searchPrices(searchQuery);
+
       let systemContent = `You are a grocery pricing expert. Estimate the market price for the given food item.
             
             CRITICAL INSTRUCTION:
-            1. First, estimate the price in the LOCAL CURRENCY of the region detected or provided (or USD if international).
-            2. THEN, CONVERT that price to BDT (Bangladeshi Taka).
-            3. MANDATORY EXCHANGE RATE: Use exactly 1 USD = 122 BDT.
-            4. The "estimatedPrice" field MUST BE in BDT.
+            1. First, analyze the provided SEARCH CONTEXT for real-time price data.
+            2. PRIORITIZE the search results over your internal knowledge.
+            3. Estimate the price in the LOCAL CURRENCY of the region detected or provided (or USD if international).
+            4. THEN, CONVERT that price to BDT (Bangladeshi Taka).
+            5. MANDATORY EXCHANGE RATE: Use exactly 1 USD = 122 BDT.
+            6. The "estimatedPrice" field MUST BE in BDT.
+
+            SEARCH CONTEXT:
+            ${searchContext}
 
             Return ONLY a JSON object with this exact schema (all values are numbers except strings):
             {
@@ -873,7 +885,8 @@ class AIAnalyticsService {
               "currency": "BDT", // Always return BDT here as this is the converted currency
               "originalPrice": number, // The price in the local currency before conversion
               "originalCurrency": string, // The local currency code (e.g. USD, EUR, GBP)
-              "regionDetected": string // The region/country used for estimation
+              "regionDetected": string, // The region/country used for estimation
+              "source": string // "Tavily Search" or "Internal Estimate"
             }
             Do not include any explanation or markdown formatting.`;
 

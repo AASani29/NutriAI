@@ -164,14 +164,14 @@ export default function ListingCard({
         {/* Header */}
         <div className="flex items-start justify-between mb-4">
           <div className="flex-1">
-            <h3 className="font-black text-lg text-black mb-1 group-hover:text-primary transition-colors">
+            <h3 className="font-bold text-lg text-black mb-1 group-hover:text-primary transition-colors">
               {listing.title}
             </h3>
-            <p className="text-xs text-muted-foreground font-black uppercase tracking-widest">
+            <p className="text-xs text-muted-foreground font-bold uppercase tracking-widest">
               {itemName} • {category}
             </p>
           </div>
-          <div className={`px-3 py-1 rounded-full border text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5 ${getStatusColor(listing.status)}`}>
+          <div className={`px-3 py-1 rounded-full border text-[10px] font-bold uppercase tracking-widest flex items-center gap-1.5 ${getStatusColor(listing.status)}`}>
             {getStatusIcon(listing.status)}
             {getStatusText(listing.status)}
           </div>
@@ -203,7 +203,7 @@ export default function ListingCard({
               {listing.latitude && listing.longitude && (
                 <button
                   onClick={() => setShowMapModal(true)}
-                  className="text-[10px] text-primary hover:text-black font-black uppercase tracking-widest bg-white border border-gray-100 px-2 py-1 rounded-lg shadow-sm transition-all active:scale-95"
+                  className="text-[10px] text-primary hover:text-black font-bold uppercase tracking-widest bg-white border border-gray-100 px-2 py-1 rounded-lg shadow-sm transition-all active:scale-95"
                   title="View on Map"
                 >
                   Map
@@ -226,7 +226,7 @@ export default function ListingCard({
         )}
 
         {/* Lister Info */}
-        <div className="flex items-center justify-between text-[10px] text-muted-foreground font-black uppercase tracking-widest mb-6 pt-4 border-t border-gray-50">
+        <div className="flex items-center justify-between text-[10px] text-muted-foreground font-bold uppercase tracking-widest mb-6 pt-4 border-t border-gray-50">
           <div className="flex items-center gap-2">
             <div className="w-5 h-5 bg-black rounded-full flex items-center justify-center text-[8px] text-white">
               {listing.lister.profile?.fullName?.[0] || 'A'}
@@ -308,7 +308,7 @@ export default function ListingCard({
               <button
                 onClick={() => setShowClaimModal(true)}
                 disabled={claimMutation.isPending}
-                className="flex-1 px-4 py-3 bg-primary text-black rounded-2xl hover:bg-black hover:text-white disabled:opacity-50 transition-all font-black flex items-center justify-center gap-2 shadow-xl shadow-primary/10"
+                className="flex-1 px-4 py-3 bg-primary text-black rounded-2xl hover:bg-black hover:text-white disabled:opacity-50 transition-all font-bold flex items-center justify-center gap-2 shadow-xl shadow-primary/10"
               >
                 <Star className="w-4 h-4" />
                 {claimMutation.isPending ? 'Booking...' : 'Book Now'}
@@ -371,7 +371,7 @@ export default function ListingCard({
           <div className="bg-white rounded-[2rem] border border-gray-100 shadow-2xl p-6 w-full max-w-2xl relative overflow-hidden">
             <div className="flex items-center justify-between mb-6">
               <div>
-                <h3 className="text-lg font-black text-black">Pickup Location</h3>
+                <h3 className="text-lg font-bold text-black">Pickup Location</h3>
                 <p className="text-xs text-muted-foreground font-medium">{listing.pickupLocation}</p>
               </div>
               <button
@@ -392,7 +392,7 @@ export default function ListingCard({
             <div className="mt-6 flex justify-center">
               <button
                 onClick={() => setShowMapModal(false)}
-                className="px-8 py-3 bg-black text-white rounded-2xl hover:bg-primary hover:text-white transition-all font-black uppercase tracking-widest text-xs"
+                className="px-8 py-3 bg-black text-white rounded-2xl hover:bg-primary hover:text-white transition-all font-bold uppercase tracking-widest text-xs"
               >
                 Close Map
               </button>

@@ -51,7 +51,7 @@ export default function ProfilePage() {
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-muted-foreground font-black tracking-widest uppercase text-xs">Synchronizing Profile...</p>
+          <p className="text-muted-foreground font-bold tracking-widest uppercase text-xs">Synchronizing Profile...</p>
         </div>
       </div>
     );
@@ -64,11 +64,11 @@ export default function ProfilePage() {
           <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6">
             <AlertCircle className="w-10 h-10 text-red-500" />
           </div>
-          <h2 className="text-2xl font-black text-black mb-3">System Error</h2>
+          <h2 className="text-2xl font-bold text-black mb-3">System Error</h2>
           <p className="text-muted-foreground font-medium mb-8 leading-relaxed">{error}</p>
           <Link
             to="/dashboard"
-            className="inline-flex items-center gap-3 px-8 py-4 bg-black text-white rounded-full hover:bg-red-500 transition-all font-black uppercase tracking-widest text-xs shadow-xl shadow-black/10 active:scale-95"
+            className="inline-flex items-center gap-3 px-8 py-4 bg-black text-white rounded-full hover:bg-red-500 transition-all font-bold uppercase tracking-widest text-xs shadow-xl shadow-black/10 active:scale-95"
           >
             <ArrowLeft className="w-4 h-4" />
             Return to Base
@@ -83,7 +83,7 @@ export default function ProfilePage() {
       <div className="container mx-auto px-4 py-8 max-w-7xl space-y-8">
         <header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
           <div>
-            <h1 className="text-4xl font-black text-black tracking-tight">Profile Information</h1>
+            <h1 className="text-4xl font-bold text-black tracking-tight">Profile Information</h1>
             <p className="text-muted-foreground font-medium mt-1">Manage your personal metrics and wellness preferences.</p>
           </div>
           <div className="flex items-center gap-4 w-full md:w-auto">
@@ -95,8 +95,8 @@ export default function ProfilePage() {
                 type="text"
               />
             </div>
-            <button className="bg-primary text-white px-8 py-4 rounded-full font-black flex items-center gap-2 hover:bg-primary-dark transition-all active:scale-95 whitespace-nowrap shadow-lg shadow-primary/20">
-              <Crown className="w-5 h-5 text-white font-black" />
+            <button className="bg-primary text-white px-8 py-4 rounded-full font-bold flex items-center gap-2 hover:bg-primary-dark transition-all active:scale-95 whitespace-nowrap shadow-lg shadow-primary/20">
+              <Crown className="w-5 h-5 text-white font-bold" />
               Upgrade
             </button>
           </div>
@@ -127,14 +127,14 @@ export default function ProfilePage() {
                   </button>
                 </div>
 
-                <h2 className="text-3xl font-black text-black tracking-tight mb-2">{profile?.profile?.fullName || 'Anonymous User'}</h2>
-                <p className="text-primary font-black uppercase tracking-[0.2em] text-[10px] bg-primary/10 px-4 py-1.5 rounded-full mb-8">Fitness Enthusiast</p>
+                <h2 className="text-3xl font-bold text-black tracking-tight mb-2">{profile?.profile?.fullName || 'Anonymous User'}</h2>
+                <p className="text-primary font-bold uppercase tracking-[0.2em] text-[10px] bg-primary/10 px-4 py-1.5 rounded-full mb-8">Fitness Enthusiast</p>
 
                 <div className="flex gap-4 w-full">
-                  <Link to="/dashboard" className="flex-1 bg-gray-50 text-black py-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-gray-100 transition-colors border border-gray-100 text-center">
+                  <Link to="/dashboard" className="flex-1 bg-gray-50 text-black py-4 rounded-2xl font-bold text-xs uppercase tracking-widest hover:bg-gray-100 transition-colors border border-gray-100 text-center">
                     Dashboard
                   </Link>
-                  <Link to="/profile/edit" className="flex-1 bg-primary text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-primary-dark transition-all shadow-lg shadow-primary/20 text-center">
+                  <Link to="/profile/edit" className="flex-1 bg-primary text-white py-4 rounded-2xl font-bold text-xs uppercase tracking-widest hover:bg-primary-dark transition-all shadow-lg shadow-primary/20 text-center">
                     Edit Profile
                   </Link>
                 </div>
@@ -148,16 +148,16 @@ export default function ProfilePage() {
                     <div className="p-3 bg-blue-50 text-blue-500 rounded-2xl">
                       <Mail className="w-6 h-6" />
                     </div>
-                    <h3 className="text-xl font-black text-black tracking-tight">Contact Information</h3>
+                    <h3 className="text-xl font-bold text-black tracking-tight">Contact Information</h3>
                   </div>
                   <div className="space-y-8">
                     <div>
-                      <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-2">Primary Email</p>
-                      <p className="text-lg font-black text-black tracking-tight truncate">{profile?.email || 'N/A'}</p>
+                      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] mb-2">Primary Email</p>
+                      <p className="text-lg font-bold text-black tracking-tight truncate">{profile?.email || 'N/A'}</p>
                     </div>
                     <div>
-                      <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-2">Location</p>
-                      <p className="text-lg font-black text-black tracking-tight mb-4">{localLocation || profile?.profile?.location || 'Earth'}</p>
+                      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] mb-2">Location</p>
+                      <p className="text-lg font-bold text-black tracking-tight mb-4">{localLocation || profile?.profile?.location || 'Earth'}</p>
                       <div className="mt-4 border border-gray-100 rounded-3xl overflow-hidden relative">
                         {updating && (
                           <div className="absolute inset-0 bg-white/50 backdrop-blur-sm z-20 flex items-center justify-center">
@@ -182,20 +182,20 @@ export default function ProfilePage() {
                     <div className="p-3 bg-purple-50 text-purple-500 rounded-2xl">
                       <Utensils className="w-6 h-6" />
                     </div>
-                    <h3 className="text-xl font-black text-black tracking-tight">User Preferences</h3>
+                    <h3 className="text-xl font-bold text-black tracking-tight">User Preferences</h3>
                   </div>
                   <div className="space-y-8">
                     <div>
-                      <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-3">Dietary Compass</p>
-                      <div className="inline-flex items-center px-4 py-2 rounded-xl bg-primary text-black text-xs font-black uppercase tracking-widest shadow-sm">
+                      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] mb-3">Dietary Compass</p>
+                      <div className="inline-flex items-center px-4 py-2 rounded-xl bg-primary text-black text-xs font-bold uppercase tracking-widest shadow-sm">
                         <span className="w-2 h-2 rounded-full bg-black mr-2 animate-pulse"></span>
                         {profile?.profile?.dietaryPreference || 'Omnivore'}
                       </div>
                     </div>
                     <div>
-                      <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-2">Economic Target</p>
-                      <p className="text-2xl font-black text-black tracking-tighter">
-                        ৳{profile?.profile?.budgetRange?.toLocaleString() || '0'}<span className="text-xs text-muted-foreground font-black uppercase tracking-widest ml-2">Monthly</span>
+                      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] mb-2">Economic Target</p>
+                      <p className="text-2xl font-bold text-black tracking-tighter">
+                        ৳{profile?.profile?.budgetRange?.toLocaleString() || '0'}<span className="text-xs text-muted-foreground font-bold uppercase tracking-widest ml-2">Monthly</span>
                       </p>
                     </div>
                   </div>
@@ -205,25 +205,25 @@ export default function ProfilePage() {
                 <div className="md:col-span-2 grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div className="bg-white p-6 rounded-[2.5rem] border border-gray-50 shadow-soft flex flex-col items-center justify-center text-center group hover:border-black transition-all">
                     <Ruler className="w-6 h-6 text-gray-400 mb-3 group-hover:text-black transition-colors" />
-                    <span className="text-3xl font-black text-black tracking-tighter">{profile?.profile?.height || '--'}</span>
-                    <span className="text-[10px] text-muted-foreground font-black uppercase tracking-widest mt-1">cm (Height)</span>
+                    <span className="text-3xl font-bold text-black tracking-tighter">{profile?.profile?.height || '--'}</span>
+                    <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest mt-1">cm (Height)</span>
                   </div>
                   <div className="bg-primary/20 p-6 rounded-[2.5rem] border border-primary/20 flex flex-col items-center justify-center text-center shadow-lg shadow-primary/5 group hover:bg-primary transition-all">
                     <Scale className="w-6 h-6 text-black mb-3" />
-                    <span className="text-3xl font-black text-black tracking-tighter">{profile?.profile?.weight || '--'}</span>
-                    <span className="text-[10px] text-black font-black uppercase tracking-widest mt-1">kg (Weight)</span>
+                    <span className="text-3xl font-bold text-black tracking-tighter">{profile?.profile?.weight || '--'}</span>
+                    <span className="text-[10px] text-black font-bold uppercase tracking-widest mt-1">kg (Weight)</span>
                   </div>
                   <div className="bg-white p-6 rounded-[2.5rem] border border-gray-50 shadow-soft flex flex-col items-center justify-center text-center group hover:border-black transition-all">
                     <Target className="w-6 h-6 text-orange-400 mb-3 group-hover:scale-110 transition-transform" />
-                    <span className="text-xl font-black text-black uppercase tracking-widest">{profile?.profile?.weightPreference || 'N/A'}</span>
-                    <span className="text-[10px] text-muted-foreground font-black uppercase tracking-widest mt-1">Weight Goal</span>
+                    <span className="text-xl font-bold text-black uppercase tracking-widest">{profile?.profile?.weightPreference || 'N/A'}</span>
+                    <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest mt-1">Weight Goal</span>
                   </div>
                   <div className="bg-red-50 p-6 rounded-[2.5rem] border border-red-100 flex flex-col items-center justify-center text-center group hover:bg-red-500 hover:text-white transition-all">
                     <Heart className="w-6 h-6 text-red-500 mb-3 group-hover:text-white transition-colors animate-pulse" />
-                    <span className="text-[10px] font-black uppercase tracking-widest text-black group-hover:text-white leading-tight">
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-black group-hover:text-white leading-tight">
                       {profile?.profile?.healthConditions ? profile.profile.healthConditions.split(' ').slice(0, 2).join('\n') : 'Healthy'}
                     </span>
-                    <span className="text-[10px] text-red-600/60 group-hover:text-white mt-1 font-black">CONDITION</span>
+                    <span className="text-[10px] text-red-600/60 group-hover:text-white mt-1 font-bold">CONDITION</span>
                   </div>
                 </div>
               </div>
@@ -234,10 +234,10 @@ export default function ProfilePage() {
               <div className="lg:col-span-2 bg-white rounded-[2.5rem] p-10 shadow-soft border border-gray-50/50">
                 <div className="flex items-center justify-between mb-8">
                   <div>
-                    <h3 className="text-2xl font-black text-black tracking-tight">Health Ecosystem</h3>
-                    <p className="text-[10px] text-muted-foreground font-black uppercase tracking-widest mt-1">Comprehensive Vitals History</p>
+                    <h3 className="text-2xl font-bold text-black tracking-tight">Health Ecosystem</h3>
+                    <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest mt-1">Comprehensive Vitals History</p>
                   </div>
-                  <button className="px-6 py-2.5 bg-primary text-white rounded-full text-xs font-black uppercase tracking-widest hover:bg-primary-dark transition-all shadow-lg shadow-primary/10 active:scale-95">Update Records</button>
+                  <button className="px-6 py-2.5 bg-primary text-white rounded-full text-xs font-bold uppercase tracking-widest hover:bg-primary-dark transition-all shadow-lg shadow-primary/10 active:scale-95">Update Records</button>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
@@ -246,8 +246,8 @@ export default function ProfilePage() {
                       <AlertCircle className="w-6 h-6" />
                     </div>
                     <div>
-                      <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-1">Active Allergies</p>
-                      <p className="text-lg font-black text-black leading-tight">{profile?.profile?.allergies || 'Zero Reported'}</p>
+                      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] mb-1">Active Allergies</p>
+                      <p className="text-lg font-bold text-black leading-tight">{profile?.profile?.allergies || 'Zero Reported'}</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-6 p-6 bg-gray-50 rounded-[2rem] border border-gray-100 group hover:bg-white hover:shadow-xl transition-all">
@@ -255,14 +255,14 @@ export default function ProfilePage() {
                       <Activity className="w-6 h-6" />
                     </div>
                     <div>
-                      <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-1">Diagnostic Status</p>
-                      <p className="text-lg font-black text-black leading-tight">{profile?.profile?.healthConditions || 'Cleared'}</p>
+                      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] mb-1">Diagnostic Status</p>
+                      <p className="text-lg font-bold text-black leading-tight">{profile?.profile?.healthConditions || 'Cleared'}</p>
                     </div>
                   </div>
                 </div>
 
                 <div>
-                  <h4 className="text-xs font-black uppercase tracking-[0.3em] text-muted-foreground mb-6 flex items-center gap-3">
+                  <h4 className="text-xs font-bold uppercase tracking-[0.3em] text-muted-foreground mb-6 flex items-center gap-3">
                     <BarChart3 className="w-4 h-4" />
                     Weight Trajectory (30D)
                   </h4>
@@ -273,7 +273,7 @@ export default function ProfilePage() {
                     <div className="flex-1 bg-gray-100 rounded-t-2xl h-[65%] transition-all hover:h-[70%] hover:bg-gray-200"></div>
                     <div className="flex-1 bg-gray-100 rounded-t-2xl h-[60%] transition-all hover:h-[65%] hover:bg-gray-200"></div>
                     <div className="flex-1 bg-black rounded-t-2xl h-[80%] relative group shadow-lg">
-                      <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-black text-white text-[10px] font-black py-2 px-3 rounded-xl opacity-0 group-hover:opacity-100 transition-all transform scale-90 group-hover:scale-100 whitespace-nowrap">
+                      <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-black text-white text-[10px] font-bold py-2 px-3 rounded-xl opacity-0 group-hover:opacity-100 transition-all transform scale-90 group-hover:scale-100 whitespace-nowrap">
                         CURRENT: {profile?.profile?.weight}kg
                       </div>
                     </div>
@@ -287,21 +287,21 @@ export default function ProfilePage() {
                 <div className="absolute top-0 right-0 w-64 h-64 bg-primary/20 rounded-full -mr-32 -mt-32 blur-3xl group-hover:bg-primary/30 transition-all duration-700"></div>
 
                 <div className="relative z-10">
-                  <h3 className="text-2xl font-black mb-10 flex items-center gap-3">
+                  <h3 className="text-2xl font-bold mb-10 flex items-center gap-3">
                     <ShieldCheck className="w-8 h-8 text-primary" />
                     Membership Vault
                   </h3>
 
                   <div className="space-y-8">
                     <div className="relative pl-6 border-l-4 border-primary/30">
-                      <p className="text-[10px] font-black text-white/50 uppercase tracking-[0.2em] mb-2">Activated On</p>
-                      <p className="text-2xl font-black tracking-tight">
+                      <p className="text-[10px] font-bold text-white/50 uppercase tracking-[0.2em] mb-2">Activated On</p>
+                      <p className="text-2xl font-bold tracking-tight">
                         {profile?.createdAt ? new Date(profile.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Alpha Tester'}
                       </p>
                     </div>
                     <div className="relative pl-6 border-l-4 border-primary/30">
-                      <p className="text-[10px] font-black text-white/50 uppercase tracking-[0.2em] mb-2">Sync Integrity</p>
-                      <p className="text-2xl font-black tracking-tight">
+                      <p className="text-[10px] font-bold text-white/50 uppercase tracking-[0.2em] mb-2">Sync Integrity</p>
+                      <p className="text-2xl font-bold tracking-tight">
                         {profile?.updatedAt ? new Date(profile.updatedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Realtime'}
                       </p>
                     </div>
@@ -309,10 +309,10 @@ export default function ProfilePage() {
                 </div>
 
                 <div className="mt-12 pt-10 border-t border-white/10 relative z-10">
-                  <p className="text-[10px] text-white/40 mb-3 font-black uppercase tracking-widest">Protocol Status</p>
+                  <p className="text-[10px] text-white/40 mb-3 font-bold uppercase tracking-widest">Protocol Status</p>
                   <div className="flex items-center justify-between">
-                    <span className="text-2xl font-black text-primary">Standard Plan</span>
-                    <button className="bg-white text-black text-[10px] font-black py-4 px-8 rounded-full hover:bg-primary transition-all active:scale-95 uppercase tracking-widest shadow-xl">Upgrade</button>
+                    <span className="text-2xl font-bold text-primary">Standard Plan</span>
+                    <button className="bg-white text-black text-[10px] font-bold py-4 px-8 rounded-full hover:bg-primary transition-all active:scale-95 uppercase tracking-widest shadow-xl">Upgrade</button>
                   </div>
                 </div>
               </div>
