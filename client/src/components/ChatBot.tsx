@@ -203,8 +203,8 @@ export const ChatBot: React.FC = () => {
                         <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-primary border-2 border-white"></div>
                     </div>
                     <div>
-                        <h4 className="font-black text-slate-800 text-sm tracking-tight">NutriAI Assistant</h4>
-                        <p className="text-[10px] text-primary font-black uppercase tracking-widest opacity-70">Online</p>
+                        <h4 className="font-bold text-slate-800 text-sm tracking-tight">NutriAI Assistant</h4>
+                        <p className="text-[10px] text-primary font-bold uppercase tracking-widest opacity-70">Online</p>
                     </div>
                 </div>
                 <div className="ml-6 mr-1 bg-primary/10 p-2 rounded-lg text-primary group-hover:bg-primary group-hover:text-white transition-colors">
@@ -224,7 +224,7 @@ export const ChatBot: React.FC = () => {
                         <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-primary border-2 border-white rounded-full"></span>
                     </div>
                     <div>
-                        <h3 className="font-black text-slate-800 text-base tracking-tight leading-tight">NutriAI Assistant</h3>
+                        <h3 className="font-bold text-slate-800 text-base tracking-tight leading-tight">NutriAI Assistant</h3>
                         <p className="text-[10px] text-primary font-bold uppercase tracking-widest">Active session</p>
                     </div>
                 </div>
@@ -243,7 +243,7 @@ export const ChatBot: React.FC = () => {
                         <div className="w-20 h-20 bg-primary/5 rounded-2xl flex items-center justify-center mx-auto mb-6">
                             <img src="/chatbot.png" alt="Logo" className="w-10 h-10 object-contain" />
                         </div>
-                        <h4 className="text-slate-900 font-black text-lg mb-2 tracking-tight">How can I help you?</h4>
+                        <h4 className="text-slate-900 font-bold text-lg mb-2 tracking-tight">How can I help you?</h4>
                         <p className="text-xs text-slate-500 leading-relaxed">
                             I can help with inventory, meal planning, and nutrition insights.
                         </p>

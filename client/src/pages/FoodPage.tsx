@@ -32,10 +32,10 @@ export default function FoodPage() {
           <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center shadow-lg shadow-black/10 group-hover:bg-primary transition-colors">
             <Apple className="w-6 h-6 text-white group-hover:text-black transition-colors" />
           </div>
-          <span className="font-black text-2xl text-foreground tracking-tighter group-hover:text-primary transition-colors">Food Inventory</span>
+          <span className="font-bold text-2xl text-foreground tracking-tighter group-hover:text-primary transition-colors">Food Inventory</span>
         </Link>
         <button
-          className="px-6 py-3 bg-black text-white rounded-2xl hover:bg-gray-900 transition-all font-bold flex items-center gap-2 shadow-xl shadow-black/10"
+          className="px-6 py-3 bg-secondary text-white rounded-2xl hover:bg-gray-900 transition-all font-bold flex items-center gap-2 shadow-xl shadow-black/10"
           onClick={() => setShowModal(true)}
         >
           <Plus className="w-5 h-5" /> Add Item

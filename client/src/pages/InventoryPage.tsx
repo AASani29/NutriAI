@@ -181,6 +181,7 @@ export default function InventoryPage() {
 
   const totalItems = inventories?.reduce((acc, inv) => acc + (inv.itemCount || 0), 0) || 0;
   const expiringSoon = inventories?.reduce((acc, inv) => acc + (inv.expiringCount || 0), 0) || 0;
+  const archivedCount = inventories?.filter(inv => inv.isArchived).length || 0;
 
   const getInventoryIcon = (name: string) => {
     const n = name.toLowerCase();
@@ -195,11 +196,11 @@ export default function InventoryPage() {
       <div className="flex items-center justify-center min-h-[60vh] p-4 text-center">
         <div className="bg-white p-12 rounded-[2.5rem] shadow-soft border border-red-50 max-w-md">
           <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-6" />
-          <h2 className="text-2xl font-black text-black mb-2 tracking-tight">Sync Error</h2>
+          <h2 className="text-2xl font-bold text-black mb-2 tracking-tight">Sync Error</h2>
           <p className="text-muted-foreground font-medium mb-8">Unable to fetch sync records from the server.</p>
           <button
             onClick={() => refetch()}
-            className="w-full py-4 bg-styled-card text-white rounded-xl font-black text-xs uppercase tracking-widest hover:bg-styled-card-dark transition-all shadow-lg shadow-primary/20"
+            className="w-full py-4 bg-styled-card text-white rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-styled-card-dark transition-all shadow-lg shadow-primary/20"
           >
             Retry Connection
           </button>
@@ -214,7 +215,7 @@ export default function InventoryPage() {
         {/* Header */}
         <header className="flex justify-between items-center mb-6 px-4 ">
           <div>
-            <h1 className="text-3xl font-black tracking-tight text-slate-900">Pantry Inventory</h1>
+            <h1 className="text-3xl font-bold tracking-tight text-slate-900">Pantry Inventory</h1>
             <p className="text-slate-400 font-medium mt-1">Manage your nutrition stock efficiently.</p>
           </div>
           <div className="flex items-center gap-4">
@@ -230,7 +231,7 @@ export default function InventoryPage() {
             </div>
             <button
               onClick={() => setShowAddModal(true)}
-              className="flex items-center gap-2 bg-black text-white px-6 py-3 rounded-xl hover:opacity-90 transition-all shadow-lg shadow-black/20 font-black text-[10px] uppercase tracking-widest active:scale-95"
+              className="flex items-center gap-2 bg-secondary text-white px-6 py-3 rounded-lg hover:bg-secondary/90 transition-all shadow-lg font-bold active:scale-95"
             >
               <Plus className="w-4 h-4" />
               <span>New Pantry</span>
@@ -238,36 +239,35 @@ export default function InventoryPage() {
           </div>
         </header>
 
-        {/* Hero & Status Section */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 px-4">
-          {/* Main Hero Card - Slate instead of Primary Gold */}
-          
-
-          {/* Status Card */}
-          <div className="text-secondary rounded-[2.5rem] bg-styled-card p-8 border border-slate-100 flex flex-col justify-between">
-            <div>
-              <div className="flex justify-between items-center mb-10">
-                <h3 className="font-black text-sm text-slate-400 uppercase tracking-widest">Inventory Health</h3>
-                <MoreHorizontal className="w-5 h-5 text-slate-300" />
-              </div>
-              <div className="space-y-8">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-white flex items-center justify-center text-secondary shadow-sm border border-slate-100">
-                    <CheckCircle2 className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <p className="text-3xl font-black text-slate-900 leading-none">{totalItems}</p>
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Total Items</p>
-                  </div>
+        {/* Inventory Health - Horizontal Stats */}
+        <div className="px-4">
+          <div className="bg-card rounded-xl border border-border p-6">
+            <div className="grid grid-cols-3 gap-8">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-lg bg-primary flex items-center justify-center shadow-sm">
+                  <CheckCircle2 className="w-6 h-6 text-black" />
                 </div>
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-white flex items-center justify-center text-red-500 shadow-sm border border-slate-100">
-                    <AlertTriangle className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <p className="text-3xl font-black text-red-500 leading-none">{expiringSoon}</p>
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Expiring Soon</p>
-                  </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Total Items</p>
+                  <p className="text-2xl font-bold text-foreground">{totalItems}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-lg bg-red-50 flex items-center justify-center shadow-sm">
+                  <AlertTriangle className="w-6 h-6 text-red-600" />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Expiring Soon</p>
+                  <p className="text-2xl font-bold text-red-500">{expiringSoon}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center shadow-sm">
+                  <ArchiveX className="w-6 h-6 text-gray-600" />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Archived</p>
+                  <p className="text-2xl font-bold text-foreground">{archivedCount}</p>
                 </div>
               </div>
             </div>
@@ -278,7 +278,7 @@ export default function InventoryPage() {
         <div className="flex items-center gap-3 py-2 px-4">
           <button
             onClick={() => setFilterTab('all')}
-            className={`px-6 py-2 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all ${
+            className={`px-6 py-2 rounded-xl font-bold text-[10px] uppercase tracking-widest transition-all ${
               filterTab === 'all'
                 ? 'bg-styled-card text-secondary shadow-lg shadow-primary/20'
                 : 'bg-white text-slate-400 hover:text-secondary'
@@ -288,7 +288,7 @@ export default function InventoryPage() {
           </button>
           <button
             onClick={() => setFilterTab('active')}
-            className={`px-6 py-2 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all ${
+            className={`px-6 py-2 rounded-xl font-bold text-[10px] uppercase tracking-widest transition-all ${
               filterTab === 'active'
                 ? 'bg-styled-card text-secondary shadow-lg shadow-primary/20'
                 : 'bg-white text-slate-400 hover:text-secondary'
@@ -298,7 +298,7 @@ export default function InventoryPage() {
           </button>
           <button
             onClick={() => setFilterTab('archived')}
-            className={`px-6 py-2 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all ${
+            className={`px-6 py-2 rounded-xl font-bold text-[10px] uppercase tracking-widest transition-all ${
               filterTab === 'archived'
                 ? 'bg-styled-card text-secondary shadow-lg shadow-primary/20'
                 : 'bg-white text-slate-400 hover:text-secondary'
@@ -353,7 +353,7 @@ export default function InventoryPage() {
                           }
                         }}
                         disabled={unarchiveInventoryMutation.isPending}
-                        className="flex items-center gap-2 px-3 py-2 bg-slate-200 text-slate-700 hover:bg-slate-300 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg font-black text-xs uppercase tracking-widest transition-all z-10"
+                        className="flex items-center gap-2 px-3 py-2 bg-slate-200 text-slate-700 hover:bg-slate-300 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg font-bold text-xs uppercase tracking-widest transition-all z-10"
                       >
                         <ArchiveX className="w-4 h-4" />
                         {unarchiveInventoryMutation.isPending && editingInventory?.id === inventory.id ? 'Unarchiving...' : 'Unarchive'}
@@ -370,13 +370,13 @@ export default function InventoryPage() {
                   )}
                   {/* Status Badge */}
                   <div className="text-right">
-                    <div className="text-[10px] font-black text-secondary uppercase tracking-widest mb-1">Status</div>
+                    <div className="text-[10px] font-bold text-secondary uppercase tracking-widest mb-1">Status</div>
                     <div className="flex items-center gap-2 justify-end">
                       <div className={`w-1.5 h-1.5 rounded-full shadow-[0_0_8px_rgba(16,185,129,0.5)] ${inventory.isArchived ? 'bg-slate-400' : 'bg-emerald-500'}`}></div>
-                      <span className="text-[10px] font-black text-slate-900 uppercase tracking-widest">{inventory.isArchived ? 'Archived' : 'Active'}</span>
+                      <span className="text-[10px] font-bold text-slate-900 uppercase tracking-widest">{inventory.isArchived ? 'Archived' : 'Active'}</span>
                     </div>
                     {inventory.accessRole && (
-                      <div className="inline-flex items-center gap-2 mt-3 px-3 py-1 rounded-full bg-white/70 text-[10px] font-black uppercase tracking-widest text-slate-500 border border-slate-100">
+                      <div className="inline-flex items-center gap-2 mt-3 px-3 py-1 rounded-full bg-white/70 text-[10px] font-bold uppercase tracking-widest text-slate-500 border border-slate-100">
                         {inventory.accessRole === 'owner' ? 'Owner' : 'Shared with you'}
                         {inventory.accessRole === 'member' && inventory.ownerName ? (
                           <span className="text-slate-400">· {inventory.ownerName}</span>
@@ -388,8 +388,8 @@ export default function InventoryPage() {
               </div>
 
               <div className="mb-8">
-                <h4 className="font-black text-2xl text-slate-900 tracking-tight group-hover:text-secondary transition-colors mb-1">{inventory.name}</h4>
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest opacity-60 line-clamp-1">{inventory.description || 'Global Storage Unit'}</p>
+                <h4 className="font-bold text-2xl text-slate-900 tracking-tight group-hover:text-secondary transition-colors mb-1">{inventory.name}</h4>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest opacity-60 line-clamp-1">{inventory.description || 'Global Storage Unit'}</p>
               </div>
 
               {/* Shared Users Dropdown - Only show if there are members, user is owner, and not archived */}
@@ -402,7 +402,7 @@ export default function InventoryPage() {
                     }}
                     className="w-full flex items-center justify-between px-4 py-2 bg-white border border-slate-100 rounded-lg hover:bg-slate-50 transition-colors"
                   >
-                    <span className="text-[10px] font-black text-slate-600 uppercase tracking-widest">
+                    <span className="text-[10px] font-bold text-slate-600 uppercase tracking-widest">
                       Shared with ({inventory.members.length})
                     </span>
                     <ChevronDown
@@ -436,25 +436,25 @@ export default function InventoryPage() {
 
               <div className="grid grid-cols-2 gap-4 mb-8">
                 <div className="text-secondary rounded-2xl p-4 border border-slate-100/50 bg-white">
-                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Quantity</span>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Quantity</span>
                   <div className="flex items-baseline gap-1">
-                    <span className="text-xl font-black text-slate-900">{inventory.itemCount || 0}</span>
-                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Items</span>
+                    <span className="text-xl font-bold text-slate-900">{inventory.itemCount || 0}</span>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Items</span>
                   </div>
                 </div>
                 <div className="text-secondary rounded-2xl p-4 border border-slate-100/50 bg-white">
-                  <span className="text-[10px] font-black text-red-400 uppercase tracking-widest block mb-1">Alerts</span>
+                  <span className="text-[10px] font-bold text-red-400 uppercase tracking-widest block mb-1">Alerts</span>
                   <div className="flex items-baseline gap-1">
-                    <span className="text-xl font-black text-red-500">{inventory.expiringCount || 0}</span>
-                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Critical</span>
+                    <span className="text-xl font-bold text-red-500">{inventory.expiringCount || 0}</span>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Critical</span>
                   </div>
                 </div>
               </div>
 
               <div className="mt-auto">
                 <div className="flex justify-between items-center mb-2">
-                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Hub Integrity</span>
-                  <span className="text-[10px] font-black text-primary uppercase tracking-widest">{(inventory.expiringCount || 0) > 0 ? '85%' : '100%'}</span>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Hub Integrity</span>
+                  <span className="text-[10px] font-bold text-primary uppercase tracking-widest">{(inventory.expiringCount || 0) > 0 ? '85%' : '100%'}</span>
                 </div>
                 <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
                   <div 
@@ -494,34 +494,34 @@ export default function InventoryPage() {
             onSubmit={handleCreateInventory}
           >
             <div className="mb-8">
-                <h2 className="text-2xl font-black text-slate-800 tracking-tight">New Pantry Hub</h2>
+                <h2 className="text-2xl font-bold text-slate-800 tracking-tight">New Pantry Hub</h2>
                 <p className="text-slate-400 text-sm font-medium mt-1">Initialize a new inventory tracking system.</p>
             </div>
 
             <div className="space-y-6">
               <div>
-                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Hub Name</label>
+                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Hub Name</label>
                 <input
                   name="name"
                   required
                   autoFocus
                   placeholder="e.g. Master Fridge"
-                  className="w-full px-5 py-4 border border-slate-100 rounded-xl text-secondary text-slate-800 font-black focus:ring-4 focus:ring-primary/10 transition-all outline-none"
+                  className="w-full px-5 py-4 border border-slate-100 rounded-xl text-secondary text-slate-800 font-bold focus:ring-4 focus:ring-primary/10 transition-all outline-none"
                 />
               </div>
 
               <div>
-                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Description</label>
+                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Description</label>
                 <textarea
                   name="description"
                   placeholder="What's in this hub?"
                   rows={3}
-                  className="w-full px-5 py-4 border border-slate-100 rounded-xl text-secondary text-slate-800 font-black focus:ring-4 focus:ring-primary/10 transition-all outline-none resize-none"
+                  className="w-full px-5 py-4 border border-slate-100 rounded-xl text-secondary text-slate-800 font-bold focus:ring-4 focus:ring-primary/10 transition-all outline-none resize-none"
                 />
               </div>
 
               <div>
-                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Share With Users</label>
+                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Share With Users</label>
                 
                 {/* Selected Users Chips */}
                 {selectedUsers.length > 0 && (
@@ -562,7 +562,7 @@ export default function InventoryPage() {
                     value={userSearch}
                     onChange={handleUserSearchChange}
                     placeholder="Search users by name or email..."
-                    className="w-full px-5 py-4 border border-slate-100 rounded-xl text-secondary text-slate-800 font-black focus:ring-4 focus:ring-primary/10 transition-all outline-none"
+                    className="w-full px-5 py-4 border border-slate-100 rounded-xl text-secondary text-slate-800 font-bold focus:ring-4 focus:ring-primary/10 transition-all outline-none"
                   />
                   {isSearching && (
                     <div className="absolute right-4 top-1/2 -translate-y-1/2">
@@ -610,14 +610,14 @@ export default function InventoryPage() {
               <button
                 type="submit"
                 disabled={createInventoryMutation.isPending}
-                className="flex-1 py-4 bg-black text-white rounded-xl font-black text-xs uppercase tracking-widest hover:opacity-90 transition-all shadow-lg"
+                className="flex-1 py-4 bg-secondary text-white rounded-lg font-bold hover:bg-secondary/90 transition-all shadow-lg"
               >
                 {createInventoryMutation.isPending ? 'Processing...' : 'Create Hub'}
               </button>
               <button
                 type="button"
                 onClick={() => setShowAddModal(false)}
-                className="flex-1 py-4 bg-slate-100 text-slate-500 rounded-xl hover:text-secondary transition-all font-black text-xs uppercase tracking-widest"
+                className="flex-1 py-4 bg-card text-muted-foreground rounded-lg hover:bg-muted transition-all font-medium border border-border"
               >
                 Cancel
               </button>

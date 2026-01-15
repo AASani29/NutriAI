@@ -186,7 +186,7 @@ export default function CreateListing({ onSuccess }: CreateListingProps) {
     <div className="space-y-6">
       {/* Header */}
       <div className="mb-8">
-        <h2 className="text-3xl font-black text-black tracking-tight mb-2">
+        <h2 className="text-3xl font-bold text-black tracking-tight mb-2">
           Share Food
         </h2>
         <p className="text-muted-foreground font-medium">
@@ -215,7 +215,7 @@ export default function CreateListing({ onSuccess }: CreateListingProps) {
       <form onSubmit={handleSubmit} className="bg-white rounded-[2.5rem] border border-gray-100 p-8 space-y-8 shadow-soft">
         {/* Item Selection */}
         <div>
-          <label className="block text-xs font-black text-muted-foreground uppercase tracking-widest mb-4">
+          <label className="block text-xs font-bold text-muted-foreground uppercase tracking-widest mb-4">
             Select Item to Share
           </label>
 
@@ -351,7 +351,7 @@ export default function CreateListing({ onSuccess }: CreateListingProps) {
 
         {/* Map Selection Area */}
         <div className="pt-2">
-          <label className="block text-xs font-black text-muted-foreground uppercase tracking-widest mb-4">
+          <label className="block text-xs font-bold text-muted-foreground uppercase tracking-widest mb-4">
             Specify Precise Location
           </label>
           <MapPicker
@@ -395,7 +395,7 @@ export default function CreateListing({ onSuccess }: CreateListingProps) {
         <button
           type="submit"
           disabled={!selectedItem || createListingMutation.isPending}
-          className="w-full px-6 py-4 bg-black text-white rounded-2xl hover:bg-primary hover:text-black disabled:opacity-50 transition-all font-black flex items-center justify-center gap-2 shadow-xl shadow-black/10 active:scale-95"
+          className="w-full px-6 py-4 bg-black text-white rounded-2xl hover:bg-primary hover:text-black disabled:opacity-50 transition-all font-bold flex items-center justify-center gap-2 shadow-xl shadow-black/10 active:scale-95"
         >
           <Plus className="w-5 h-5" />
           {createListingMutation.isPending ? 'Adding...' : 'Add'}

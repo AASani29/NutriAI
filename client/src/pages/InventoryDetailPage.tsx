@@ -344,7 +344,7 @@ export default function InventoryDetailPage() {
         <div className="flex items-center gap-3 w-full md:w-auto">
           <button
             onClick={() => setShowImageUploadModal(true)}
-            className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-slate-100 text-slate-800 px-6 py-4 rounded-xl hover:bg-slate-200 transition-all font-black text-[10px] uppercase tracking-widest"
+            className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-slate-100 text-slate-800 px-6 py-4 rounded-xl hover:bg-slate-200 transition-all font-bold text-[10px] uppercase tracking-widest"
           >
             <span className="material-icons-round text-lg">photo_camera</span>
             <span>Upload Image</span>
@@ -352,7 +352,7 @@ export default function InventoryDetailPage() {
 
           <button
             onClick={() => setShowAddModal(true)}
-            className="flex items-center gap-2 bg-black text-white px-6 py-3 rounded-full hover:bg-gray-900 transition-all shadow-lg font-medium"
+            className="flex items-center gap-2 bg-secondary text-white px-6 py-3 rounded-full hover:bg-gray-900 transition-all shadow-lg font-medium"
           >
             <span className="material-icons-round text-lg">add</span>
             <span>Add Item</span>
@@ -471,8 +471,8 @@ export default function InventoryDetailPage() {
 
                   <div className="space-y-4 flex-1 flex flex-col">
                     <div>
-                      <h4 className="font-black text-xl text-slate-800 mb-1 group-hover:text-primary transition-colors leading-tight line-clamp-1">{itemName}</h4>
-                      {/* <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest opacity-60">
+                      <h4 className="font-bold text-xl text-slate-800 mb-1 group-hover:text-primary transition-colors leading-tight line-clamp-1">{itemName}</h4>
+                      {/* <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest opacity-60">
                         {category} HUB • {expDate ? `${daysLeft}d REMAINING` : 'PERPETUAL'}
                       </p> */}
 
@@ -502,11 +502,11 @@ export default function InventoryDetailPage() {
 
                     <div className="mt-auto pt-6 border-t border-slate-50 flex items-center justify-between">
                       <div className="flex flex-col">
-                        <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest mb-1">Stock Load</span>
+                        <span className="text-[10px] font-bold text-slate-300 uppercase tracking-widest mb-1">Stock Load</span>
                         <div>
                           <div className="flex items-baseline gap-1">
-                            <span className="text-2xl font-black text-slate-800">{item.quantity}</span>
-                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{item.unit || 'pcs'}</span>
+                            <span className="text-2xl font-bold text-slate-800">{item.quantity}</span>
+                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{item.unit || 'pcs'}</span>
                           </div>
                         </div>
                         {item.foodItem?.basePrice ? (
@@ -908,7 +908,7 @@ function AddItemModal({ onClose, onAdd, onScan }: {
                 type="button"
                 onClick={handleEstimatePrice}
                 disabled={priceLoading}
-                className="text-[10px] font-black uppercase tracking-widest text-primary hover:text-primary-dark transition-colors flex items-center gap-1 disabled:opacity-50"
+                className="text-[10px] font-bold uppercase tracking-widest text-primary hover:text-primary-dark transition-colors flex items-center gap-1 disabled:opacity-50"
               >
                 {priceLoading ? (
                   <div className="w-3 h-3 border-2 border-primary border-t-transparent rounded-full animate-spin" />

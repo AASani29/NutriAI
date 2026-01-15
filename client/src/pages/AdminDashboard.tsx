@@ -16,7 +16,7 @@ export default function AdminDashboard() {
   const OverviewContent = () => (
     <>
     <div className="mb-12">
-      <h1 className="text-4xl font-black text-foreground mb-3 tracking-tight">
+      <h1 className="text-4xl font-bold text-foreground mb-3 tracking-tight">
         Admin Overview
       </h1>
       <p className="text-muted-foreground font-medium">
@@ -34,7 +34,7 @@ export default function AdminDashboard() {
             </div>
             <div>
               <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-1">Total Items</p>
-              <p className="text-3xl font-black text-foreground">1,234</p>
+              <p className="text-3xl font-bold text-foreground">1,234</p>
             </div>
           </div>
         </div>
@@ -47,7 +47,7 @@ export default function AdminDashboard() {
             </div>
             <div>
               <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-1">Resources</p>
-              <p className="text-3xl font-black text-foreground">89</p>
+              <p className="text-3xl font-bold text-foreground">89</p>
             </div>
           </div>
         </div>
@@ -60,7 +60,7 @@ export default function AdminDashboard() {
             </div>
             <div>
               <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-1">Users</p>
-              <p className="text-3xl font-black text-foreground">456</p>
+              <p className="text-3xl font-bold text-foreground">456</p>
             </div>
           </div>
         </div>
@@ -73,7 +73,7 @@ export default function AdminDashboard() {
             </div>
             <div>
               <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-1">Growth</p>
-              <p className="text-3xl font-black text-foreground">+12%</p>
+              <p className="text-3xl font-bold text-foreground">+12%</p>
             </div>
           </div>
         </div>
@@ -81,7 +81,7 @@ export default function AdminDashboard() {
 
       {/* Quick Actions */}
       <div className="bg-white rounded-3xl border border-gray-100 p-8 mb-12 shadow-soft">
-        <h2 className="text-2xl font-black text-foreground mb-8 tracking-tight">
+        <h2 className="text-2xl font-bold text-foreground mb-8 tracking-tight">
           Global Actions
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -94,7 +94,7 @@ export default function AdminDashboard() {
               <div className="w-20 h-20 bg-black rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-black/10 group-hover:bg-primary group-hover:text-black transition-colors">
                 <Package className="w-10 h-10 text-white group-hover:text-black transition-colors" />
               </div>
-              <h3 className="text-xl font-black text-foreground mb-3">
+              <h3 className="text-xl font-bold text-foreground mb-3">
                 Add Food Item
               </h3>
               <p className="text-muted-foreground font-medium max-w-xs">
@@ -112,7 +112,7 @@ export default function AdminDashboard() {
               <div className="w-20 h-20 bg-primary/20 rounded-2xl flex items-center justify-center mb-6 border border-primary/30 group-hover:bg-black group-hover:border-black transition-colors">
                 <BookOpen className="w-10 h-10 text-black group-hover:text-white transition-colors" />
               </div>
-              <h3 className="text-xl font-black text-foreground mb-3">
+              <h3 className="text-xl font-bold text-foreground mb-3">
                 Add Resource
               </h3>
               <p className="text-muted-foreground font-medium max-w-xs">
@@ -126,10 +126,10 @@ export default function AdminDashboard() {
       {/* Recent Activity */}
       <div className="bg-white rounded-3xl border border-gray-100 p-8 shadow-soft">
         <div className="flex items-center justify-between mb-8">
-          <h2 className="text-2xl font-black text-foreground tracking-tight">
+          <h2 className="text-2xl font-bold text-foreground tracking-tight">
             Recent Audit Log
           </h2>
-          <button className="text-xs font-black text-black uppercase tracking-widest hover:text-primary-dark transition-colors">View All Logs</button>
+          <button className="text-xs font-bold text-black uppercase tracking-widest hover:text-primary-dark transition-colors">View All Logs</button>
         </div>
         <div className="space-y-4">
           <div className="flex items-center gap-5 p-5 bg-gray-50/50 rounded-2xl border border-gray-100 group hover:bg-white hover:shadow-md transition-all">
@@ -144,7 +144,7 @@ export default function AdminDashboard() {
                 Organic Quinoa successfully cataloged in global food list.
               </p>
             </div>
-            <span className="text-xs font-black text-muted-foreground uppercase tracking-wider">2h ago</span>
+            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">2h ago</span>
           </div>
 
           <div className="flex items-center gap-5 p-5 bg-gray-50/50 rounded-2xl border border-gray-100 group hover:bg-white hover:shadow-md transition-all">
@@ -159,7 +159,7 @@ export default function AdminDashboard() {
                 Meal Planning Guide optimized for regional sustainability data.
               </p>
             </div>
-            <span className="text-xs font-black text-muted-foreground uppercase tracking-wider">5h ago</span>
+            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">5h ago</span>
           </div>
 
           <div className="flex items-center gap-5 p-5 bg-gray-50/50 rounded-2xl border border-gray-100 group hover:bg-white hover:shadow-md transition-all">
@@ -174,7 +174,7 @@ export default function AdminDashboard() {
                 Significant spike in registrations from Dhaka North sector.
               </p>
             </div>
-            <span className="text-xs font-black text-muted-foreground uppercase tracking-wider">1d ago</span>
+            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">1d ago</span>
           </div>
         </div>
       </div>

@@ -174,7 +174,7 @@ export default function EditProfilePage() {
           <div className="flex items-center justify-between">
             <Link
               to="/profile"
-              className="inline-flex items-center gap-3 px-6 py-3 bg-white text-black border border-gray-100 rounded-full hover:bg-gray-50 transition-all font-black uppercase tracking-widest text-[10px] shadow-sm group"
+              className="inline-flex items-center gap-3 px-6 py-3 bg-white text-black border border-gray-100 rounded-full hover:bg-gray-50 transition-all font-bold uppercase tracking-widest text-[10px] shadow-sm group"
             >
               <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
               Back to Profile
@@ -187,14 +187,14 @@ export default function EditProfilePage() {
 
             <div className="relative z-10">
               <header className="mb-12">
-                <h1 className="text-4xl font-black text-black tracking-tight mb-2">Edit Metadata</h1>
+                <h1 className="text-4xl font-bold text-black tracking-tight mb-2">Edit Metadata</h1>
                 <p className="text-muted-foreground font-medium uppercase tracking-[0.2em] text-[10px]">Registry & Personal Metrics</p>
               </header>
 
               <form onSubmit={handleSubmit} className="space-y-10">
                 {/* Full Name */}
                 <div>
-                  <label htmlFor="fullName" className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-3 block">
+                  <label htmlFor="fullName" className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] mb-3 block">
                     Full Name <span className="text-primary">*</span>
                   </label>
                   <div className="relative group">
@@ -207,7 +207,7 @@ export default function EditProfilePage() {
                       name="fullName"
                       value={formData.fullName}
                       onChange={handleChange}
-                      className="w-full pl-12 pr-4 py-5 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-4 focus:ring-primary/20 text-foreground font-black placeholder:text-muted-foreground/50 transition-all"
+                      className="w-full pl-12 pr-4 py-5 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-4 focus:ring-primary/20 text-foreground font-bold placeholder:text-muted-foreground/50 transition-all"
                       placeholder="Enter your full name"
                       required
                     />
@@ -216,7 +216,7 @@ export default function EditProfilePage() {
 
                 {/* Dietary Preference */}
                 <div>
-                  <label htmlFor="dietaryPreference" className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-3 block">
+                  <label htmlFor="dietaryPreference" className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] mb-3 block">
                     Dietary Preference
                   </label>
                   <div className="relative group">
@@ -228,7 +228,7 @@ export default function EditProfilePage() {
                       name="dietaryPreference"
                       value={formData.dietaryPreference}
                       onChange={handleChange}
-                      className="w-full pl-12 pr-4 py-5 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-4 focus:ring-primary/20 text-foreground font-black transition-all appearance-none"
+                      className="w-full pl-12 pr-4 py-5 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-4 focus:ring-primary/20 text-foreground font-bold transition-all appearance-none"
                     >
                       {dietaryOptions.map((option) => (
                         <option key={option.value} value={option.value}>
@@ -241,7 +241,7 @@ export default function EditProfilePage() {
 
                 {/* Location */}
                 <div>
-                  <label htmlFor="location" className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-3 block">
+                  <label htmlFor="location" className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] mb-3 block">
                     Location
                   </label>
                   <div className="relative group">
@@ -254,7 +254,7 @@ export default function EditProfilePage() {
                       name="location"
                       value={formData.location}
                       onChange={handleChange}
-                      className="w-full pl-12 pr-4 py-5 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-4 focus:ring-primary/20 text-foreground font-black placeholder:text-muted-foreground/50 transition-all"
+                      className="w-full pl-12 pr-4 py-5 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-4 focus:ring-primary/20 text-foreground font-bold placeholder:text-muted-foreground/50 transition-all"
                       placeholder="e.g., Dhaka, Bangladesh"
                     />
                   </div>
@@ -262,7 +262,7 @@ export default function EditProfilePage() {
 
                 {/* Budget Range */}
                 <div>
-                  <label htmlFor="budgetRange" className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-3 block">
+                  <label htmlFor="budgetRange" className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] mb-3 block">
                     Monthly Budget (৳)
                   </label>
                   <div className="relative group">
@@ -277,7 +277,7 @@ export default function EditProfilePage() {
                       onChange={handleChange}
                       min="0"
                       step="0.01"
-                      className="w-full pl-12 pr-4 py-5 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-4 focus:ring-primary/20 text-foreground font-black placeholder:text-muted-foreground/50 transition-all"
+                      className="w-full pl-12 pr-4 py-5 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-4 focus:ring-primary/20 text-foreground font-bold placeholder:text-muted-foreground/50 transition-all"
                       placeholder="e.g., 5000"
                     />
                   </div>
@@ -285,7 +285,7 @@ export default function EditProfilePage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label htmlFor="height" className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-3 block">
+                    <label htmlFor="height" className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] mb-3 block">
                       Height (cm)
                     </label>
                     <div className="relative group">
@@ -300,14 +300,14 @@ export default function EditProfilePage() {
                         onChange={handleChange}
                         min="0"
                         step="0.1"
-                        className="w-full pl-12 pr-4 py-5 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-4 focus:ring-primary/20 text-foreground font-black placeholder:text-muted-foreground/50 transition-all"
+                        className="w-full pl-12 pr-4 py-5 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-4 focus:ring-primary/20 text-foreground font-bold placeholder:text-muted-foreground/50 transition-all"
                         placeholder="e.g., 170"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label htmlFor="weight" className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-3 block">
+                    <label htmlFor="weight" className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] mb-3 block">
                       Weight (kg)
                     </label>
                     <div className="relative group">
@@ -322,7 +322,7 @@ export default function EditProfilePage() {
                         onChange={handleChange}
                         min="0"
                         step="0.1"
-                        className="w-full pl-12 pr-4 py-5 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-4 focus:ring-primary/20 text-foreground font-black placeholder:text-muted-foreground/50 transition-all"
+                        className="w-full pl-12 pr-4 py-5 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-4 focus:ring-primary/20 text-foreground font-bold placeholder:text-muted-foreground/50 transition-all"
                         placeholder="e.g., 70"
                       />
                     </div>
@@ -331,7 +331,7 @@ export default function EditProfilePage() {
 
                 {/* Weight Preference */}
                 <div>
-                  <label htmlFor="weightPreference" className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-3 block">
+                  <label htmlFor="weightPreference" className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] mb-3 block">
                     Weight Goal
                   </label>
                   <div className="relative group">
@@ -343,7 +343,7 @@ export default function EditProfilePage() {
                       name="weightPreference"
                       value={formData.weightPreference}
                       onChange={handleChange}
-                      className="w-full pl-12 pr-4 py-5 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-4 focus:ring-primary/20 text-foreground font-black transition-all appearance-none"
+                      className="w-full pl-12 pr-4 py-5 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-4 focus:ring-primary/20 text-foreground font-bold transition-all appearance-none"
                     >
                       <option value="">Select a goal</option>
                       <option value="lose">Lose Weight</option>
@@ -355,7 +355,7 @@ export default function EditProfilePage() {
 
                 {/* Allergies */}
                 <div>
-                  <label htmlFor="allergies" className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-3 block">
+                  <label htmlFor="allergies" className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] mb-3 block">
                     Allergies
                   </label>
                   <div className="relative group">
@@ -368,7 +368,7 @@ export default function EditProfilePage() {
                       name="allergies"
                       value={formData.allergies}
                       onChange={handleChange}
-                      className="w-full pl-12 pr-4 py-5 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-4 focus:ring-primary/20 text-foreground font-black placeholder:text-muted-foreground/50 transition-all"
+                      className="w-full pl-12 pr-4 py-5 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-4 focus:ring-primary/20 text-foreground font-bold placeholder:text-muted-foreground/50 transition-all"
                       placeholder="e.g., Peanuts, Seafood, Dairy"
                     />
                   </div>
@@ -377,7 +377,7 @@ export default function EditProfilePage() {
 
                 {/* Health Conditions */}
                 <div>
-                  <label htmlFor="healthConditions" className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-3 block">
+                  <label htmlFor="healthConditions" className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] mb-3 block">
                     Health Condition
                   </label>
                   <div className="relative group">
@@ -389,7 +389,7 @@ export default function EditProfilePage() {
                       name="healthConditions"
                       value={formData.healthConditions}
                       onChange={handleChange}
-                      className="w-full pl-12 pr-4 py-5 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-4 focus:ring-primary/20 text-foreground font-black transition-all appearance-none"
+                      className="w-full pl-12 pr-4 py-5 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-4 focus:ring-primary/20 text-foreground font-bold transition-all appearance-none"
                     >
                       {healthOptions.map((option) => (
                         <option key={option.value} value={option.value}>
@@ -403,13 +403,13 @@ export default function EditProfilePage() {
 
                 {/* Nutrition Goals Section */}
                 <div className="pt-8 border-t border-gray-200">
-                  <h3 className="text-lg font-black text-gray-800 mb-1">Daily Nutrition Goals</h3>
+                  <h3 className="text-lg font-bold text-gray-800 mb-1">Daily Nutrition Goals</h3>
                   <p className='text-sm mb-6'> (Recommended from your height, weight and age)</p>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {/* Protein Goal */}
                     <div>
-                      <label htmlFor="proteinGoal" className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-3 block">
+                      <label htmlFor="proteinGoal" className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] mb-3 block">
                         Protein Goal (g)
                       </label>
                       <div className="relative group">
@@ -424,7 +424,7 @@ export default function EditProfilePage() {
                           onChange={handleChange}
                           min="0"
                           step="0.1"
-                          className="w-full pl-12 pr-4 py-5 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-4 focus:ring-primary/20 text-foreground font-black placeholder:text-muted-foreground/50 transition-all"
+                          className="w-full pl-12 pr-4 py-5 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-4 focus:ring-primary/20 text-foreground font-bold placeholder:text-muted-foreground/50 transition-all"
                           placeholder={`e.g., ${recommendations.protein}`}
                         />
                       </div>
@@ -435,7 +435,7 @@ export default function EditProfilePage() {
 
                     {/* Carbohydrate Goal */}
                     <div>
-                      <label htmlFor="carbGoal" className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-3 block">
+                      <label htmlFor="carbGoal" className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] mb-3 block">
                         Carbohydrate Goal (g)
                       </label>
                       <div className="relative group">
@@ -450,7 +450,7 @@ export default function EditProfilePage() {
                           onChange={handleChange}
                           min="0"
                           step="0.1"
-                          className="w-full pl-12 pr-4 py-5 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-4 focus:ring-primary/20 text-foreground font-black placeholder:text-muted-foreground/50 transition-all"
+                          className="w-full pl-12 pr-4 py-5 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-4 focus:ring-primary/20 text-foreground font-bold placeholder:text-muted-foreground/50 transition-all"
                           placeholder={`e.g., ${recommendations.carbs}`}
                         />
                       </div>
@@ -461,7 +461,7 @@ export default function EditProfilePage() {
 
                     {/* Fat Goal */}
                     <div>
-                      <label htmlFor="fatGoal" className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-3 block">
+                      <label htmlFor="fatGoal" className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] mb-3 block">
                         Fat Goal (g)
                       </label>
                       <div className="relative group">
@@ -476,7 +476,7 @@ export default function EditProfilePage() {
                           onChange={handleChange}
                           min="0"
                           step="0.1"
-                          className="w-full pl-12 pr-4 py-5 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-4 focus:ring-primary/20 text-foreground font-black placeholder:text-muted-foreground/50 transition-all"
+                          className="w-full pl-12 pr-4 py-5 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-4 focus:ring-primary/20 text-foreground font-bold placeholder:text-muted-foreground/50 transition-all"
                           placeholder={`e.g., ${recommendations.fat}`}
                         />
                       </div>
@@ -487,7 +487,7 @@ export default function EditProfilePage() {
 
                     {/* Energy Goal */}
                     <div>
-                      <label htmlFor="energyGoal" className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-3 block">
+                      <label htmlFor="energyGoal" className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] mb-3 block">
                         Energy Goal (kcal)
                       </label>
                       <div className="relative group">
@@ -502,7 +502,7 @@ export default function EditProfilePage() {
                           onChange={handleChange}
                           min="0"
                           step="1"
-                          className="w-full pl-12 pr-4 py-5 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-4 focus:ring-primary/20 text-foreground font-black placeholder:text-muted-foreground/50 transition-all"
+                          className="w-full pl-12 pr-4 py-5 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-4 focus:ring-primary/20 text-foreground font-bold placeholder:text-muted-foreground/50 transition-all"
                           placeholder={`e.g., ${recommendations.energy}`}
                         />
                       </div>
@@ -532,7 +532,7 @@ export default function EditProfilePage() {
                   <button
                     type="button"
                     onClick={() => navigate('/profile')}
-                    className="flex-1 px-8 py-5 bg-gray-50 text-black border border-gray-200 rounded-2xl hover:bg-gray-100 transition-all font-black uppercase tracking-widest text-xs active:scale-95"
+                    className="flex-1 px-8 py-5 bg-gray-50 text-black border border-gray-200 rounded-2xl hover:bg-gray-100 transition-all font-bold uppercase tracking-widest text-xs active:scale-95"
                     disabled={loading}
                   >
                     Cancel Changes
@@ -540,7 +540,7 @@ export default function EditProfilePage() {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="flex-1 inline-flex items-center justify-center gap-2 px-8 py-5 bg-primary text-white rounded-2xl hover:bg-primary-dark transition-all font-black uppercase tracking-widest text-xs disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_20px_40px_-15px_rgba(172,156,6,0.3)] active:scale-95"
+                    className="flex-1 inline-flex items-center justify-center gap-2 px-8 py-5 bg-primary text-white rounded-2xl hover:bg-primary-dark transition-all font-bold uppercase tracking-widest text-xs disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_20px_40px_-15px_rgba(172,156,6,0.3)] active:scale-95"
                   >
                     {loading ? (
                       <>

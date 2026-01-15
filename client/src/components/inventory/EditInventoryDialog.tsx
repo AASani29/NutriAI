@@ -123,7 +123,7 @@ export function EditInventoryDialog({
         {/* Header */}
         <div className="flex justify-between items-start mb-8">
           <div>
-            <h2 className="text-2xl font-black text-slate-800 tracking-tight">Edit Pantry</h2>
+            <h2 className="text-2xl font-bold text-slate-800 tracking-tight">Edit Pantry</h2>
             <p className="text-slate-400 text-sm font-medium mt-1">Manage users and archive settings.</p>
           </div>
           <button
@@ -136,7 +136,7 @@ export function EditInventoryDialog({
 
         {/* Pantry Info */}
         <div className="mb-8 p-4 bg-slate-50 rounded-xl border border-slate-100">
-          <h3 className="font-black text-sm text-slate-900 mb-1">{inventory.name}</h3>
+          <h3 className="font-bold text-sm text-slate-900 mb-1">{inventory.name}</h3>
           {inventory.description && (
             <p className="text-xs text-slate-500 line-clamp-2">{inventory.description}</p>
           )}
@@ -145,7 +145,7 @@ export function EditInventoryDialog({
         {/* Shared Users Section */}
         <div className="space-y-6">
           <div>
-            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">
+            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">
               Shared With ({selectedUsers.length})
             </label>
 
@@ -188,7 +188,7 @@ export function EditInventoryDialog({
                 value={userSearch}
                 onChange={handleUserSearchChange}
                 placeholder="Search users by name or email..."
-                className="w-full px-5 py-4 border border-slate-100 rounded-xl text-secondary text-slate-800 font-black focus:ring-4 focus:ring-primary/10 transition-all outline-none"
+                className="w-full px-5 py-4 border border-slate-100 rounded-xl text-secondary text-slate-800 font-bold focus:ring-4 focus:ring-primary/10 transition-all outline-none"
               />
               {isSearching && (
                 <div className="absolute right-4 top-1/2 -translate-y-1/2">
@@ -245,12 +245,12 @@ export function EditInventoryDialog({
         {/* Archive Section - Only show for owners */}
         {inventory.accessRole === 'owner' && (
           <div className="mb-8">
-            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">
+            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">
               Archive Status
             </label>
             <div className="p-4 bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between">
               <div>
-                <p className="font-black text-sm text-slate-900">
+                <p className="font-bold text-sm text-slate-900">
                   {inventory.isArchived ? 'Archived' : 'Active'}
                 </p>
                 <p className="text-xs text-slate-500 mt-1">
@@ -271,7 +271,7 @@ export function EditInventoryDialog({
                     }
                   }}
                   disabled={isLoading}
-                  className="flex items-center gap-2 px-4 py-2 bg-slate-200 text-slate-700 hover:bg-slate-300 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg font-black text-xs uppercase tracking-widest transition-all"
+                  className="flex items-center gap-2 px-4 py-2 bg-slate-200 text-slate-700 hover:bg-slate-300 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg font-bold text-xs uppercase tracking-widest transition-all"
                 >
                   <ArchiveX className="w-4 h-4" />
                   {isLoading ? 'Processing...' : 'Unarchive'}
@@ -288,7 +288,7 @@ export function EditInventoryDialog({
                     }
                   }}
                   disabled={isLoading}
-                  className="flex items-center gap-2 px-4 py-2 bg-amber-100 text-amber-700 hover:bg-amber-200 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg font-black text-xs uppercase tracking-widest transition-all"
+                  className="flex items-center gap-2 px-4 py-2 bg-amber-100 text-amber-700 hover:bg-amber-200 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg font-bold text-xs uppercase tracking-widest transition-all"
                 >
                   <Archive className="w-4 h-4" />
                   {isLoading ? 'Processing...' : 'Archive'}
@@ -303,14 +303,14 @@ export function EditInventoryDialog({
           <button
             onClick={handleSaveChanges}
             disabled={isLoading}
-            className="flex-1 py-4 bg-black text-white rounded-xl font-black text-xs uppercase tracking-widest hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg"
+            className="flex-1 py-4 bg-black text-white rounded-xl font-bold text-xs uppercase tracking-widest hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg"
           >
             {isLoading ? 'Saving...' : 'Save Changes'}
           </button>
           <button
             onClick={onClose}
             disabled={isLoading}
-            className="flex-1 py-4 bg-slate-100 text-slate-500 rounded-xl hover:text-secondary transition-all font-black text-xs uppercase tracking-widest disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1 py-4 bg-slate-100 text-slate-500 rounded-xl hover:text-secondary transition-all font-bold text-xs uppercase tracking-widest disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoading ? 'Processing...' : 'Cancel'}
           </button>

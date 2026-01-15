@@ -77,12 +77,12 @@ export default function HeroSection() {
                      {/* Stats Row */}
                      <div className="flex gap-4 mb-6">
                         <div className="flex-1 bg-gray-50 p-4 rounded-xl border border-gray-100">
-                           <div className="text-2xl font-black text-foreground mb-1">3</div>
+                           <div className="text-2xl font-bold text-foreground mb-1">3</div>
                            <div className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider mb-1">Expires Soon</div>
                            <div className="text-[10px] text-foreground font-medium">Tomatoes, Milk, Bread</div>
                         </div>
                         <div className="flex-1 bg-gray-50 p-4 rounded-xl border border-gray-100">
-                           <div className="text-2xl font-black text-foreground mb-1">1,850</div>
+                           <div className="text-2xl font-bold text-foreground mb-1">1,850</div>
                            <div className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider mb-1">Kcal Today</div>
                            <div className="text-[10px] text-foreground font-medium">On Target</div>
                         </div>

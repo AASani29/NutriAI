@@ -525,12 +525,12 @@ export default function DailyLogPage() {
       <div className="container mx-auto px-4 py-8 max-w-7xl space-y-8">
         <header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
           <div>
-            <h1 className="text-4xl font-black text-black tracking-tight">Daily Log</h1>
-            <p className="text-muted-foreground font-medium mt-1">Track your daily intake and maintain a healthy balance.</p>
+            <h1 className="text-3xl font-bold text-foreground tracking-tight">Daily Log</h1>
+            <p className="text-muted-foreground mt-1">Track your daily intake and maintain a healthy balance.</p>
           </div>
           <div className="flex items-center gap-4 w-full md:w-auto">
-            <button className="bg-black text-white px-8 py-3 rounded-full font-black flex items-center gap-2 hover:opacity-90 transition-all active:scale-95 whitespace-nowrap shadow-lg shadow-black/10" onClick={()=>navigate('/inventory')}>
-              <Plus className="w-5 h-5 text-primary font-black" />
+            <button className="bg-secondary text-white px-8 py-3 rounded-lg font-bold flex items-center gap-2 hover:bg-secondary/90 transition-all active:scale-95 whitespace-nowrap shadow-lg" onClick={()=>navigate('/inventory')}>
+              <Plus className="w-5 h-5" />
               Log Meal
             </button>
           </div>
@@ -547,7 +547,7 @@ export default function DailyLogPage() {
               </div>
 
               <div className="relative z-10 w-full md:w-1/2">
-                <h2 className="text-5xl font-black text-black mb-4 leading-tight">Eat Smarter,<br /><span className="text-primary-dark">Live Better!</span></h2>
+                <h2 className="text-4xl font-bold text-foreground mb-4 leading-tight">Eat Smarter,<br /><span className="text-secondary">Live Better!</span></h2>
                 <div className="space-y-4 mb-8">
                    <div className="relative w-56 h-56">
                     <svg className="w-full h-full transform -rotate-90">
@@ -566,17 +566,17 @@ export default function DailyLogPage() {
                       ></circle>
                     </svg>
                     <div className="absolute inset-0 flex flex-col items-center justify-center">
-                      <span className="text-4xl font-black text-[#8EC5DB] tracking-tighter">{calculateCaloriesBurned}</span>
-                      <span className="text-[10px] uppercase font-black tracking-[0.2em] text-muted-foreground mt-1">kcal Burned</span>
+                      <span className="text-4xl font-bold text-[#8EC5DB] tracking-tighter">{calculateCaloriesBurned}</span>
+                      <span className="text-[10px] uppercase font-bold tracking-[0.2em] text-muted-foreground mt-1">kcal Burned</span>
                     </div>
                   </div>
 
                 </div>
                 <div className="flex items-center gap-6">
-                  <button className="bg-black text-white px-8 py-4 rounded-full font-black hover:bg-primary hover:text-black transition-all flex items-center gap-3 group shadow-xl shadow-black/10 active:scale-95">
+                  <button className="bg-secondary text-white px-8 py-4 rounded-lg font-bold hover:bg-primary hover:text-secondary transition-all flex items-center gap-3 group shadow-lg active:scale-95">
                     View Analytics
                     <div className="bg-white rounded-full p-1.5 w-7 h-7 flex items-center justify-center transition-transform group-hover:translate-x-1">
-                      <ArrowRight className="w-4 h-4 text-black" />
+                      <ArrowRight className="w-4 h-4 text-foreground" />
                     </div>
                   </button>
                 </div>
@@ -589,12 +589,12 @@ export default function DailyLogPage() {
                     <circle className="text-black transition-all duration-1000 ease-out" cx="112" cy="112" fill="transparent" r="98" stroke="currentColor" strokeDasharray={strokeDasharray} strokeDashoffset={strokeDashoffset} strokeLinecap="round" strokeWidth="16"></circle>
                   </svg>
                   <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className="text-4xl font-black text-black tracking-tighter">{Math.round(caloriesLeft)}</span>
-                    <span className="text-[10px] uppercase font-black tracking-[0.2em] text-muted-foreground mt-1">kcal Left</span>
+                    <span className="text-4xl font-bold text-black tracking-tighter">{Math.round(caloriesLeft)}</span>
+                    <span className="text-[10px] uppercase font-bold tracking-[0.2em] text-muted-foreground mt-1">kcal Left</span>
                   </div>
-                  <div className="absolute -top-2 -right-2 bg-primary/20 backdrop-blur-md border border-primary/50 text-black px-4 py-2 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg">Carbs {Math.round((totalMacros.carbs * 4 / (consumedCalories || 1)) * 100)}%</div>
- <div className="absolute -bottom-2 -right-2 bg-orange-500/20 backdrop-blur-md border border-orange-500/50 text-black px-4 py-2 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg">Fats {Math.round((totalMacros.fat * 9 / (consumedCalories || 1)) * 100)}%</div>
-                  <div className="absolute bottom-4 -left-6 bg-black text-white px-4 py-2 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl">Protein {Math.round((totalMacros.protein * 4 / (consumedCalories || 1)) * 100)}%</div>
+                  <div className="absolute -top-2 -right-2 bg-primary/20 backdrop-blur-md border border-primary/50 text-black px-4 py-2 rounded-2xl text-[10px] font-bold uppercase tracking-widest shadow-lg">Carbs {Math.round((totalMacros.carbs * 4 / (consumedCalories || 1)) * 100)}%</div>
+ <div className="absolute -bottom-2 -right-2 bg-orange-500/20 backdrop-blur-md border border-orange-500/50 text-black px-4 py-2 rounded-2xl text-[10px] font-bold uppercase tracking-widest shadow-lg">Fats {Math.round((totalMacros.fat * 9 / (consumedCalories || 1)) * 100)}%</div>
+                  <div className="absolute bottom-4 -left-6 bg-black text-white px-4 py-2 rounded-2xl text-[10px] font-bold uppercase tracking-widest shadow-xl">Protein {Math.round((totalMacros.protein * 4 / (consumedCalories || 1)) * 100)}%</div>
                 </div>
               </div>
             </div>
@@ -609,14 +609,14 @@ export default function DailyLogPage() {
               )}
               <div className="flex justify-between items-center mb-10">
                 <div>
-                  <h3 className="text-2xl font-black text-black tracking-tight">Today's Meals</h3>
-                  <p className="text-muted-foreground text-xs font-bold uppercase tracking-widest mt-1">Daily Log Feed</p>
+                  <h3 className="text-xl font-bold text-foreground tracking-tight">Today's Meals</h3>
+                  <p className="text-muted-foreground text-sm mt-1">Daily Log Feed</p>
                 </div>
                 <button
                   onClick={() => setShowFilters(!showFilters)}
-                  className={`px-6 py-2.5 rounded-2xl font-black text-sm transition-all active:scale-95 border flex items-center gap-2 ${showFilters || hasActiveFilters
-                    ? 'bg-black text-white border-black'
-                    : 'bg-gray-50 text-black border-gray-100'
+                  className={`px-6 py-2.5 rounded-lg font-medium text-sm transition-all active:scale-95 border flex items-center gap-2 ${showFilters || hasActiveFilters
+                    ? 'bg-secondary text-white border-secondary'
+                    : 'bg-card text-foreground border-border'
                     }`}
                 >
                   <Filter className="w-4 h-4" />
@@ -631,7 +631,7 @@ export default function DailyLogPage() {
                     <div className="space-y-4">
                       <div className="flex items-center gap-2 mb-1">
                         <Calendar className="w-4 h-4 text-primary" />
-                        <label className="text-[10px] font-black uppercase tracking-widest text-black">Date Range</label>
+                        <label className="text-[10px] font-bold uppercase tracking-widest text-black">Date Range</label>
                       </div>
                       <div className="grid grid-cols-[1fr,auto,1fr] items-center gap-3 bg-white p-4 rounded-2xl border border-gray-100 shadow-sm focus-within:ring-2 focus-within:ring-black transition-all">
                         <input
@@ -640,7 +640,7 @@ export default function DailyLogPage() {
                           onChange={handleStartDateChange}
                           className="bg-transparent text-xs font-bold focus:outline-none w-full cursor-pointer hover:text-secondary transition-colors"
                         />
-                        <span className="text-muted-foreground font-black opacity-30">—</span>
+                        <span className="text-muted-foreground font-bold opacity-30">—</span>
                         <input
                           type="date"
                           value={dateRange.endDate.toISOString().split('T')[0]}
@@ -654,7 +654,7 @@ export default function DailyLogPage() {
                     <div className="space-y-4">
                       <div className="flex items-center gap-2 mb-1">
                         <Package className="w-4 h-4 text-primary" />
-                        <label className="text-[10px] font-black uppercase tracking-widest text-black">Source Inventory</label>
+                        <label className="text-[10px] font-bold uppercase tracking-widest text-black">Source Inventory</label>
                       </div>
                       <select
                         value={filters.inventoryId}
@@ -674,7 +674,7 @@ export default function DailyLogPage() {
                     <div className="space-y-4">
                       <div className="flex items-center gap-2 mb-1">
                         <Filter className="w-4 h-4 text-primary" />
-                        <label className="text-[10px] font-black uppercase tracking-widest text-black">Food Category</label>
+                        <label className="text-[10px] font-bold uppercase tracking-widest text-black">Food Category</label>
                       </div>
                       <select
                         value={filters.category}
@@ -696,7 +696,7 @@ export default function DailyLogPage() {
                     <div className="flex items-center justify-between pt-6 border-t border-gray-100">
                       <div className="flex flex-wrap gap-2">
                         {filters.inventoryId && (
-                          <span className="px-3 py-1 bg-black text-white rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
+                          <span className="px-3 py-1 bg-black text-white rounded-full text-[10px] font-bold uppercase tracking-widest flex items-center gap-2">
                             {inventories?.find(i => i.id === filters.inventoryId)?.name}
                             <button onClick={() => setFilters(prev => ({ ...prev, inventoryId: '' }))}>
                               <X className="w-3 h-3 text-primary" />
@@ -704,7 +704,7 @@ export default function DailyLogPage() {
                           </span>
                         )}
                         {filters.category && (
-                          <span className="px-3 py-1 bg-primary text-black rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
+                          <span className="px-3 py-1 bg-primary text-black rounded-full text-[10px] font-bold uppercase tracking-widest flex items-center gap-2">
                             {filters.category}
                             <button onClick={() => setFilters(prev => ({ ...prev, category: '' }))}>
                               <X className="w-3 h-3" />
@@ -714,7 +714,7 @@ export default function DailyLogPage() {
                       </div>
                       <button
                         onClick={clearFilters}
-                        className="text-[10px] font-black uppercase tracking-[0.2em] text-black hover:text-secondary transition-colors underline underline-offset-4"
+                        className="text-[10px] font-bold uppercase tracking-[0.2em] text-black hover:text-secondary transition-colors underline underline-offset-4"
                       >
                         Clear All
                       </button>
@@ -727,15 +727,15 @@ export default function DailyLogPage() {
                 {consumptionLoading && consumptionLogs.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-20 gap-4">
                     <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-                    <p className="text-black font-black uppercase tracking-widest text-[10px]">Updating Log Feed...</p>
+                    <p className="text-black font-bold uppercase tracking-widest text-[10px]">Updating Log Feed...</p>
                   </div>
                 ) : consumptionError ? (
                   <div className="text-center py-16 bg-red-50/30 rounded-[2rem] border-2 border-dashed border-red-100">
                     <X className="w-16 h-16 text-red-200 mx-auto mb-4" />
-                    <p className="text-red-700 font-black uppercase tracking-widest text-xs">Failed to load meals</p>
+                    <p className="text-red-700 font-bold uppercase tracking-widest text-xs">Failed to load meals</p>
                     <button
                       onClick={() => window.location.reload()}
-                      className="mt-4 text-black font-black hover:text-secondary underline underline-offset-8 transition-all"
+                      className="mt-4 text-black font-bold hover:text-secondary underline underline-offset-8 transition-all"
                     >
                       Retry Connection
                     </button>
@@ -743,8 +743,8 @@ export default function DailyLogPage() {
                 ) : Object.keys(logsByDate).length === 0 ? (
                   <div className="text-center py-16 bg-gray-50/50 rounded-[2rem] border-2 border-dashed border-gray-100">
                     <Utensils className="w-16 h-16 text-gray-200 mx-auto mb-4" />
-                    <p className="text-muted-foreground font-black uppercase tracking-widest text-xs">No meals logged for this period</p>
-                    <button className="mt-4 text-black font-black hover:text-secondary underline underline-offset-8 transition-all">Log your first meal</button>
+                    <p className="text-muted-foreground font-bold uppercase tracking-widest text-xs">No meals logged for this period</p>
+                    <button className="mt-4 text-black font-bold hover:text-secondary underline underline-offset-8 transition-all">Log your first meal</button>
                   </div>
                 ) : (
                   Object.entries(logsByDate)
@@ -752,7 +752,7 @@ export default function DailyLogPage() {
                     .map(([date, logs]) => (
                       <div key={date} className="space-y-6 animate-in fade-in duration-500">
                         <div className="flex items-center gap-4">
-                          <h4 className="text-sm font-black text-black uppercase tracking-[0.3em] whitespace-nowrap">{formatDate(date)}</h4>
+                          <h4 className="text-sm font-bold text-black uppercase tracking-[0.3em] whitespace-nowrap">{formatDate(date)}</h4>
                           <div className="h-px bg-gray-100 w-full" />
                         </div>
 
@@ -767,27 +767,27 @@ export default function DailyLogPage() {
                               <div className="flex-1 min-w-0">
                                 <div className="flex justify-between items-start mb-2">
                                   <div>
-                                    <h4 className="font-black text-lg text-black leading-none mb-1 group-hover:text-secondary transition-colors">{log.itemName}</h4>
-                                    <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest flex items-center gap-2">
-                                      <Clock className="w-3 h-3 text-primary" />
+                                    <h4 className="font-bold text-lg text-black leading-none mb-1 group-hover:text-secondary transition-colors">{log.itemName}</h4>
+                                    <p className="text-[12px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-2">
+                                      <Clock className="w-3 h-3 text-secondary" />
                                       {formatTime(log.consumedAt)} • {log.foodItem?.category || 'Uncategorized'}
                                     </p>
                                   </div>
                                   <div className="text-right">
-                                    <span className="font-black text-xl text-black tracking-tighter block">{Math.round(log.calories || 0)} <span className="text-[8px] text-muted-foreground uppercase tracking-widest">kcal</span></span>
+                                    <span className="font-bold text-xl text-black tracking-tighter block">{Math.round(log.calories || 0)} <span className="text-[8px] text-muted-foreground uppercase tracking-widest">kcal</span></span>
                                     {log.quantity > 1 && (
-                                      <span className="text-[8px] font-black text-muted-foreground uppercase tracking-[0.2em]">Qty: {log.quantity}</span>
+                                      <span className="text-[8px] font-bold text-muted-foreground uppercase tracking-[0.2em]">Qty: {log.quantity}</span>
                                     )}
                                   </div>
                                 </div>
                                 <div className="flex gap-2">
-                                  <div className="text-[8px] font-black uppercase tracking-widest bg-gray-50 text-gray-500 px-2 py-1 rounded-lg border border-gray-100">
+                                  <div className="text-[12px] font-bold uppercase tracking-widest bg-gray-50 text-gray-500 px-2 py-1 rounded-lg border border-gray-100">
                                     {log.carbohydrates?.toFixed(1) || 0}g Carbs
                                   </div>
-                                  <div className="text-[8px] font-black uppercase tracking-widest bg-gray-50 text-gray-500 px-2 py-1 rounded-lg border border-gray-100">
+                                  <div className="text-[12px] font-bold uppercase tracking-widest bg-gray-50 text-gray-500 px-2 py-1 rounded-lg border border-gray-100">
                                     {log.protein?.toFixed(1) || 0}g Protein
                                   </div>
-                                  <div className="text-[8px] font-black uppercase tracking-widest bg-gray-50 text-gray-500 px-2 py-1 rounded-lg border border-gray-100">
+                                  <div className="text-[12px] font-bold uppercase tracking-widest bg-gray-50 text-gray-500 px-2 py-1 rounded-lg border border-gray-100">
                                     {log.fat?.toFixed(1) || 0}g Fat
                                   </div>
                                 </div>
@@ -805,7 +805,7 @@ export default function DailyLogPage() {
                     <button
                       onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                       disabled={currentPage === 1}
-                      className="w-10 h-10 rounded-xl bg-white border border-gray-100 flex items-center justify-center disabled:opacity-30 hover:bg-gray-50 transition-all font-black text-xs"
+                      className="w-10 h-10 rounded-xl bg-white border border-gray-100 flex items-center justify-center disabled:opacity-30 hover:bg-gray-50 transition-all font-bold text-xs"
                     >
                       ←
                     </button>
@@ -813,7 +813,7 @@ export default function DailyLogPage() {
                       <button
                         key={i}
                         onClick={() => setCurrentPage(i + 1)}
-                        className={`w-10 h-10 rounded-xl border transition-all font-black text-xs ${currentPage === i + 1
+                        className={`w-10 h-10 rounded-xl border transition-all font-bold text-xs ${currentPage === i + 1
                           ? 'bg-black text-primary border-black'
                           : 'bg-white border-gray-100 text-gray-400 hover:border-black hover:text-black'
                           }`}
@@ -824,7 +824,7 @@ export default function DailyLogPage() {
                     <button
                       onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                       disabled={currentPage === totalPages}
-                      className="w-10 h-10 rounded-xl bg-white border border-gray-100 flex items-center justify-center disabled:opacity-30 hover:bg-gray-50 transition-all font-black text-xs"
+                      className="w-10 h-10 rounded-xl bg-white border border-gray-100 flex items-center justify-center disabled:opacity-30 hover:bg-gray-50 transition-all font-bold text-xs"
                     >
                       →
                     </button>
@@ -838,8 +838,8 @@ export default function DailyLogPage() {
                   </div>
                   <div className="flex-1 flex items-center justify-between ml-6">
                     <div>
-                      <h4 className="font-black text-lg text-black">Feeling peckish?</h4>
-                      <p className="text-xs font-black text-muted-foreground uppercase tracking-widest">Log a quick snack to stay precise</p>
+                      <h4 className="font-bold text-lg text-black">Feeling peckish?</h4>
+                      <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Log a quick snack to stay precise</p>
                     </div>
                     <button className="w-12 h-12 rounded-2xl bg-black text-primary flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-xl shadow-black/20">
                       <Plus className="w-6 h-6" />
@@ -853,14 +853,14 @@ export default function DailyLogPage() {
           {/* Right Column */}
           <div className="xl:sticky xl:top-8 flex flex-col gap-8 h-fit">
             {/* Hydration Card */}
-            <div className="bg-gradient-to-br from-[#8EC5DB] to-[#7FB0C8] rounded-[2.5rem] p-8 text-white relative overflow-hidden shadow-xl min-h-[380px] flex flex-col group">
+            <div className="bg-gradient-to-br from-[#8EC5DB] to-[#7FB0C8] rounded-xl p-8 text-white relative overflow-hidden shadow-lg min-h-[380px] flex flex-col group">
               <div className="absolute -right-10 -top-10 w-44 h-104 bg-white opacity-10 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-1000"></div>
 
               {/* Header / Date Selector */}
               <div className="relative z-10 mb-6 h-26">
                 <div className="flex justify-between items-start">
                   <div>
-                    <h3 className="text-xl font-black mb-1 flex items-center gap-2">
+                    <h3 className="text-lg font-bold mb-1 flex items-center gap-2">
                       Hydration <Droplets className="w-5 h-5 text-white/80" />
                       {hydrationLoading && <span className="text-[10px] opacity-70">Syncing...</span>}
                     </h3>
@@ -925,7 +925,7 @@ export default function DailyLogPage() {
                               <div className={`w-2 h-8 rounded-full bg-white/20 overflow-hidden relative ${isSelected ? 'shadow-[0_0_10px_rgba(255,255,255,0.5)]' : ''}`}>
                                 <div className="absolute bottom-0 left-0 w-full bg-white transition-all duration-500" style={{ height: `${percent}%` }} />
                               </div>
-                              <span className={`text-[10px] font-black uppercase tracking-wider ${isToday ? 'text-white' : ''}`}>
+                              <span className={`text-[10px] font-bold uppercase tracking-wider ${isToday ? 'text-white' : ''}`}>
                                 {d.getDate()}
                               </span>
                             </button>
@@ -959,13 +959,13 @@ export default function DailyLogPage() {
                     <button
                       onClick={handleAddWater}
                       disabled={updateHydrationMutation.isPending}
-                      className="bg-white text-[#8EC5DB] px-6 py-3 rounded-2xl text-xs font-black uppercase tracking-widest shadow-xl hover:bg-black hover:text-white transition-all active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed"
+                      className="bg-white text-[#8EC5DB] px-6 py-3 rounded-lg text-sm font-bold shadow-lg hover:bg-secondary hover:text-white transition-all active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed"
                     >
                       {updateHydrationMutation.isPending ? 'Saving...' : '+ 250ml'}
                     </button>
                     <div className="text-right">
-                      <span className="text-5xl font-black block leading-none tracking-tighter">{hydrationAmount.toFixed(1)}L</span>
-                      <span className="text-[10px] font-black uppercase tracking-widest opacity-70">/ {hydrationGoal}L Goal</span>
+                      <span className="text-5xl font-bold block leading-none tracking-tighter">{hydrationAmount.toFixed(1)}L</span>
+                      <span className="text-[10px] font-bold uppercase tracking-widest opacity-70">/ {hydrationGoal}L Goal</span>
                     </div>
                   </div>
                 </>
@@ -975,20 +975,20 @@ export default function DailyLogPage() {
                   <div className="relative z-10 grid grid-cols-2 gap-4 mt-4">
                     <div className="bg-white/10 rounded-2xl p-4 backdrop-blur-sm">
                       <p className="text-[10px] uppercase tracking-widest opacity-70 mb-1">Total Intake</p>
-                      <p className="text-3xl font-black">{monthlyStats.total.toFixed(0)}L</p>
+                      <p className="text-3xl font-bold">{monthlyStats.total.toFixed(0)}L</p>
                     </div>
                     <div className="bg-white/10 rounded-2xl p-4 backdrop-blur-sm">
                       <p className="text-[10px] uppercase tracking-widest opacity-70 mb-1">Daily Avg</p>
-                      <p className="text-3xl font-black">{monthlyStats.avg.toFixed(1)}L</p>
+                      <p className="text-3xl font-bold">{monthlyStats.avg.toFixed(1)}L</p>
                     </div>
                   </div>
 
                   <div className="relative z-10 mt-6 bg-white/10 rounded-2xl p-6 backdrop-blur-sm flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-full bg-white text-[#8EC5DB] flex items-center justify-center font-black text-lg">
+                    <div className="w-12 h-12 rounded-full bg-white text-[#8EC5DB] flex items-center justify-center font-bold text-lg">
                       {monthlyStats.daysMetGoal}
                     </div>
                     <div>
-                      <p className="text-sm font-black">Goal Days</p>
+                      <p className="text-sm font-bold">Goal Days</p>
                       <p className="text-[10px] opacity-70 uppercase tracking-widest">Days you hit your target</p>
                     </div>
                   </div>
@@ -999,13 +999,13 @@ export default function DailyLogPage() {
               <div className="absolute top-8 left-75 transform -translate-x-1/2 bg-white/10 backdrop-blur-xl border border-white/20 rounded-full p-1.5 flex shadow-2xl z-20">
                 <button
                   onClick={() => setViewMode('daily')}
-                  className={`w-12 h-10 rounded-full font-black text-xs flex items-center justify-center shadow-lg transition-all scale-105 ${viewMode === 'daily' ? 'bg-white text-[#8EC5DB]' : 'text-white hover:bg-white/10'}`}
+                  className={`w-12 h-10 rounded-full font-bold text-xs flex items-center justify-center shadow-lg transition-all scale-105 ${viewMode === 'daily' ? 'bg-white text-[#8EC5DB]' : 'text-white hover:bg-white/10'}`}
                 >
                   Daily
                 </button>
                 <button
                   onClick={() => setViewMode('monthly')}
-                  className={`w-16 h-10 rounded-full font-black text-xs flex items-center justify-center shadow-lg transition-all scale-105 ${viewMode === 'monthly' ? 'bg-white text-[#8EC5DB]' : 'text-white hover:bg-white/10'}`}
+                  className={`w-16 h-10 rounded-full font-bold text-xs flex items-center justify-center shadow-lg transition-all scale-105 ${viewMode === 'monthly' ? 'bg-white text-[#8EC5DB]' : 'text-white hover:bg-white/10'}`}
                 >
                   Monthly
                 </button>
@@ -1013,18 +1013,18 @@ export default function DailyLogPage() {
             </div>
 
             {/* Macros Card */}
-            <div className="bg-white rounded-[2.5rem] p-8 shadow-soft border border-gray-50/50">
+            <div className="bg-card rounded-xl p-8 shadow-lg border border-border">
               <div className="flex justify-between items-center mb-10">
                 <div>
-                  <h3 className="font-black text-xl text-black flex items-center gap-2 tracking-tight">
-                    <PieChart className="w-6 h-6 text-primary" />
+                  <h3 className="font-bold text-lg text-foreground flex items-center gap-2 tracking-tight">
+                    <PieChart className="w-5 h-5 text-primary" />
                     Macros
                   </h3>
-                  <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mt-1">Daily Balance</p>
+                  <p className="text-sm text-muted-foreground mt-1">Daily Balance</p>
                 </div>
                 <div className="text-right">
-                  <span className="text-2xl font-black text-black tracking-tighter">{Math.round(consumedCalories)}</span>
-                  <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest ml-1">kcal</span>
+                  <span className="text-2xl font-bold text-black tracking-tighter">{Math.round(consumedCalories)}</span>
+                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1">kcal</span>
                 </div>
               </div>
 
@@ -1039,8 +1039,8 @@ export default function DailyLogPage() {
                   return (
                     <div key={macro.label}>
                       <div className="flex justify-between items-end mb-3">
-                        <span className="text-xs font-black text-black uppercase tracking-widest">{macro.label}</span>
-                        <span className="text-sm font-black text-black tracking-tighter">
+                        <span className="text-xs font-bold text-black uppercase tracking-widest">{macro.label}</span>
+                        <span className="text-sm font-bold text-black tracking-tighter">
                           {Math.round(macro.value)}{macro.unit}
                           <span className="text-muted-foreground text-[10px] font-bold ml-1">/ {macro.goal}{macro.unit}</span>
                         </span>
@@ -1066,7 +1066,7 @@ export default function DailyLogPage() {
                     />
                   ))}
                 </div>
-                <div className="flex justify-between mt-4 text-[10px] font-black text-muted-foreground uppercase tracking-widest">
+                <div className="flex justify-between mt-4 text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
                   <span>Morning</span>
                   <span>Midnight</span>
                 </div>
@@ -1074,19 +1074,19 @@ export default function DailyLogPage() {
             </div>
 
             {/* Fitness Card */}
-            <div className="bg-white rounded-[2.5rem] p-8 shadow-soft border border-gray-50/50 flex flex-col group">
+            <div className="bg-card rounded-xl p-8 shadow-lg border border-border flex flex-col group">
               <div className="flex justify-between items-start mb-6">
                 <div>
-                  <h3 className="font-black text-xl text-black flex items-center gap-2">
-                    <Dumbbell className="w-6 h-6 text-muted-foreground group-hover:text-black transition-colors" />
+                  <h3 className="font-bold text-lg text-foreground flex items-center gap-2">
+                    <Dumbbell className="w-5 h-5 text-muted-foreground group-hover:text-foreground transition-colors" />
                     Fitness
                   </h3>
-                  <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mt-1">
+                  <p className="text-sm text-muted-foreground mt-1">
                     {fitnessData?.weight || profile?.profile?.weight ? `Current Weight: ${fitnessData?.weight || profile?.profile?.weight}kg` : 'No weight logged'}
                   </p>
                 </div>
                 <div className="text-right">
-                  <span className="block text-2xl font-black text-black tracking-tighter">
+                  <span className="block text-2xl font-bold text-black tracking-tighter">
                     {fitnessData?.steps || 0} <span className="text-xs text-muted-foreground font-medium uppercase tracking-widest">Steps</span>
                   </span>
                 </div>
@@ -1111,9 +1111,9 @@ export default function DailyLogPage() {
                     ></circle>
                   </svg>
                   <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className="text-3xl font-black text-[#8EC5DB] tracking-tighter">{calculateCaloriesBurned}</span>
-                    <span className="text-[8px] uppercase font-black tracking-[0.2em] text-muted-foreground">kcal burned</span>
-                    <span className="text-[7px] font-black text-gray-400 mt-1">Goal: {dailyBurnGoal}kcal</span>
+                    <span className="text-3xl font-bold text-[#8EC5DB] tracking-tighter">{calculateCaloriesBurned}</span>
+                    <span className="text-[8px] uppercase font-bold tracking-[0.2em] text-muted-foreground">kcal burned</span>
+                    <span className="text-[7px] font-bold text-gray-400 mt-1">Goal: {dailyBurnGoal}kcal</span>
                   </div>
                 </div>
               )}
@@ -1123,7 +1123,7 @@ export default function DailyLogPage() {
                 <div className="bg-gray-50 backdrop-blur-sm border border-gray-100 rounded-full p-1.5 flex shadow-sm">
                   <button
                     onClick={() => setWeightChartViewMode('daily')}
-                    className={`px-5 py-2 rounded-full font-black text-xs flex items-center justify-center shadow-sm transition-all ${
+                    className={`px-5 py-2 rounded-full font-bold text-xs flex items-center justify-center shadow-sm transition-all ${
                       weightChartViewMode === 'daily' ? 'bg-black text-primary' : 'text-black hover:bg-gray-100'
                     }`}
                   >
@@ -1131,7 +1131,7 @@ export default function DailyLogPage() {
                   </button>
                   <button
                     onClick={() => setWeightChartViewMode('monthly')}
-                    className={`px-5 py-2 rounded-full font-black text-xs flex items-center justify-center shadow-sm transition-all ${
+                    className={`px-5 py-2 rounded-full font-bold text-xs flex items-center justify-center shadow-sm transition-all ${
                       weightChartViewMode === 'monthly' ? 'bg-black text-primary' : 'text-black hover:bg-gray-100'
                     }`}
                   >
@@ -1191,9 +1191,9 @@ export default function DailyLogPage() {
                       
                       return (
                         <div key={actualIndex} className="flex-1 text-center">
-                          <span className="text-lg font-black text-black block">{day.date.getDate()}</span>
+                          <span className="text-lg font-bold text-black block">{day.date.getDate()}</span>
                           <span className="text-[11px] font-bold text-gray-500">{day.date.toLocaleDateString('en-US', { weekday: 'short' })}</span>
-                          {displayWeight > 0 && <span className="text-sm font-black text-black block mt-2">{displayWeight}kg</span>}
+                          {displayWeight > 0 && <span className="text-sm font-bold text-black block mt-2">{displayWeight}kg</span>}
                         </div>
                       );
                     })}
@@ -1260,9 +1260,9 @@ export default function DailyLogPage() {
                       
                       return (
                         <div key={actualIndex} className="flex-1 text-center">
-                          <span className="text-sm font-black text-black block">{month.month}</span>
+                          <span className="text-sm font-bold text-black block">{month.month}</span>
                           <span className="text-[10px] font-bold text-gray-500">{month.year}</span>
-                          {displayWeight > 0 && <span className="text-sm font-black text-black block mt-2">{displayWeight.toFixed(1)}kg</span>}
+                          {displayWeight > 0 && <span className="text-sm font-bold text-black block mt-2">{displayWeight.toFixed(1)}kg</span>}
                           {month.entriesCount > 0 && <span className="text-[8px] font-bold text-gray-400 block">{month.entriesCount} logs</span>}
                         </div>
                       );
@@ -1282,11 +1282,11 @@ export default function DailyLogPage() {
               <div className="flex items-end justify-between mt-auto gap-4">
                 <div className="flex items-center gap-4 flex-1">
                   <div>
-                    <span className="text-4xl font-black text-black tracking-tighter">
+                    <span className="text-4xl font-bold text-black tracking-tighter">
                       {fitnessData?.weight || profile?.profile?.weight || '--'}
                       <span className="text-xl text-muted-foreground font-medium tracking-tight">kg</span>
                     </span>
-                    <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mt-1">
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-1">
                       {fitnessData?.weight ? 'Logged Today' : profile?.profile?.weight ? 'From Profile' : 'No Data'}
                     </p>
                   </div>
@@ -1309,11 +1309,11 @@ export default function DailyLogPage() {
                       setTempSteps(fitnessData?.steps?.toString() || '');
                       setIsFitnessModalOpen(true);
                     }}
-                    className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] w-32 leading-relaxed hover:text-black transition-colors"
+                    className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] w-32 leading-relaxed hover:text-black transition-colors"
                   >
                     Log Activity →
                   </button>
-                  <p className="text-xs font-black text-black mt-1 uppercase tracking-widest group-hover:translate-x-1 transition-transform">Keep Pushing</p>
+                  <p className="text-xs font-bold text-black mt-1 uppercase tracking-widest group-hover:translate-x-1 transition-transform">Keep Pushing</p>
                 </div>
               </div>
             </div>
@@ -1325,7 +1325,7 @@ export default function DailyLogPage() {
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-300">
           <div className="bg-white rounded-[3rem] w-full max-w-sm p-10 shadow-2xl animate-in zoom-in-95 duration-300 border border-white/20">
             <div className="flex justify-between items-center mb-8">
-              <h3 className="text-2xl font-black text-black flex items-center gap-3">
+              <h3 className="text-2xl font-bold text-black flex items-center gap-3">
                 <Dumbbell className="w-7 h-7 text-primary" />
                 Daily Fitness
               </h3>
@@ -1339,7 +1339,7 @@ export default function DailyLogPage() {
 
             <div className="space-y-6">
               <div className="bg-gray-50 p-6 rounded-[2rem] border border-gray-100 group transition-all focus-within:border-black focus-within:bg-white focus-within:shadow-xl">
-                <label className="block text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-2 group-focus-within:text-black transition-colors">Current Weight (kg)</label>
+                <label className="block text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2 group-focus-within:text-black transition-colors">Current Weight (kg)</label>
                 <div className="flex items-baseline gap-2">
                   <input
                     type="number"
@@ -1348,21 +1348,21 @@ export default function DailyLogPage() {
                     value={tempWeight}
                     onChange={(e) => setTempWeight(e.target.value)}
                     placeholder="00.0"
-                    className="bg-transparent border-none p-0 text-5xl font-black tracking-tighter w-full focus:ring-0 placeholder:text-gray-200"
+                    className="bg-transparent border-none p-0 text-5xl font-bold tracking-tighter w-full focus:ring-0 placeholder:text-gray-200"
                   />
-                  <span className="text-2xl font-black text-muted-foreground">kg</span>
+                  <span className="text-2xl font-bold text-muted-foreground">kg</span>
                 </div>
               </div>
 
               <div className="bg-gray-50 p-6 rounded-[2rem] border border-gray-100 group transition-all focus-within:border-black focus-within:bg-white focus-within:shadow-xl">
-                <label className="block text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-2 group-focus-within:text-black transition-colors">Daily Steps</label>
+                <label className="block text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2 group-focus-within:text-black transition-colors">Daily Steps</label>
                 <div className="flex items-baseline gap-2">
                   <input
                     type="number"
                     value={tempSteps}
                     onChange={(e) => setTempSteps(e.target.value)}
                     placeholder="0"
-                    className="bg-transparent border-none p-0 text-5xl font-black tracking-tighter w-full focus:ring-0 placeholder:text-gray-200"
+                    className="bg-transparent border-none p-0 text-5xl font-bold tracking-tighter w-full focus:ring-0 placeholder:text-gray-200"
                   />
                   <TrendingUp className="w-6 h-6 text-primary animate-pulse" />
                 </div>
@@ -1392,7 +1392,7 @@ export default function DailyLogPage() {
                   });
                 }}
                 disabled={updateFitnessMutation.isPending || weightUpdateMutation}
-                className="w-full bg-black text-primary py-6 rounded-[2rem] font-black uppercase tracking-widest text-sm hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl shadow-black/20 mt-4 flex items-center justify-center gap-2 group disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-black text-primary py-6 rounded-[2rem] font-bold uppercase tracking-widest text-sm hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl shadow-black/20 mt-4 flex items-center justify-center gap-2 group disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {updateFitnessMutation.isPending || weightUpdateMutation ? 'Syncing...' : 'Save Daily Stats'}
                 {!updateFitnessMutation.isPending && !weightUpdateMutation && <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />}

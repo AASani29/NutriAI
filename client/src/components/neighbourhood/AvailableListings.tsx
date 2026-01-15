@@ -143,11 +143,11 @@ export default function AvailableListings({ externalSearch }: AvailableListingsP
       {showFilters && (
         <div className="bg-white border border-gray-100 rounded-3xl p-6 shadow-soft space-y-6">
           <div className="flex items-center justify-between">
-            <h3 className="font-black text-black">Filter Options</h3>
+            <h3 className="font-bold text-black">Filter Options</h3>
             {hasActiveFilters && (
               <button
                 onClick={clearFilters}
-                className="text-sm font-black text-primary hover:text-black transition-colors uppercase tracking-widest"
+                className="text-sm font-bold text-primary hover:text-black transition-colors uppercase tracking-widest"
               >
                 Clear all
               </button>
@@ -157,7 +157,7 @@ export default function AvailableListings({ externalSearch }: AvailableListingsP
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Category Filter */}
             <div>
-              <label className="block text-xs font-black text-muted-foreground uppercase tracking-widest mb-3">
+              <label className="block text-xs font-bold text-muted-foreground uppercase tracking-widest mb-3">
                 Category
               </label>
               <select
@@ -181,7 +181,7 @@ export default function AvailableListings({ externalSearch }: AvailableListingsP
 
             {/* Location Filter */}
             <div>
-              <label className="block text-xs font-black text-muted-foreground uppercase tracking-widest mb-3">
+              <label className="block text-xs font-bold text-muted-foreground uppercase tracking-widest mb-3">
                 Location
               </label>
               <div className="relative">
@@ -198,7 +198,7 @@ export default function AvailableListings({ externalSearch }: AvailableListingsP
 
             {/* Status Filter */}
             <div>
-              <label className="block text-xs font-black text-muted-foreground uppercase tracking-widest mb-3">
+              <label className="block text-xs font-bold text-muted-foreground uppercase tracking-widest mb-3">
                 Status
               </label>
               <select

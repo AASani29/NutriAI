@@ -55,7 +55,7 @@ interface MealPlan {
 export default function MealPlannerPage() {
   const { profile } = useProfile();
   const api = useApi();
-  const { useGetConsumptionLogs } = useInventory();
+  const { useGetConsumptionLogs, useGetHydration } = useInventory();
   const [loading, setLoading] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [showConfig, setShowConfig] = useState(false);
@@ -97,6 +97,9 @@ export default function MealPlannerPage() {
     startDate: startOfDay,
     endDate: endOfDay
   }) || { data: null };
+
+  // Fetch hydration data for selected date
+  const { data: hydrationData } = useGetHydration(selectedDate);
 
   const consumptionLogs = consumptionResult?.consumptionLogs || [];
 
@@ -440,49 +443,49 @@ export default function MealPlannerPage() {
             <div className="relative z-10 flex justify-between items-start">
               <div>
                 
-                <h2 className="text-3xl font-black max-w-sm leading-[1.1] mb-2 tracking-tightest">{displayTitle}</h2>
+                <h2 className="text-3xl font-bold max-w-sm leading-[1.1] mb-2 tracking-tightest">{displayTitle}</h2>
                 <p className="text-white/80 font-medium max-w-sm">{displaySubtitle}</p>
               </div>
               
               <div className="hidden sm:block lg:flex lg:gap-4">
                 {/* Calorie Goal */}
                 <div className="bg-white/60 backdrop-blur-md p-6 rounded-[2rem] border border-white/10 shadow-xl">
-                  <div className="text-[10px] font-black text-secondary uppercase tracking-[0.2em] opacity-100 mb-2 text-center">Calories</div>
-                  <div className="text-xl font-black text-center text-secondary">{Math.round(consumedNutrition.calories)}/{profile?.profile?.energyGoal || 2500}</div>
-                  <div className="text-xl text-secondary font-black text-center mb-2">kcal</div>
+                  <div className="text-[10px] font-bold text-secondary uppercase tracking-[0.2em]  mb-2 text-center">Calories</div>
+                  <div className="text-xl font-bold text-center text-secondary">{Math.round(consumedNutrition.calories)}/{profile?.profile?.energyGoal || 2500}</div>
+                  <div className="text-xl text-secondary font-bold text-center mb-2">kcal</div>
                   <div className="w-24 h-2 bg-black/20 rounded-full mt-2 overflow-hidden p-0.5">
                     <div className="bg-white h-full rounded-full" style={{ width: `${Math.min(100, (consumedNutrition.calories / (profile?.profile?.energyGoal || 2500)) * 100)}%` }}></div>
                   </div>
-                  <div className="text-[14px] text-center text-secondary font-bold opacity-70 mt-2">{Math.round((consumedNutrition.calories / (profile?.profile?.energyGoal || 2500)) * 100)}%</div>
+                  <div className="text-[14px] text-center text-secondary font-bold mt-2">{Math.round((consumedNutrition.calories / (profile?.profile?.energyGoal || 2500)) * 100)}%</div>
                 </div>
 
                 {/* Protein Goal */}
                 <div className="bg-white/50 backdrop-blur-md p-6 rounded-[2rem] border border-white/10 shadow-xl">
-                  <div className="text-[10px] font-black text-secondary uppercase tracking-[0.2em] opacity-80 mb-2 text-center">Protein</div>
-                  <div className="text-xl font-black text-center text-secondary">{Math.round(consumedNutrition.protein)}/{profile?.profile?.proteinGoal || 180}</div>
-                  <div className="text-xl text-secondary font-black text-center mb-2">g</div>                  
+                  <div className="text-[10px] font-bold text-secondary uppercase tracking-[0.2em] mb-2 text-center">Protein</div>
+                  <div className="text-xl font-bold text-center text-secondary">{Math.round(consumedNutrition.protein)}/{profile?.profile?.proteinGoal || 180}</div>
+                  <div className="text-xl text-secondary font-bold text-center mb-2">g</div>                  
                   <div className="w-24 h-2 bg-black/20 rounded-full mt-2 overflow-hidden p-0.5">
                     <div className="bg-white h-full rounded-full" style={{ width: `${Math.min(100, (consumedNutrition.protein / (profile?.profile?.proteinGoal || 180)) * 100)}%` }}></div>
                   </div>
-                  <div className="text-[14px] text-center text-secondary font-bold opacity-70 mt-2">{Math.round((consumedNutrition.protein / (profile?.profile?.proteinGoal || 180)) * 100)}%</div>
+                  <div className="text-[14px] text-center text-secondary font-bold  mt-2">{Math.round((consumedNutrition.protein / (profile?.profile?.proteinGoal || 180)) * 100)}%</div>
                 </div>
 
                 {/* Carbs Goal */}
                 <div className="bg-white/40 backdrop-blur-md p-6 rounded-[2rem] border border-white/10 shadow-xl">
-                  <div className="text-[10px] font-black text-secondary uppercase tracking-[0.2em] opacity-80 mb-2 text-center">Carbs</div>
-                  <div className="text-xl font-black text-center text-secondary">{Math.round(consumedNutrition.carbs)}/{Math.round((profile?.profile?.energyGoal || 2500) * 0.45 / 4)}</div>
-                  <div className="text-xl text-secondary font-black text-center mb-2">g</div>                  
+                  <div className="text-[10px] font-bold text-secondary uppercase tracking-[0.2em]  mb-2 text-center">Carbs</div>
+                  <div className="text-xl font-bold text-center text-secondary">{Math.round(consumedNutrition.carbs)}/{Math.round((profile?.profile?.energyGoal || 2500) * 0.45 / 4)}</div>
+                  <div className="text-xl text-secondary font-bold text-center mb-2">g</div>                  
                   <div className="w-24 h-2 bg-black/20 rounded-full mt-2 overflow-hidden p-0.5">
                     <div className="bg-white h-full rounded-full" style={{ width: `${Math.min(100, (consumedNutrition.carbs / (Math.round((profile?.profile?.energyGoal || 2500) * 0.45 / 4))) * 100)}%` }}></div>
                   </div>
-                  <div className="text-[14px] text-center opacity-70 text-secondary font-bold mt-2">{Math.round((consumedNutrition.carbs / (Math.round((profile?.profile?.energyGoal || 2500) * 0.45 / 4))) * 100)}%</div>
+                  <div className="text-[14px] text-center  text-secondary font-bold mt-2">{Math.round((consumedNutrition.carbs / (Math.round((profile?.profile?.energyGoal || 2500) * 0.45 / 4))) * 100)}%</div>
                 </div>
 
                 {/* Fats Goal */}
                 <div className="bg-white/30 backdrop-blur-md p-6 rounded-[2rem] border border-white/10 shadow-xl">
-                  <div className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-2 text-center">Fats</div>
-                  <div className="text-xl font-black text-center text-primary">{Math.round(consumedNutrition.fat)}/{Math.round((profile?.profile?.energyGoal || 2500) * 0.25 / 9)}</div>
-                  <div className="text-xl text-primary font-black text-center mb-2">g</div>                  
+                  <div className="text-[10px] font-bold text-white uppercase tracking-[0.2em] mb-2 text-center">Fats</div>
+                  <div className="text-xl font-bold text-center text-white">{Math.round(consumedNutrition.fat)}/{Math.round((profile?.profile?.energyGoal || 2500) * 0.25 / 9)}</div>
+                  <div className="text-xl text-white font-bold text-center mb-2">g</div>                  
                   <div className="w-24 h-2 bg-black/20 rounded-full mt-2 overflow-hidden p-0.5">
                     <div className="bg-white h-full rounded-full" style={{ width: `${Math.min(100, (consumedNutrition.fat / (Math.round((profile?.profile?.energyGoal || 2500) * 0.25 / 9))) * 100)}%` }}></div>
                   </div>
@@ -491,13 +494,13 @@ export default function MealPlannerPage() {
 
                 {/* Hydration Goal */}
                 <div className="bg-white/20 backdrop-blur-md p-6 rounded-[2rem] border border-white/10 shadow-xl">
-                  <div className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-2 text-center">Hydration</div>
-                  <div className="text-xl font-black text-center text-primary">0/2.5</div>
-                  <div className="text-xl text-primary font-black text-center mb-2">L</div>                  
+                  <div className="text-[10px] font-bold text-white uppercase tracking-[0.2em] mb-2 text-center">Hydration</div>
+                  <div className="text-xl font-bold text-center text-white">{(hydrationData?.amount || 0).toFixed(1)}/{hydrationData?.goal || 2.5}</div>
+                  <div className="text-xl text-white font-bold text-center mb-2">L</div>                  
                   <div className="w-24 h-2 bg-black/20 rounded-full mt-2 overflow-hidden p-0.5">
-                    <div className="bg-white h-full rounded-full" style={{ width: `0%` }}></div>
+                    <div className="bg-white h-full rounded-full" style={{ width: `${Math.min(100, ((hydrationData?.amount || 0) / (hydrationData?.goal || 2.5)) * 100)}%` }}></div>
                   </div>
-                  <div className="text-[14px] font-bold text-center mt-2">0%</div>
+                  <div className="text-[14px] font-bold text-center mt-2">{Math.round(((hydrationData?.amount || 0) / (hydrationData?.goal || 2.5)) * 100)}%</div>
                 </div>
               </div>
             </div>
@@ -506,7 +509,7 @@ export default function MealPlannerPage() {
               
               <button 
                 onClick={() => setViewMode(viewMode === 'current' ? 'saved' : 'current')}
-                className="bg-black text-white px-8 py-4 rounded-full font-black flex items-center gap-3 hover:scale-105 transition-transform shadow-2xl active:scale-95 text-xs uppercase tracking-widest"
+                className="bg-black text-white px-8 py-4 rounded-full font-bold flex items-center gap-3 hover:scale-105 transition-transform shadow-2xl active:scale-95 text-xs uppercase tracking-widest"
               >
                 <span>{viewMode === 'current' ? 'View Saved Plans' : 'View Current Plan'}</span>
                 <div className="bg-white rounded-full p-1.5">
@@ -524,7 +527,7 @@ export default function MealPlannerPage() {
                 <Sparkles className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 text-primary animate-pulse" />
               </div>
               <div className="text-center">
-                <p className="font-black text-2xl mb-2 text-black tracking-tight">AI is crafting your plan...</p>
+                <p className="font-bold text-2xl mb-2 text-black tracking-tight">AI is crafting your plan...</p>
                 <p className="text-muted-foreground font-medium max-w-xs">Optimizing for metabolic health and current market prices.</p>
               </div>
             </div>
@@ -537,12 +540,12 @@ export default function MealPlannerPage() {
                       <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 blur-2xl"></div>
                       <div className="flex justify-between items-center relative z-10">
                         <div>
-                          <h3 className="text-xl font-black text-black">Meal Plan from {new Date(plan.createdAt).toLocaleDateString()}</h3>
+                          <h3 className="text-xl font-bold text-black">Meal Plan from {new Date(plan.createdAt).toLocaleDateString()}</h3>
                           <div className="flex items-center gap-4 mt-2">
-                            <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground bg-gray-50 px-3 py-1 rounded-full border border-gray-100">
+                            <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground bg-gray-50 px-3 py-1 rounded-full border border-gray-100">
                               {Array.isArray(plan.meals) ? plan.meals.length : 0} meals
                             </span>
-                            <span className="text-[10px] font-black uppercase tracking-widest text-primary bg-primary/10 px-3 py-1 rounded-full border border-primary/20">
+                            <span className="text-[10px] font-bold uppercase tracking-widest text-primary bg-primary/10 px-3 py-1 rounded-full border border-primary/20">
                               ৳{plan.budget} budget
                             </span>
                           </div>
@@ -557,7 +560,7 @@ export default function MealPlannerPage() {
                             });
                             setViewMode('current');
                           }}
-                          className="px-8 py-3 bg-black text-white rounded-full text-xs font-black uppercase tracking-widest hover:bg-primary hover:text-black transition-all shadow-lg active:scale-95"
+                          className="px-8 py-3 bg-black text-white rounded-full text-xs font-bold uppercase tracking-widest hover:bg-primary hover:text-black transition-all shadow-lg active:scale-95"
                         >
                           Load Plan
                         </button>
@@ -568,7 +571,7 @@ export default function MealPlannerPage() {
               ) : (
                 <div className="bg-white rounded-[2.5rem] border-2 border-dashed border-gray-100 p-20 text-center">
                    <Calendar className="w-16 h-16 text-gray-200 mx-auto mb-6" />
-                   <h3 className="text-xl font-black text-black">No saved plans yet</h3>
+                   <h3 className="text-xl font-bold text-black">No saved plans yet</h3>
                    <p className="text-muted-foreground font-medium max-w-xs mx-auto mt-2">Generate and save a plan to see it archived here for future reference.</p>
                 </div>
               )}
@@ -578,7 +581,7 @@ export default function MealPlannerPage() {
                <div className="bg-white rounded-[2.5rem] p-10 shadow-soft border border-gray-50/50 flex flex-col md:flex-row justify-between items-center gap-8 relative overflow-hidden">
                  <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full -mr-32 -mt-32 blur-3xl"></div>
                  <div className="relative z-10 flex-1">
-                   <h3 className="text-2xl font-black text-black flex items-center gap-3 mb-4">
+                   <h3 className="text-2xl font-bold text-black flex items-center gap-3 mb-4">
                      <Info className="w-6 h-6 text-primary" />
                      NutriAI Insights
                    </h3>
@@ -588,12 +591,12 @@ export default function MealPlannerPage() {
                  </div>
                  <div className="relative z-10 flex flex-col items-center gap-4">
                    <div className="bg-black text-white px-8 py-4 rounded-[1.5rem] shadow-2xl flex flex-col items-center">
-                     <span className="text-[10px] font-black uppercase tracking-[0.2em] opacity-60 mb-1">Estimated Cost</span>
-                     <span className="text-3xl font-black">৳{mealPlan.totalEstimatedCost}</span>
+                     <span className="text-[10px] font-bold uppercase tracking-[0.2em] opacity-60 mb-1">Estimated Cost</span>
+                     <span className="text-3xl font-bold">৳{mealPlan.totalEstimatedCost}</span>
                    </div>
                    <button
                       onClick={() => savePlan(mealPlan)}
-                      className="flex items-center gap-3 px-8 py-3 bg-gray-50 border border-gray-100 text-black rounded-full hover:bg-black hover:text-white transition-all font-black text-xs uppercase tracking-widest shadow-sm active:scale-95"
+                      className="flex items-center gap-3 px-8 py-3 bg-gray-50 border border-gray-100 text-black rounded-full hover:bg-black hover:text-white transition-all font-bold text-xs uppercase tracking-widest shadow-sm active:scale-95"
                     >
                       <ShoppingBag className="w-4 h-4" />
                       Save Plan
@@ -610,9 +613,9 @@ export default function MealPlannerPage() {
                            {meal.type.toLowerCase().includes('breakfast') ? <Sunrise className="w-4 h-4 text-orange-400" /> : 
                             meal.type.toLowerCase().includes('lunch') ? <Sun className="w-4 h-4 text-primary" /> : 
                             <Moon className="w-4 h-4 text-indigo-400" />}
-                           <span className="text-[10px] font-black text-black uppercase tracking-[0.2em] bg-white px-3 py-1 rounded-full border border-gray-100">{meal.type}</span>
+                           <span className="text-[10px] font-bold text-black uppercase tracking-[0.2em] bg-white px-3 py-1 rounded-full border border-gray-100">{meal.type}</span>
                          </div>
-                         <h4 className="text-2xl font-black text-black leading-tight">
+                         <h4 className="text-2xl font-bold text-black leading-tight">
                            <span 
                              className="cursor-pointer hover:text-primary transition-colors" 
                              onClick={() => handleMealClick(meal.name, [], meal.nutrition, meal.type)}
@@ -625,16 +628,16 @@ export default function MealPlannerPage() {
                      
                      <div className="p-8 space-y-6">
                        <div className="flex flex-wrap gap-3">
-                         <div className="text-[10px] font-black uppercase tracking-widest bg-gray-50 text-gray-600 px-4 py-2 rounded-full border border-gray-100">
+                         <div className="text-[10px] font-bold uppercase tracking-widest bg-gray-50 text-gray-600 px-4 py-2 rounded-full border border-gray-100">
                            {meal.nutrition.calories} <span className="text-muted-foreground/60 ml-1">kcal</span>
                          </div>
-                         <div className="text-[10px] font-black uppercase tracking-widest bg-gray-50 text-gray-600 px-4 py-2 rounded-full border border-gray-100">
+                         <div className="text-[10px] font-bold uppercase tracking-widest bg-gray-50 text-gray-600 px-4 py-2 rounded-full border border-gray-100">
                             {meal.nutrition.protein} <span className="text-muted-foreground/60 ml-1">Protein</span>
                          </div>
-                         <div className="text-[10px] font-black uppercase tracking-widest bg-gray-50 text-gray-600 px-4 py-2 rounded-full border border-gray-100">
+                         <div className="text-[10px] font-bold uppercase tracking-widest bg-gray-50 text-gray-600 px-4 py-2 rounded-full border border-gray-100">
                             {meal.nutrition.carbs} <span className="text-muted-foreground/60 ml-1">Carbs</span>
                          </div>
-                         <div className="text-[10px] font-black uppercase tracking-widest bg-gray-50 text-gray-600 px-4 py-2 rounded-full border border-gray-100">
+                         <div className="text-[10px] font-bold uppercase tracking-widest bg-gray-50 text-gray-600 px-4 py-2 rounded-full border border-gray-100">
                             {meal.nutrition.fat} <span className="text-muted-foreground/60 ml-1">Fats</span>
                          </div>
                        </div>
@@ -642,17 +645,17 @@ export default function MealPlannerPage() {
                        <div className="space-y-4 pt-2">
                          {meal.option1 && meal.option1.items && meal.option1.items.length > 0 ? (
                            <div className="p-6 bg-primary/5 rounded-[2rem] border border-primary/20 relative overflow-hidden group/opt hover:bg-primary/10 transition-colors">
-                             <div className="absolute top-0 right-0 bg-black text-[8px] text-white px-4 py-1.5 rounded-bl-2xl font-black uppercase tracking-[0.2em]">
+                             <div className="absolute top-0 right-0 bg-black text-[8px] text-white px-4 py-1.5 rounded-bl-2xl font-bold uppercase tracking-[0.2em]">
                                STOCK CONFIRMED
                              </div>
                              <div className="flex justify-between items-center mb-3">
-                               <span className="text-[10px] font-black text-black uppercase tracking-widest flex items-center gap-2">
+                               <span className="text-[10px] font-bold text-black uppercase tracking-widest flex items-center gap-2">
                                  <CheckCircle2 className="w-4 h-4 text-primary" />
                                  Inventory Option
                                </span>
-                               <span className="text-sm font-black text-black tracking-tight">৳{meal.option1.cost}</span>
+                               <span className="text-sm font-bold text-black tracking-tight">৳{meal.option1.cost}</span>
                              </div>
-                             <p className="text-lg font-black text-black mb-1">
+                             <p className="text-lg font-bold text-black mb-1">
                                <span 
                                  className="cursor-pointer hover:text-primary hover:underline transition-colors" 
                                  onClick={() => handleMealClick(meal.option1?.name || '', meal.option1?.items || [], meal.nutrition, meal.type)}
@@ -666,7 +669,7 @@ export default function MealPlannerPage() {
                              <button
                                onClick={() => consumeMeal(idx, 'option1')}
                                disabled={consuming === `${idx}-option1` || consumedMeals.has(`${idx}-option1`)}
-                               className="w-full py-4 bg-black text-white text-[10px] font-black rounded-2xl hover:bg-primary hover:text-black transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed uppercase tracking-widest shadow-xl active:scale-95"
+                               className="w-full py-4 bg-black text-white text-[10px] font-bold rounded-2xl hover:bg-primary hover:text-black transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed uppercase tracking-widest shadow-xl active:scale-95"
                              >
                                {consuming === `${idx}-option1` ? (
                                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -694,13 +697,13 @@ export default function MealPlannerPage() {
 
                           <div className="p-6 bg-gray-50 rounded-[2rem] border border-gray-100 group/opt hover:bg-gray-100 transition-colors">
                             <div className="flex justify-between items-center mb-3">
-                              <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest flex items-center gap-2">
+                              <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest flex items-center gap-2">
                                 <ShoppingBag className="w-4 h-4" />
                                 Market Option
                               </span>
-                              <span className="text-sm font-black text-black tracking-tight">৳{meal.option2.cost}</span>
+                              <span className="text-sm font-bold text-black tracking-tight">৳{meal.option2.cost}</span>
                             </div>
-                            <p className="text-lg font-black text-black mb-1">
+                            <p className="text-lg font-bold text-black mb-1">
                               <span className="cursor-pointer hover:text-primary transition-colors" onClick={() => handleMealClick(meal.option2.name, meal.option2.items, meal.nutrition, meal.type)}>
                                 {meal.option2.name}
                               </span>
@@ -711,7 +714,7 @@ export default function MealPlannerPage() {
                             <button
                               onClick={() => consumeMeal(idx, 'option2')}
                               disabled={consuming === `${idx}-option2` || consumedMeals.has(`${idx}-option2`)}
-                              className="w-full py-4 bg-white border border-gray-200 text-black text-[10px] font-black rounded-2xl hover:bg-black hover:text-white transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed uppercase tracking-widest shadow-sm active:scale-95"
+                              className="w-full py-4 bg-white border border-gray-200 text-black text-[10px] font-bold rounded-2xl hover:bg-black hover:text-white transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed uppercase tracking-widest shadow-sm active:scale-95"
                             >
                               {consuming === `${idx}-option2` ? (
                                 <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
@@ -741,7 +744,7 @@ export default function MealPlannerPage() {
                      <ShoppingBasket className="w-8 h-8" />
                    </div>
                    <div>
-                     <h3 className="text-2xl font-black text-black tracking-tight">Generate Shopping List</h3>
+                     <h3 className="text-2xl font-bold text-black tracking-tight">Generate Shopping List</h3>
                      <p className="text-muted-foreground font-medium mt-1">Export ingredients needed for the entire week.</p>
                    </div>
                  </div>
@@ -760,14 +763,14 @@ export default function MealPlannerPage() {
                 <Utensils className="w-20 h-20 text-gray-200" />
               </div>
               <div>
-                <h2 className="text-3xl font-black text-black tracking-tight mb-4">No Active Meal Plan</h2>
+                <h2 className="text-3xl font-bold text-black tracking-tight mb-4">No Active Meal Plan</h2>
                 <p className="text-muted-foreground font-medium max-w-md mx-auto">
                   Get a personalized, price-smart meal plan optimized for your metabolism and local bazaar prices.
                 </p>
               </div>
               <button
                 onClick={() => setShowConfig(true)}
-                className="px-12 py-5 bg-black text-white rounded-full font-black text-xs uppercase tracking-widest hover:bg-primary hover:text-black transition-all shadow-2xl active:scale-95 flex items-center gap-3"
+                className="px-12 py-5 bg-black text-white rounded-full font-bold text-xs uppercase tracking-widest hover:bg-primary hover:text-black transition-all shadow-2xl active:scale-95 flex items-center gap-3"
               >
                 <Sparkles className="w-5 h-5" />
                 Get Started Now
@@ -788,35 +791,35 @@ export default function MealPlannerPage() {
               <div className="p-3 bg-primary/10 rounded-2xl">
                 <Sparkles className="w-6 h-6 text-primary" />
               </div>
-              <h2 className="text-3xl font-black text-black tracking-tight">Plan Setup</h2>
+              <h2 className="text-3xl font-bold text-black tracking-tight">Plan Setup</h2>
             </div>
 
             <div className="space-y-8">
               <div>
-                <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground mb-3 flex items-center gap-2">
+                <label className="block text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground mb-3 flex items-center gap-2">
                   <DollarSign className="w-3.5 h-3.5" />
                   Total Budget (BDT)
                 </label>
                 <div className="relative">
-                  <span className="absolute left-6 top-1/2 -translate-y-1/2 font-black text-black text-lg">৳</span>
+                  <span className="absolute left-6 top-1/2 -translate-y-1/2 font-bold text-black text-lg">৳</span>
                   <input
                     type="number"
                     value={config.budget}
                     onChange={(e) => setConfig({ ...config, budget: parseInt(e.target.value) })}
-                    className="w-full pl-12 pr-6 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-primary outline-none transition-all font-black text-lg text-black"
+                    className="w-full pl-12 pr-6 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-primary outline-none transition-all font-bold text-lg text-black"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground mb-3 flex items-center gap-2">
+                <label className="block text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground mb-3 flex items-center gap-2">
                   <Calendar className="w-3.5 h-3.5" />
                   Time Period
                 </label>
                 <select
                   value={config.timePeriod}
                   onChange={(e) => setConfig({ ...config, timePeriod: e.target.value })}
-                  className="w-full px-6 py-4 bg-gray-50 border-none rounded-2xl outline-none font-black text-black focus:ring-2 focus:ring-primary appearance-none cursor-pointer"
+                  className="w-full px-6 py-4 bg-gray-50 border-none rounded-2xl outline-none font-bold text-black focus:ring-2 focus:ring-primary appearance-none cursor-pointer"
                 >
                   <optgroup label="Single Meals">
                     <option value="breakfast">Breakfast Only</option>
@@ -831,7 +834,7 @@ export default function MealPlannerPage() {
               </div>
 
               <div>
-                <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground mb-3 flex items-center gap-2">
+                <label className="block text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground mb-3 flex items-center gap-2">
                   <MessageSquare className="w-3.5 h-3.5" />
                   Notes / Focus
                 </label>
@@ -846,13 +849,13 @@ export default function MealPlannerPage() {
               <div className="flex gap-4 pt-4">
                 <button
                   onClick={() => setShowConfig(false)}
-                  className="flex-1 py-4 bg-gray-100 text-black font-black uppercase tracking-widest text-[10px] rounded-full hover:bg-gray-200 transition-all"
+                  className="flex-1 py-4 bg-gray-100 text-black font-bold uppercase tracking-widest text-[10px] rounded-full hover:bg-gray-200 transition-all"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={generatePlan}
-                  className="flex-1 py-4 bg-black text-white font-black uppercase tracking-widest text-[10px] rounded-full hover:bg-primary hover:text-black shadow-xl transition-all active:scale-95"
+                  className="flex-1 py-4 bg-black text-white font-bold uppercase tracking-widest text-[10px] rounded-full hover:bg-primary hover:text-black shadow-xl transition-all active:scale-95"
                 >
                   Generate
                 </button>
@@ -870,11 +873,11 @@ export default function MealPlannerPage() {
             <div className="p-10 pb-6 flex justify-between items-start">
               <div>
                 <div className="flex items-center gap-3 mb-2">
-                  <span className="text-[10px] font-black text-black uppercase tracking-[0.2em] bg-primary/10 px-3 py-1 rounded-full border border-primary/20">
+                  <span className="text-[10px] font-bold text-black uppercase tracking-[0.2em] bg-primary/10 px-3 py-1 rounded-full border border-primary/20">
                     {activeMeal.type}
                   </span>
                 </div>
-                <h2 className="text-4xl font-black text-black tracking-tight leading-tight">{activeMeal.name}</h2>
+                <h2 className="text-4xl font-bold text-black tracking-tight leading-tight">{activeMeal.name}</h2>
               </div>
               <button 
                 onClick={() => setActiveMeal(null)}
@@ -888,7 +891,7 @@ export default function MealPlannerPage() {
             <div className="flex bg-gray-50 p-1.5 mx-10 rounded-2xl mb-8">
               <button
                 onClick={() => setModalTab('nutrition')}
-                className={`flex-1 py-3 text-[10px] font-black uppercase tracking-widest rounded-[1rem] transition-all flex items-center justify-center gap-2 ${
+                className={`flex-1 py-3 text-[10px] font-bold uppercase tracking-widest rounded-[1rem] transition-all flex items-center justify-center gap-2 ${
                   modalTab === 'nutrition' ? 'bg-white text-black shadow-lg shadow-black/5' : 'text-muted-foreground hover:text-black'
                 }`}
               >
@@ -896,7 +899,7 @@ export default function MealPlannerPage() {
               </button>
               <button
                 onClick={() => setModalTab('recipe')}
-                className={`flex-1 py-3 text-[10px] font-black uppercase tracking-widest rounded-[1rem] transition-all flex items-center justify-center gap-2 ${
+                className={`flex-1 py-3 text-[10px] font-bold uppercase tracking-widest rounded-[1rem] transition-all flex items-center justify-center gap-2 ${
                   modalTab === 'recipe' ? 'bg-white text-black shadow-lg shadow-black/5' : 'text-muted-foreground hover:text-black'
                 }`}
               >
@@ -909,32 +912,32 @@ export default function MealPlannerPage() {
                 <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
                     <div className="p-6 bg-gray-50 rounded-[2rem] border border-gray-100 text-center">
-                      <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-2">Calories</p>
-                      <p className="text-2xl font-black text-black">{activeMeal.nutrition.calories}</p>
+                      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] mb-2">Calories</p>
+                      <p className="text-2xl font-bold text-black">{activeMeal.nutrition.calories}</p>
                     </div>
                     <div className="p-6 bg-gray-50 rounded-[2rem] border border-gray-100 text-center">
-                      <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-2">Protein</p>
-                      <p className="text-2xl font-black text-black">{activeMeal.nutrition.protein}</p>
+                      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] mb-2">Protein</p>
+                      <p className="text-2xl font-bold text-black">{activeMeal.nutrition.protein}</p>
                     </div>
                     <div className="p-6 bg-gray-50 rounded-[2rem] border border-gray-100 text-center">
-                      <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-2">Carbs</p>
-                      <p className="text-2xl font-black text-black">{activeMeal.nutrition.carbs}</p>
+                      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] mb-2">Carbs</p>
+                      <p className="text-2xl font-bold text-black">{activeMeal.nutrition.carbs}</p>
                     </div>
                     <div className="p-6 bg-gray-50 rounded-[2rem] border border-gray-100 text-center">
-                      <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-2">Fat</p>
-                      <p className="text-2xl font-black text-black">{activeMeal.nutrition.fat}</p>
+                      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] mb-2">Fat</p>
+                      <p className="text-2xl font-bold text-black">{activeMeal.nutrition.fat}</p>
                     </div>
                   </div>
 
                   <div className="space-y-6">
-                    <h3 className="text-xl font-black flex items-center gap-3">
+                    <h3 className="text-xl font-bold flex items-center gap-3">
                        <ShoppingBag className="w-6 h-6 text-primary" />
                        Included Ingredients
                     </h3>
                     <div className="flex flex-wrap gap-3">
                       {activeMeal?.items && activeMeal.items.length > 0 ? (
                         activeMeal.items.map((item, i) => (
-                          <span key={i} className="px-6 py-2.5 bg-white rounded-full border border-gray-100 shadow-sm text-sm font-black tracking-tight hover:border-black transition-colors">
+                          <span key={i} className="px-6 py-2.5 bg-white rounded-full border border-gray-100 shadow-sm text-sm font-bold tracking-tight hover:border-black transition-colors">
                             {item}
                           </span>
                         ))
@@ -956,29 +959,29 @@ export default function MealPlannerPage() {
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                         <div className="space-y-6">
-                          <h3 className="text-xl font-black flex items-center gap-3">
+                          <h3 className="text-xl font-bold flex items-center gap-3">
                             <ShoppingBag className="w-6 h-6 text-primary" />
                             Ingredients
                           </h3>
                           <div className="space-y-3">
                             {selectedRecipe.ingredients.map((ing: any, i: number) => (
                               <div key={i} className="flex justify-between items-center p-4 bg-gray-50 rounded-2xl border border-gray-100 group hover:bg-white hover:shadow-xl transition-all">
-                                <span className="font-black text-black">{ing.item}</span>
-                                <span className="text-xs font-black uppercase tracking-widest text-primary bg-primary/10 px-3 py-1 rounded-full">{ing.amount}</span>
+                                <span className="font-bold text-black">{ing.item}</span>
+                                <span className="text-xs font-bold uppercase tracking-widest text-primary bg-primary/10 px-3 py-1 rounded-full">{ing.amount}</span>
                               </div>
                             ))}
                           </div>
                         </div>
 
                         <div className="space-y-6">
-                          <h3 className="text-xl font-black flex items-center gap-3">
+                          <h3 className="text-xl font-bold flex items-center gap-3">
                             <ListChecks className="w-6 h-6 text-primary" />
                             Step-by-Step
                           </h3>
                           <div className="space-y-6">
                             {selectedRecipe.instructions.map((step: string, i: number) => (
                               <div key={i} className="flex gap-6 group">
-                                <span className="flex-shrink-0 w-8 h-8 bg-black text-white text-[10px] font-black rounded-full flex items-center justify-center group-hover:bg-primary group-hover:text-black transition-colors shadow-lg">
+                                <span className="flex-shrink-0 w-8 h-8 bg-black text-white text-[10px] font-bold rounded-full flex items-center justify-center group-hover:bg-primary group-hover:text-black transition-colors shadow-lg">
                                   {i + 1}
                                 </span>
                                 <p className="text-sm leading-relaxed text-muted-foreground font-medium group-hover:text-black transition-colors">{step}</p>
@@ -990,7 +993,7 @@ export default function MealPlannerPage() {
 
                       <div className="bg-black text-white p-8 rounded-[2.5rem] shadow-2xl relative overflow-hidden">
                         <div className="absolute top-0 right-0 w-32 h-32 bg-primary/20 rounded-full -mr-16 -mt-16 blur-3xl"></div>
-                        <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-primary mb-3">Chef's Secret Tips</h4>
+                        <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary mb-3">Chef's Secret Tips</h4>
                         <p className="text-sm font-medium leading-relaxed text-gray-300">{selectedRecipe.chefTips}</p>
                       </div>
                     </div>
@@ -1001,7 +1004,7 @@ export default function MealPlannerPage() {
                         <Utensils className="w-20 h-20 text-gray-200 relative z-10" />
                       </div>
                       <div>
-                        <h3 className="text-3xl font-black text-black tracking-tight mb-3">Ready to Cook?</h3>
+                        <h3 className="text-3xl font-bold text-black tracking-tight mb-3">Ready to Cook?</h3>
                         <p className="text-muted-foreground font-medium max-w-xs mx-auto">
                           NutriAI will generate a custom culinary guide tailored to your selected items.
                         </p>
@@ -1009,7 +1012,7 @@ export default function MealPlannerPage() {
                       <button
                         onClick={() => activeMeal && fetchRecipe(activeMeal.name, activeMeal.items)}
                         disabled={isRecipeLoading}
-                        className="px-12 py-5 bg-black text-white font-black rounded-full hover:bg-primary hover:text-black transition-all shadow-xl flex items-center gap-3 active:scale-95 uppercase tracking-widest text-xs"
+                        className="px-12 py-5 bg-black text-white font-bold rounded-full hover:bg-primary hover:text-black transition-all shadow-xl flex items-center gap-3 active:scale-95 uppercase tracking-widest text-xs"
                       >
                         {isRecipeLoading ? <Sparkles className="w-5 h-5 animate-spin" /> : <Sparkles className="w-5 h-5 shadow-sm" />}
                         Generate Cooking Protocol
@@ -1030,7 +1033,7 @@ export default function MealPlannerPage() {
             <div className="w-24 h-24 border-4 border-primary border-t-transparent rounded-full animate-spin" />
             <ChefHat className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 text-primary animate-pulse" />
           </div>
-          <p className="mt-8 text-white font-black tracking-[0.3em] uppercase text-xs animate-pulse">Consulting NutriAI Chef...</p>
+          <p className="mt-8 text-white font-bold tracking-[0.3em] uppercase text-xs animate-pulse">Consulting NutriAI Chef...</p>
         </div>
       )}
       </div>
