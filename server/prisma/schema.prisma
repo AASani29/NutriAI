@@ -6,7 +6,7 @@ generator client {
 datasource db {
   provider   = "postgresql"
   url        = env("DATABASE_URL")
-  extensions = [pgvector(map: "vector")]
+  extensions = [vector]
 }
 
 model User {
@@ -308,7 +308,7 @@ model MealPlan {
 model ChatSession {
   id           String        @id @default(cuid())
   userId       String
-  mode         String        @default("ask") // "ask" or "agent"
+  mode         String        @default("ask")
   startedAt    DateTime      @default(now())
   lastActivity DateTime      @default(now())
   messages     ChatMessage[]
@@ -414,6 +414,52 @@ model FoodSafetyAlert {
   inventoryItem   InventoryItem? @relation("InventoryItemAlerts", fields: [inventoryItemId], references: [id])
 }
 
+model HealthKnowledge {
+  id        String                 @id @default(uuid())
+  content   String
+  category  String
+  tags      String[]
+  metadata  Json?
+  embedding Unsupported("vector")?
+  createdAt DateTime               @default(now())
+  updatedAt DateTime               @updatedAt
+
+  @@map("health_knowledge")
+}
+
+model UserHealthMemory {
+  id        String                 @id @default(uuid())
+  userId    String
+  content   String
+  source    String
+  embedding Unsupported("vector")?
+  createdAt DateTime               @default(now())
+  updatedAt DateTime               @updatedAt
+  user      User                   @relation(fields: [userId], references: [id])
+
+  @@map("user_health_memory")
+}
+
+model Recipe {
+  id           String   @id @default(uuid())
+  name         String
+  description  String?
+  cuisine      String?
+  prepTime     Int?
+  cookTime     Int?
+  servings     Int?
+  ingredients  Json
+  instructions Json
+  nutrition    Json?
+  sourceUrl    String?
+  sourceType   String   @default("AI_SCOUT")
+  externalId   String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([name])
+}
+
 enum ResourceType {
   Article
   Video
@@ -424,52 +470,4 @@ enum ListingStatus {
   CLAIMED
   COMPLETED
   CANCELLED
-}
-model HealthKnowledge {
-  id        String                      @id @default(uuid())
-  content   String
-  category  String                      // e.g., "Nutrition", "Diet", "Medical"
-  tags      String[]
-  metadata  Json?                       // Source info, author, etc.
-  embedding Unsupported("vector(768)")? // Gemini text-embedding-004 is 768 dimensions
-  createdAt DateTime                   @default(now())
-  updatedAt DateTime                   @updatedAt
-
-  @@map("health_knowledge")
-}
-
-model UserHealthMemory {
-  id        String                      @id @default(uuid())
-  userId    String
-  user      User                        @relation(fields: [userId], references: [id])
-  content   String                      // The specific health-related insight or pattern
-  source    String                      // "consumption", "profile", "activity"
-  embedding Unsupported("vector(768)")?
-  createdAt DateTime                   @default(now())
-  updatedAt DateTime                   @updatedAt
-
-  @@map("user_health_memory")
-}
-
-model Recipe {
-  id          String   @id @default(uuid())
-  name        String
-  description String?
-  cuisine     String?
-  prepTime    Int?
-  cookTime    Int?
-  servings    Int?
-  
-  ingredients Json     // array of { name, quantity, unit, notes }
-  instructions Json    // array of strings or { step: number, text: string }
-  nutrition   Json?    // { calories, protein, carbs, fat }
-  
-  sourceUrl   String?
-  sourceType  String   @default("AI_SCOUT") // "USER", "AI_SCOUT", "API"
-  externalId  String?  // ID from TheMealDB or other APIs
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  @@index([name])
 }
