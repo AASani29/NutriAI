@@ -308,15 +308,26 @@ export class IntelligentDashboardController {
         return res.status(401).json({ error: 'Unauthorized' });
       }
 
-      const { budget, timePeriod, preferences, notes } = req.body;
+      const { budget, timePeriod, preferences, notes, userStats } = req.body;
 
       let query = `Generate a price-smart meal plan for the period: ${timePeriod || 'one_day'}. `;
       if (budget) query += `The total budget for this entire period is ${budget} BDT. `;
+      
+      // Add comprehensive nutrition gap analysis to guide AI suggestions
+      if (userStats) {
+        query += `\n\nCURRENT NUTRITION STATUS:\n`;
+        query += `Goals: ${userStats.energyGoal} kcal, ${userStats.proteinGoal}g protein, ${userStats.carbsGoal}g carbs, ${userStats.fatsGoal}g fats, ${userStats.hydrationGoal}L water\n`;
+        query += `Already consumed today: ${Math.round(userStats.consumed?.calories || 0)} kcal, ${Math.round(userStats.consumed?.protein || 0)}g protein, ${Math.round(userStats.consumed?.carbs || 0)}g carbs, ${Math.round(userStats.consumed?.fat || 0)}g fat\n`;
+        query += `Still needed: ${Math.round(userStats.remaining?.calories || 0)} kcal, ${Math.round(userStats.remaining?.protein || 0)}g protein, ${Math.round(userStats.remaining?.carbs || 0)}g carbs, ${Math.round(userStats.remaining?.fats || 0)}g fats\n`;
+        query += `\nIMPORTANT: Prioritize foods HIGH in the nutrients I need most (those with highest 'remaining' values) and LOWER in nutrients I've already met or exceeded. Do NOT suggest high-carb meals if carbs remaining is low or zero. Do NOT suggest high-fat meals if fats remaining is low.\n`;
+      }
+      
       if (preferences)
         query += `Dietary preferences: ${JSON.stringify(preferences)}. `;
       if (notes)
         query += `IMPORTANT USER CONSIDERATION/NOTE: "${notes}". Adapt the meal choices according to this note. `;
-      query += `Use my inventory where possible. Return the result in the requested JSON format.`;
+      query += `\n\nCRITICAL INVENTORY RULE: For option1 (inventory option), ONLY include items that ACTUALLY exist in my inventory. Check my inventory items carefully. If an ingredient is NOT in my inventory, do NOT include it in option1.items array. If you cannot find enough inventory items to make a complete meal, leave option1 as null or with empty items array. Do NOT hallucinate inventory items.\n`;
+      query += `Return the result in the requested JSON format.`;
 
       const mealPlan = await aiAnalyticsService.generateIntelligentInsights(
         userId,

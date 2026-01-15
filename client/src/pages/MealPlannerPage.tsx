@@ -228,11 +228,40 @@ export default function MealPlannerPage() {
     setMealPlan(null);
     setRawResponse(null);
     try {
+      // Calculate current nutritional status and gaps
+      const energyGoal = profile?.profile?.energyGoal || 2500;
+      const proteinGoal = profile?.profile?.proteinGoal || 180;
+      const carbsGoal = Math.round(energyGoal * 0.45 / 4);
+      const fatsGoal = Math.round(energyGoal * 0.25 / 9);
+      const hydrationGoal = 2.5; // L
+
       console.log('Generating meal plan with config:', config);
       const response = await api.getOptimizedMealPlan({
         budget: config.budget,
         timePeriod: config.timePeriod,
         notes: config.notes,
+        // Pass comprehensive health stats for AI consideration
+        userStats: {
+          energyGoal,
+          proteinGoal,
+          carbsGoal,
+          fatsGoal,
+          hydrationGoal,
+          consumed: {
+            calories: consumedNutrition.calories,
+            protein: consumedNutrition.protein,
+            carbs: consumedNutrition.carbs,
+            fat: consumedNutrition.fat,
+          },
+          remaining: {
+            calories: Math.max(0, energyGoal - consumedNutrition.calories),
+            protein: Math.max(0, proteinGoal - consumedNutrition.protein),
+            carbs: Math.max(0, carbsGoal - consumedNutrition.carbs),
+            fats: Math.max(0, fatsGoal - consumedNutrition.fat),
+          },
+          weight: profile?.profile?.weight,
+          height: profile?.profile?.height,
+        },
       });
       
       console.log('API Response received:', response);
