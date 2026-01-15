@@ -6,6 +6,7 @@ export interface Inventory {
   name: string;
   description?: string;
   isPrivate?: boolean;
+  isArchived?: boolean;
   createdAt: string;
   updatedAt: string;
   itemCount?: number;
@@ -305,6 +306,36 @@ export function useInventory() {
         await fetchWithAuth(`/inventories/${id}`, {
           method: 'DELETE',
         });
+      },
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['inventories'] });
+      },
+    });
+  };
+
+  // Archive inventory
+  const useArchiveInventory = () => {
+    return useMutation({
+      mutationFn: async (id: string) => {
+        const response = await fetchWithAuth(`/inventories/${id}/archive`, {
+          method: 'PATCH',
+        });
+        return response.data || response;
+      },
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['inventories'] });
+      },
+    });
+  };
+
+  // Unarchive inventory
+  const useUnarchiveInventory = () => {
+    return useMutation({
+      mutationFn: async (id: string) => {
+        const response = await fetchWithAuth(`/inventories/${id}/unarchive`, {
+          method: 'PATCH',
+        });
+        return response.data || response;
       },
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ['inventories'] });
@@ -623,6 +654,8 @@ export function useInventory() {
     useUpdateInventory,
     useUpdateInventoryItem,
     useDeleteInventory,
+    useArchiveInventory,
+    useUnarchiveInventory,
     useRemoveItemFromInventory,
     useLogConsumption,
     useGetConsumptionLogs,

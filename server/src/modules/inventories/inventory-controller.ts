@@ -157,6 +157,60 @@ export class InventoryController {
     }
   };
 
+  // Archive an inventory
+  archiveInventory = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const userId = req.auth?.userId;
+      const { inventoryId } = req.params;
+
+      if (!userId) {
+        res.status(401).json({ error: 'Unauthorized' });
+        return;
+      }
+
+      if (!inventoryId) {
+        res.status(400).json({ error: 'Inventory ID is required' });
+        return;
+      }
+
+      const archivedInventory = await this.inventoryService.archiveInventory(
+        inventoryId,
+        userId,
+      );
+      res.status(200).json(archivedInventory);
+    } catch (error) {
+      console.error('Error archiving inventory:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  };
+
+  // Unarchive an inventory
+  unarchiveInventory = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const userId = req.auth?.userId;
+      const { inventoryId } = req.params;
+
+      if (!userId) {
+        res.status(401).json({ error: 'Unauthorized' });
+        return;
+      }
+
+      if (!inventoryId) {
+        res.status(400).json({ error: 'Inventory ID is required' });
+        return;
+      }
+
+      const unarchivedInventory = await this.inventoryService.unarchiveInventory(
+        inventoryId,
+        userId,
+      );
+      res.status(200).json(unarchivedInventory);
+    } catch (error) {
+      console.error('Error unarchiving inventory:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  };
+
   // Add an item to an inventory
   addInventoryItem = async (req: Request, res: Response): Promise<void> => {
     try {

@@ -117,6 +117,8 @@ model Inventory {
   description String?
   createdById String?
   isPrivate   Boolean           @default(true)
+  isArchived  Boolean           @default(false)
+  archivedAt  DateTime?
   createdAt   DateTime          @default(now())
   updatedAt   DateTime          @updatedAt
   isDeleted   Boolean           @default(false)

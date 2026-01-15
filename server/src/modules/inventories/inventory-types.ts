@@ -17,6 +17,7 @@ export type UpdateInventoryRequest = {
   name?: string;
   description?: string;
   isPrivate?: boolean;
+  isArchived?: boolean;
 };
 
 export type ShareInventoryRequest = {

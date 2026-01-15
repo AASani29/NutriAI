@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useInventory } from '../hooks/useInventory';
-import { AlertCircle, Plus, Search, Package, AlertTriangle, ArrowRight, CheckCircle2, MoreHorizontal, Settings2, Database, Warehouse, X, User } from 'lucide-react';
+import { AlertCircle, Plus, Search, Package, AlertTriangle, ArrowRight, CheckCircle2, MoreHorizontal, Settings2, Database, Warehouse, X, User, ChevronDown } from 'lucide-react';
 import { useAuth } from '@clerk/clerk-react';
+import { EditInventoryDialog } from '../components/inventory/EditInventoryDialog';
 
 export default function InventoryPage() {
   const [showAddModal, setShowAddModal] = useState(false);
@@ -11,12 +12,24 @@ export default function InventoryPage() {
   const [userSearchResults, setUserSearchResults] = useState<any[]>([]);
   const [selectedUsers, setSelectedUsers] = useState<any[]>([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [editingInventory, setEditingInventory] = useState<any | null>(null);
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const [filterTab, setFilterTab] = useState<'all' | 'active' | 'archived'>('all');
   const navigate = useNavigate();
   const { getToken } = useAuth();
 
-  const { useGetInventories, useCreateInventory } = useInventory();
+  const { 
+    useGetInventories, 
+    useCreateInventory, 
+    useUpdateInventory,
+    useArchiveInventory,
+    useUnarchiveInventory 
+  } = useInventory();
   const { data: inventories, isLoading, isError, refetch } = useGetInventories();
   const createInventoryMutation = useCreateInventory();
+  const updateInventoryMutation = useUpdateInventory();
+  const archiveInventoryMutation = useArchiveInventory();
+  const unarchiveInventoryMutation = useUnarchiveInventory();
 
   const searchUsers = async (query: string) => {
     if (!query || query.trim().length < 2) {
@@ -103,9 +116,68 @@ export default function InventoryPage() {
     }
   };
 
-  const filteredInventories = inventories?.filter(inv =>
-    inv.name.toLowerCase().includes(search.toLowerCase())
-  ) || [];
+  const handleEditInventory = (inventory: any, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setEditingInventory(inventory);
+  };
+
+  const handleUpdateInventory = async (data: any) => {
+    if (!editingInventory) return;
+    try {
+      await updateInventoryMutation.mutateAsync({
+        id: editingInventory.id,
+        data,
+      });
+      setEditingInventory(null);
+    } catch (err) {
+      console.error('Error updating inventory:', err);
+    }
+  };
+
+  const handleArchive = async () => {
+    if (!editingInventory) return;
+    try {
+      console.log('Archiving inventory:', editingInventory.id);
+      const result = await archiveInventoryMutation.mutateAsync(editingInventory.id);
+      console.log('Archive result:', result);
+      setEditingInventory(null);
+      setFilterTab('archived'); // Switch to archived tab
+    } catch (err) {
+      console.error('Error archiving inventory:', err);
+      throw err;
+    }
+  };
+
+  const handleUnarchive = async () => {
+    if (!editingInventory) return;
+    try {
+      console.log('Unarchiving inventory:', editingInventory.id);
+      const result = await unarchiveInventoryMutation.mutateAsync(editingInventory.id);
+      console.log('Unarchive result:', result);
+      setEditingInventory(null);
+      setFilterTab('active'); // Switch to active tab
+    } catch (err) {
+      console.error('Error unarchiving inventory:', err);
+      throw err;
+    }
+  };
+
+  const filteredInventories = inventories?.filter(inv => {
+    // First filter by search term
+    if (!inv.name.toLowerCase().includes(search.toLowerCase())) {
+      return false;
+    }
+    
+    // Then filter by tab
+    if (filterTab === 'active') {
+      return !inv.isArchived;
+    } else if (filterTab === 'archived') {
+      return inv.isArchived;
+    }
+    
+    // 'all' tab shows everything
+    return true;
+  }) || [];
 
   const totalItems = inventories?.reduce((acc, inv) => acc + (inv.itemCount || 0), 0) || 0;
   const expiringSoon = inventories?.reduce((acc, inv) => acc + (inv.expiringCount || 0), 0) || 0;
@@ -204,9 +276,36 @@ export default function InventoryPage() {
 
         {/* Filter Bar */}
         <div className="flex items-center gap-3 py-2 px-4">
-          <button className="px-6 py-2 rounded-xl bg-styled-card text-secondary font-black text-[10px] uppercase tracking-widest shadow-lg shadow-primary/20">All Pantries</button>
-          <button className="px-6 py-2 rounded-xl bg-white text-slate-400 hover:text-secondary font-black text-[10px] uppercase tracking-widest transition-all">Active</button>
-          <button className="px-6 py-2 rounded-xl bg-white text-slate-400 hover:text-secondary font-black text-[10px] uppercase tracking-widest transition-all">Archived</button>
+          <button
+            onClick={() => setFilterTab('all')}
+            className={`px-6 py-2 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all ${
+              filterTab === 'all'
+                ? 'bg-styled-card text-secondary shadow-lg shadow-primary/20'
+                : 'bg-white text-slate-400 hover:text-secondary'
+            }`}
+          >
+            All Pantries
+          </button>
+          <button
+            onClick={() => setFilterTab('active')}
+            className={`px-6 py-2 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all ${
+              filterTab === 'active'
+                ? 'bg-styled-card text-secondary shadow-lg shadow-primary/20'
+                : 'bg-white text-slate-400 hover:text-secondary'
+            }`}
+          >
+            Active
+          </button>
+          <button
+            onClick={() => setFilterTab('archived')}
+            className={`px-6 py-2 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all ${
+              filterTab === 'archived'
+                ? 'bg-styled-card text-secondary shadow-lg shadow-primary/20'
+                : 'bg-white text-slate-400 hover:text-secondary'
+            }`}
+          >
+            Archived
+          </button>
           <button className="ml-auto w-10 h-10 flex items-center justify-center rounded-xl text-secondary text-slate-400 hover:text-secondary transition-all">
             <Settings2 className="w-5 h-5" />
           </button>
@@ -231,20 +330,32 @@ export default function InventoryPage() {
                 <div className="w-16 h-16 rounded-2xl text-secondary flex items-center justify-center text-primary group-hover:scale-110 transition-transform duration-500 shadow-sm border border-slate-100/50">
                   {getInventoryIcon(inventory.name)}
                 </div>
-                <div className="text-right">
-                  <div className="text-[10px] font-black text-secondary uppercase tracking-widest mb-1">Status</div>
-                  <div className="flex items-center gap-2 justify-end">
-                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div>
-                    <span className="text-[10px] font-black text-slate-900 uppercase tracking-widest">Active</span>
-                  </div>
-                  {inventory.accessRole && (
-                    <div className="inline-flex items-center gap-2 mt-3 px-3 py-1 rounded-full bg-white/70 text-[10px] font-black uppercase tracking-widest text-slate-500 border border-slate-100">
-                      {inventory.accessRole === 'owner' ? 'Owner' : 'Shared with you'}
-                      {inventory.accessRole === 'member' && inventory.ownerName ? (
-                        <span className="text-slate-400">· {inventory.ownerName}</span>
-                      ) : null}
-                    </div>
+                <div className="flex items-center gap-3">
+                  {/* Edit Menu Button */}
+                  {inventory.accessRole === 'owner' && (
+                    <button
+                      onClick={(e) => handleEditInventory(inventory, e)}
+                      className=" group-hover:opacity-100 transition-opacity p-2 hover:bg-white/50 rounded-lg"
+                    >
+                      <MoreHorizontal className="w-5 h-5 text-slate-600" />
+                    </button>
                   )}
+                  {/* Status Badge */}
+                  <div className="text-right">
+                    <div className="text-[10px] font-black text-secondary uppercase tracking-widest mb-1">Status</div>
+                    <div className="flex items-center gap-2 justify-end">
+                      <div className={`w-1.5 h-1.5 rounded-full shadow-[0_0_8px_rgba(16,185,129,0.5)] ${inventory.isArchived ? 'bg-slate-400' : 'bg-emerald-500'}`}></div>
+                      <span className="text-[10px] font-black text-slate-900 uppercase tracking-widest">{inventory.isArchived ? 'Archived' : 'Active'}</span>
+                    </div>
+                    {inventory.accessRole && (
+                      <div className="inline-flex items-center gap-2 mt-3 px-3 py-1 rounded-full bg-white/70 text-[10px] font-black uppercase tracking-widest text-slate-500 border border-slate-100">
+                        {inventory.accessRole === 'owner' ? 'Owner' : 'Shared with you'}
+                        {inventory.accessRole === 'member' && inventory.ownerName ? (
+                          <span className="text-slate-400">· {inventory.ownerName}</span>
+                        ) : null}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -252,6 +363,48 @@ export default function InventoryPage() {
                 <h4 className="font-black text-2xl text-slate-900 tracking-tight group-hover:text-secondary transition-colors mb-1">{inventory.name}</h4>
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest opacity-60 line-clamp-1">{inventory.description || 'Global Storage Unit'}</p>
               </div>
+
+              {/* Shared Users Dropdown - Only show if there are members and user is owner */}
+              {inventory.accessRole === 'owner' && inventory.members && inventory.members.length > 0 && (
+                <div className="mb-8 relative">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setOpenDropdown(openDropdown === inventory.id ? null : inventory.id);
+                    }}
+                    className="w-full flex items-center justify-between px-4 py-2 bg-white border border-slate-100 rounded-lg hover:bg-slate-50 transition-colors"
+                  >
+                    <span className="text-[10px] font-black text-slate-600 uppercase tracking-widest">
+                      Shared with ({inventory.members.length})
+                    </span>
+                    <ChevronDown
+                      className={`w-4 h-4 text-slate-400 transition-transform ${
+                        openDropdown === inventory.id ? 'rotate-180' : ''
+                      }`}
+                    />
+                  </button>
+
+                  {/* Dropdown Menu */}
+                  {openDropdown === inventory.id && (
+                    <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-slate-100 rounded-lg shadow-lg z-50 max-h-48 overflow-y-auto">
+                      {inventory.members.map((member) => (
+                        <div
+                          key={member.id}
+                          className="flex items-center gap-3 px-4 py-3 hover:bg-slate-50 transition-colors border-b border-slate-50 last:border-b-0"
+                        >
+                          <User className="w-4 h-4 text-slate-400 flex-shrink-0" />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-bold text-slate-900 truncate">
+                              {member.memberName || 'Unknown User'}
+                            </p>
+                            <p className="text-xs text-slate-500">{member.role}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
 
               <div className="grid grid-cols-2 gap-4 mb-8">
                 <div className="text-secondary rounded-2xl p-4 border border-slate-100/50 bg-white">
@@ -292,6 +445,18 @@ export default function InventoryPage() {
         
           
       </div>
+
+      {/* Edit Inventory Dialog */}
+      {editingInventory && (
+        <EditInventoryDialog
+          inventory={editingInventory}
+          onClose={() => setEditingInventory(null)}
+          onUpdate={handleUpdateInventory}
+          onArchive={handleArchive}
+          onUnarchive={handleUnarchive}
+          isLoading={updateInventoryMutation.isPending || archiveInventoryMutation.isPending || unarchiveInventoryMutation.isPending}
+        />
+      )}
 
       {/* Modal */}
       {showAddModal && (

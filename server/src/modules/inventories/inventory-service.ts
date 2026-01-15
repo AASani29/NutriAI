@@ -163,6 +163,8 @@ export class InventoryService {
         name: true,
         description: true,
         isPrivate: true,
+        isArchived: true,
+        archivedAt: true,
         createdAt: true,
         updatedAt: true,
         createdById: true,
@@ -211,6 +213,8 @@ export class InventoryService {
       name: inv.name,
       description: inv.description,
       isPrivate: inv.isPrivate,
+      isArchived: inv.isArchived,
+      archivedAt: inv.archivedAt,
       createdAt: inv.createdAt,
       updatedAt: inv.updatedAt,
       itemCount: inv._count.items,
@@ -346,6 +350,44 @@ export class InventoryService {
       data: {
         isDeleted: true,
         deletedAt: new Date(),
+      },
+    });
+  }
+
+  /**
+   * Archive an inventory
+   */
+  async archiveInventory(inventoryId: string, userId: string) {
+    const user = await this.getDbUser(userId);
+    await this.ensureInventoryAccess(inventoryId, user.id, { requireOwner: true });
+
+    return await prisma.inventory.update({
+      where: {
+        id: inventoryId,
+        createdById: user.id,
+      },
+      data: {
+        isArchived: true,
+        archivedAt: new Date(),
+      },
+    });
+  }
+
+  /**
+   * Unarchive an inventory
+   */
+  async unarchiveInventory(inventoryId: string, userId: string) {
+    const user = await this.getDbUser(userId);
+    await this.ensureInventoryAccess(inventoryId, user.id, { requireOwner: true });
+
+    return await prisma.inventory.update({
+      where: {
+        id: inventoryId,
+        createdById: user.id,
+      },
+      data: {
+        isArchived: false,
+        archivedAt: null,
       },
     });
   }
