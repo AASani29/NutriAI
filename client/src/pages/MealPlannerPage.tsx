@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import {
   Calendar,
   Utensils,
@@ -6,7 +6,6 @@ import {
   DollarSign,
   Brain,
   ArrowRight,
-  TrendingDown,
   ShoppingBag,
   ShoppingBasket,
   ChefHat,
@@ -14,9 +13,7 @@ import {
   ListChecks,
   MessageSquare,
   Search,
-  Dumbbell,
   ChevronRight,
-  Plus,
   Info,
   Sunrise,
   Sun,
@@ -77,6 +74,40 @@ export default function MealPlannerPage() {
     timePeriod: 'one_day',
     notes: '',
   });
+
+  // Generate personalized AI insights based on health metrics
+  const aiInsight = useMemo(() => {
+    const userGoals = profile?.profile;
+    const weight = userGoals?.weight || 70;
+    const height = userGoals?.height || 170;
+    const proteinGoal = userGoals?.proteinGoal || 180;
+    
+    // Generate insight based on current health profile
+    let recommendation = 'Balanced nutrition';
+    let subtitle = 'Crafted for your optimal wellness.';
+    
+    if (proteinGoal > 150) {
+      recommendation = 'Protein-rich meals';
+      subtitle = 'Building strength, one meal at a time.';
+    } else if (weight > 85) {
+      recommendation = 'Nutrient-dense, calorie-aware meals';
+      subtitle = 'Smart choices for sustainable health.';
+    } else {
+      recommendation = 'Balanced macro meals';
+      subtitle = 'Fuel your day the right way.';
+    }
+
+    return {
+      title: `Focus on ${recommendation} this week!`,
+      subtitle: subtitle,
+      metrics: {
+        calories: 65,
+        protein: 58,
+        hydration: 70,
+        steps: 45
+      }
+    };
+  }, [profile]);
 
   const hasHealthMetrics = profile?.profile?.height && profile?.profile?.weight;
 
@@ -266,21 +297,60 @@ export default function MealPlannerPage() {
             
             <div className="relative z-10 flex justify-between items-start">
               <div>
-                <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-md px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest mb-6">
-                  <Calendar className="w-3.5 h-3.5" />
-                  <span>{new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - Oct 20</span>
-                </div>
-                <h2 className="text-4xl font-black max-w-md leading-[1.1] mb-2 tracking-tight">Focus on protein-rich meals this week!</h2>
-                <p className="text-white/80 font-medium max-w-sm">Optimized based on your goals and local market prices.</p>
+                
+                <h2 className="text-4xl font-black max-w-md leading-[1.1] mb-2 tracking-tight">{aiInsight.title}</h2>
+                <p className="text-white/80 font-medium max-w-sm">{aiInsight.subtitle}</p>
               </div>
               
-              <div className="hidden sm:block">
-                <div className="bg-white/20 backdrop-blur-md p-6 rounded-[2rem] border border-white/10 shadow-xl">
-                  <div className="text-[10px] font-black uppercase tracking-[0.2em] opacity-80 mb-2 text-center">Weekly Goal</div>
-                  <div className="text-3xl font-black text-center">85%</div>
+              <div className="hidden sm:block lg:flex lg:gap-4">
+                {/* Calorie Goal */}
+                <div className="bg-white/60 backdrop-blur-md p-6 rounded-[2rem] border border-white/10 shadow-xl">
+                  <div className="text-[10px] font-black text-secondary uppercase tracking-[0.2em] opacity-100 mb-2 text-center">Calorie Goal</div>
+                  <div className="text-2xl font-black text-center text-secondary">{profile?.profile?.energyGoal || 2500}<span className="text-xs opacity-80">kcal</span></div>
                   <div className="w-24 h-2 bg-black/20 rounded-full mt-3 overflow-hidden p-0.5">
-                    <div className="bg-white w-[85%] h-full rounded-full"></div>
+                    <div className="bg-white h-full rounded-full" style={{ width: `65%` }}></div>
                   </div>
+                  <div className="text-[14px] text-center text-secondary font-bold opacity-70 mt-2">65%</div>
+                </div>
+
+                {/* Protein Goal */}
+                <div className="bg-white/50 backdrop-blur-md p-6 rounded-[2rem] border border-white/10 shadow-xl">
+                  <div className="text-[10px] font-black text-secondary uppercase tracking-[0.2em] opacity-80 mb-2 text-center">Protein Goal</div>
+                  <div className="text-2xl font-black text-center text-secondary">{profile?.profile?.proteinGoal || 180}<span className="text-xs opacity-80">g</span></div>
+                  <div className="w-24 h-2 bg-black/20 rounded-full mt-3 overflow-hidden p-0.5">
+                    <div className="bg-white h-full rounded-full" style={{ width: `60%` }}></div>
+                  </div>
+                  <div className="text-[14px] text-center text-secondary font-bold opacity-70 mt-2">60%</div>
+                </div>
+
+                {/* Carbs Goal */}
+                <div className="bg-white/40 backdrop-blur-md p-6 rounded-[2rem] border border-white/10 shadow-xl">
+                  <div className="text-[10px] font-black text-secondary uppercase tracking-[0.2em] opacity-80 mb-2 text-center">Carbs Goal</div>
+                  <div className="text-2xl font-black text-center text-secondary">{Math.round((profile?.profile?.energyGoal || 2500) * 0.45 / 4)}<span className="text-xs opacity-80">g</span></div>
+                  <div className="w-24 h-2 bg-black/20 rounded-full mt-3 overflow-hidden p-0.5">
+                    <div className="bg-white h-full rounded-full" style={{ width: `55%` }}></div>
+                  </div>
+                  <div className="text-[14px] text-center opacity-70 text-secondary font-bold mt-2">55%</div>
+                </div>
+
+                {/* Fats Goal */}
+                <div className="bg-white/30 backdrop-blur-md p-6 rounded-[2rem] border border-white/10 shadow-xl">
+                  <div className="text-[10px] font-black text-secondary uppercase tracking-[0.2em] opacity-80 mb-2 text-center">Fats Goal</div>
+                  <div className="text-2xl font-black text-center">{Math.round((profile?.profile?.energyGoal || 2500) * 0.25 / 9)}<span className="text-xs opacity-80">g</span></div>
+                  <div className="w-24 h-2 bg-black/20 rounded-full mt-3 overflow-hidden p-0.5">
+                    <div className="bg-white h-full rounded-full" style={{ width: `50%` }}></div>
+                  </div>
+                  <div className="text-[14px] font-bold text-center opacity-70 mt-2">50%</div>
+                </div>
+
+                {/* Hydration Goal */}
+                <div className="bg-white/20 backdrop-blur-md p-6 rounded-[2rem] border border-white/10 shadow-xl">
+                  <div className="text-[10px] font-black text-secondary uppercase tracking-[0.2em] opacity-80 mb-2 text-center">Hydration Goal</div>
+                  <div className="text-2xl font-black text-center">2.5<span className="text-xs opacity-80">L</span></div>
+                  <div className="w-24 h-2 bg-black/20 rounded-full mt-3 overflow-hidden p-0.5">
+                    <div className="bg-white h-full rounded-full" style={{ width: `60%` }}></div>
+                  </div>
+                  <div className="text-[14px] font-bold text-center opacity-70 mt-2">60%</div>
                 </div>
               </div>
             </div>
