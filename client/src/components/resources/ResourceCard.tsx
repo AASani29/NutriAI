@@ -18,38 +18,34 @@ export function ResourceCard({ resource }: { resource: Resource }) {
     }
   };
   const getTypeBgColor = (type: string) => {
-    switch (type) {
-      case 'Article': return 'bg-blue-600';
-      case 'Video': return 'bg-green-600';
-      default: return 'bg-gray-600';
-    }
+    return 'bg-secondary/10';
   };
   const TypeIcon = getTypeIcon(resource.type);
   return (
     <div
-      className="bg-gradient-to-br from-white to-gray-50 rounded-lg p-5 border-2 border-gray-200 hover:border-green-300 hover:shadow-md transition-all"
+      className="bg-gradient-to-br from-white to-gray-50 rounded-2xl p-5 border border-gray-100 hover:border-secondary/30 hover:shadow-soft transition-all group"
     >
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-start space-x-3">
-          <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${getTypeBgColor(resource.type)}`}> 
-            <TypeIcon className="h-5 w-5 text-white" />
+          <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${getTypeBgColor(resource.type)}`}> 
+            <TypeIcon className="h-6 w-6 text-secondary" />
           </div>
           <div className="flex-1">
-            <h3 className="font-semibold text-gray-900 mb-1">{resource.title}</h3>
+            <h3 className="font-bold text-foreground mb-1 tracking-tight group-hover:text-secondary transition-colors">{resource.title}</h3>
             <div className="flex items-center space-x-2 mb-2">
               {resource.tags.map(tag => (
-                <span key={tag} className="px-2 py-1 text-xs font-medium bg-gray-100 text-gray-700 rounded-full border border-gray-200">
+                <span key={tag} className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider bg-primary/10 text-secondary rounded-lg border border-primary/20">
                   {tag}
                 </span>
               ))}
-              <span className={`px-2 py-1 text-xs font-medium bg-gray-100 text-gray-700 rounded-full border border-gray-200`}>
+              <span className={`px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider bg-gray-50 text-muted-foreground rounded-lg border border-gray-100`}>
                 {resource.type}
               </span>
             </div>
           </div>
         </div>
       </div>
-      <p className="text-sm text-gray-700 mb-4 leading-relaxed">
+      <p className="text-sm text-muted-foreground mb-4 leading-relaxed font-medium line-clamp-2">
         {resource.description}
       </p>
       {resource.url && (
@@ -57,10 +53,10 @@ export function ResourceCard({ resource }: { resource: Resource }) {
           href={resource.url}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center space-x-2 text-sm font-medium text-green-600 hover:text-green-700 transition-colors"
+          className="inline-flex items-center space-x-2 text-sm font-bold text-secondary hover:text-secondary/80 transition-all group/link"
         >
           <span>Learn more</span>
-          <ExternalLink className="h-4 w-4" />
+          <ExternalLink className="h-4 w-4 group-hover/link:translate-x-0.5 transition-transform" />
         </a>
       )}
     </div>

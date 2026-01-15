@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Play, Eye, Calendar, User } from 'lucide-react';
 import type { Video } from '../../types/resource-types';
-import { RecommendationBadge } from './RecommendationBadge';
 
 interface VideoCardProps {
     video: Video;
@@ -68,28 +67,28 @@ export function VideoCard({ video }: VideoCardProps) {
             </div>
 
             {/* Content */}
-            <div className="p-4">
-                <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2">
+            <div className="p-6">
+                <h3 className="text-lg font-bold text-foreground mb-2 line-clamp-2 tracking-tight group-hover:text-secondary transition-colors">
                     {video.title}
                 </h3>
 
-                <p className="text-sm text-gray-600 mb-3 line-clamp-2">
+                <p className="text-sm text-muted-foreground mb-4 line-clamp-2 font-medium leading-relaxed">
                     {video.description}
                 </p>
 
                 {/* Metadata */}
-                <div className="flex items-center justify-between text-xs text-gray-500 mb-3">
-                    <div className="flex items-center gap-1">
-                        <User className="h-3 w-3" />
-                        <span className="truncate">{video.channelTitle}</span>
-                    </div>
+                <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 mb-5 pb-4 border-b border-gray-100">
                     <div className="flex items-center gap-2">
+                        <User className="h-3.5 w-3.5" />
+                        <span className="truncate max-w-[100px]">{video.channelTitle}</span>
+                    </div>
+                    <div className="flex items-center gap-3">
                         <div className="flex items-center gap-1">
-                            <Eye className="h-3 w-3" />
+                            <Eye className="h-3.5 w-3.5" />
                             <span>{formatViewCount(video.viewCount)}</span>
                         </div>
                         <div className="flex items-center gap-1">
-                            <Calendar className="h-3 w-3" />
+                            <Calendar className="h-3.5 w-3.5" />
                             <span>{formatDate(video.publishedAt)}</span>
                         </div>
                     </div>
@@ -101,9 +100,10 @@ export function VideoCard({ video }: VideoCardProps) {
                         href={watchUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 text-sm font-medium text-red-600 hover:text-red-700 transition-colors"
+                        className="inline-flex items-center gap-2 text-sm font-bold text-secondary hover:text-secondary/80 transition-all group/link"
                     >
-                        Watch on YouTube
+                        <span>Watch on YouTube</span>
+                        <Play className="h-4 w-4 group-hover/link:translate-x-0.5 transition-transform" />
                     </a>
                 )}
             </div>
