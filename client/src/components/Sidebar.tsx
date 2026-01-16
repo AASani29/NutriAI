@@ -181,7 +181,7 @@ export default function Sidebar({
                     <div className="relative group/icon">
                       <Info
                         size={18}
-                        className="text-gray-400 hover:text-gray-700 cursor-pointer"
+                        className="text-white hover:text-white cursor-pointer"
                       />
 
                       {/* Tooltip only appears when icon is hovered */}
