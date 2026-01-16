@@ -75,10 +75,10 @@ export default function FeaturesSection() {
           {/* Column 3: Sustainability (Sustain) */}
           <motion.div transition={{duration:0.5, ease:'easeIn', delay:0.2}} whileInView={{opacity:1, y:0}} initial={{y:20, opacity:0}}  viewport={{once:true}} className="space-y-6">
             <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm  hover:translate-y-[-10px] hover:shadow-lg transition-all duration-300 relative overflow-hidden group h-full">
-              <div className="absolute top-0 left-0 w-32 h-32 bg-green-50 rounded-full -ml-8 -mt-8 opacity-50" />
+              <div className="absolute top-0 left-0 w-32 h-32 bg-secondary/5 rounded-full -ml-8 -mt-8 opacity-50" />
               <div className="relative z-10 text-center">
-                <div className="w-16 h-16 mx-auto bg-primary/10 rounded-2xl flex items-center justify-center mb-8 border border-primary/20 transition-colors group-hover:bg-primary group-hover:text-white">
-                  <Recycle className="w-8 h-8 text-primary group-hover:text-white" />
+                <div className="w-16 h-16 mx-auto bg-secondary/10 rounded-2xl flex items-center justify-center mb-8 border border-secondary/20 transition-colors group-hover:bg-secondary group-hover:text-white">
+                  <Recycle className="w-8 h-8 text-secondary group-hover:text-white" />
                 </div>
                 <h3 className="text-2xl font-bold text-foreground mb-4">Zero-Waste Impact</h3>
                 <p className="text-muted-foreground mb-8 font-medium">Close the loop by sharing surplus and tracking your eco-footprint.</p>
