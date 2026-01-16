@@ -229,30 +229,30 @@ export default function InventoryPage() {
   }
 
   return (
-    <main className="flex-1 overflow-y-auto bg-white rounded-xl">
+    <main className="flex-1 overflow-y-auto bg-background/30 rounded-xl">
       <div className="container mx-auto px-6 py-8 max-w-7xl space-y-8">
         {/* Header */}
         <header className="flex justify-between items-center mb-6 px-4 ">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight text-slate-900">Pantry Inventory</h1>
-            <p className="text-slate-400 font-medium mt-1">Manage your nutrition stock efficiently.</p>
+            <h1 className="text-3xl font-bold tracking-tight text-foreground">Inventory</h1>
+            <p className="text-secondary/60 font-medium mt-1">Your Smart Pantry Tracker</p>
           </div>
           <div className="flex items-center gap-4">
             <div className="relative hidden md:block group">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors w-4 h-4" />
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-secondary/40 group-focus-within:text-secondary transition-colors w-4 h-4" />
               <input
                 type="text"
                 placeholder="Search inventories..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="pl-11 pr-4 py-3 w-80 rounded-xl text-secondary border-none focus:ring-4 focus:ring-primary/10 text-sm transition-all font-medium text-slate-800 outline-none"
+                className="pl-11 pr-4 py-3 w-80 rounded-xl text-foreground font-medium bg-white border border-border/50 focus:ring-4 focus:ring-primary/20 text-sm transition-all outline-none shadow-sm"
               />
             </div>
             <button
               onClick={() => setShowAddModal(true)}
-              className="flex items-center gap-2 bg-secondary text-white px-6 py-3 rounded-lg hover:bg-secondary/90 transition-all shadow-lg font-bold active:scale-95"
+              className="flex items-center gap-2 bg-secondary text-white px-6 py-3 rounded-xl hover:bg-secondary/90 transition-all shadow-lg font-bold active:scale-95"
             >
-              <Plus className="w-4 h-4" />
+              <Plus className="w-5 h-5" />
               <span>New Pantry</span>
             </button>
           </div>
@@ -260,33 +260,33 @@ export default function InventoryPage() {
 
         {/* Inventory Health - Horizontal Stats */}
         <div className="px-4">
-          <div className="bg-card rounded-xl border border-border p-6">
-            <div className="grid grid-cols-3 gap-8">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-lg bg-primary flex items-center justify-center shadow-sm">
-                  <CheckCircle2 className="w-6 h-6 text-black" />
+          <div className="bg-white rounded-[2rem] border border-border/60 p-8 shadow-soft">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <div className="flex items-center gap-5">
+                <div className="w-14 h-14 rounded-2xl bg-primary/20 flex items-center justify-center shadow-sm">
+                  <CheckCircle2 className="w-7 h-7 text-secondary" />
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Total Items</p>
-                  <p className="text-2xl font-bold text-foreground">{totalItems}</p>
+                  <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-0.5">Total Items</p>
+                  <p className="text-3xl font-bold text-foreground">{totalItems}</p>
                 </div>
               </div>
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-lg bg-red-50 flex items-center justify-center shadow-sm">
-                  <AlertTriangle className="w-6 h-6 text-red-600" />
+              <div className="flex items-center gap-5 border-y md:border-y-0 md:border-x border-border/40 py-6 md:py-0 md:px-8">
+                <div className="w-14 h-14 rounded-2xl bg-orange-50 flex items-center justify-center shadow-sm">
+                  <AlertTriangle className="w-7 h-7 text-orange-600" />
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Expiring Soon</p>
-                  <p className="text-2xl font-bold text-red-500">{expiringSoon}</p>
+                  <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-0.5">Expiring Soon</p>
+                  <p className="text-3xl font-bold text-orange-600">{expiringSoon}</p>
                 </div>
               </div>
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center shadow-sm">
-                  <ArchiveX className="w-6 h-6 text-gray-600" />
+              <div className="flex items-center gap-5">
+                <div className="w-14 h-14 rounded-2xl bg-gray-50 flex items-center justify-center shadow-sm">
+                  <ArchiveX className="w-7 h-7 text-gray-400" />
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Archived</p>
-                  <p className="text-2xl font-bold text-foreground">{archivedCount}</p>
+                  <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-0.5">Archived</p>
+                  <p className="text-3xl font-bold text-foreground">{archivedCount}</p>
                 </div>
               </div>
             </div>
@@ -297,35 +297,35 @@ export default function InventoryPage() {
         <div className="flex items-center gap-3 py-2 px-4">
           <button
             onClick={() => setFilterTab('all')}
-            className={`px-6 py-2 rounded-xl font-bold text-[10px] uppercase tracking-widest transition-all ${
+            className={`px-6 py-2.5 rounded-xl font-bold text-[10px] uppercase tracking-widest transition-all duration-300 ${
               filterTab === 'all'
-                ? 'bg-styled-card text-secondary shadow-lg shadow-primary/20'
-                : 'bg-white text-slate-400 hover:text-secondary'
+                ? 'bg-secondary text-white shadow-lg shadow-secondary/20'
+                : 'bg-white text-muted-foreground hover:text-secondary hover:shadow-sm border border-border/50'
             }`}
           >
             All Pantries
           </button>
           <button
             onClick={() => setFilterTab('active')}
-            className={`px-6 py-2 rounded-xl font-bold text-[10px] uppercase tracking-widest transition-all ${
+            className={`px-6 py-2.5 rounded-xl font-bold text-[10px] uppercase tracking-widest transition-all duration-300 ${
               filterTab === 'active'
-                ? 'bg-styled-card text-secondary shadow-lg shadow-primary/20'
-                : 'bg-white text-slate-400 hover:text-secondary'
+                ? 'bg-secondary text-white shadow-lg shadow-secondary/20'
+                : 'bg-white text-muted-foreground hover:text-secondary hover:shadow-sm border border-border/50'
             }`}
           >
             Active
           </button>
           <button
             onClick={() => setFilterTab('archived')}
-            className={`px-6 py-2 rounded-xl font-bold text-[10px] uppercase tracking-widest transition-all ${
+            className={`px-6 py-2.5 rounded-xl font-bold text-[10px] uppercase tracking-widest transition-all duration-300 ${
               filterTab === 'archived'
-                ? 'bg-styled-card text-secondary shadow-lg shadow-primary/20'
-                : 'bg-white text-slate-400 hover:text-secondary'
+                ? 'bg-secondary text-white shadow-lg shadow-secondary/20'
+                : 'bg-white text-muted-foreground hover:text-secondary hover:shadow-sm border border-border/50'
             }`}
           >
             Archived
           </button>
-          <button className="ml-auto w-10 h-10 flex items-center justify-center rounded-xl text-secondary text-slate-400 hover:text-secondary transition-all">
+          <button className="ml-auto w-10 h-10 flex items-center justify-center rounded-xl bg-white text-muted-foreground border border-border/50 hover:text-secondary hover:shadow-sm transition-all">
             <Settings2 className="w-5 h-5" />
           </button>
         </div>
@@ -334,75 +334,79 @@ export default function InventoryPage() {
         <div className="grid grid-cols-1 gap-6 px-4">
           {isLoading ? (
             Array(3).fill(0).map((_, i) => (
-              <div key={i} className="h-80 text-secondary rounded-[2.5rem] animate-pulse"></div>
+              <div key={i} className="h-80 text-secondary rounded-[2.5rem] animate-pulse bg-gray-100/50"></div>
             ))
           ) : filteredInventories.map((inventory) => (
             <div
               key={inventory.id}
               onClick={() => !inventory.isArchived && navigate(`/inventory/${inventory.id}`)}
-              className={`group shadow-lg hover:shadow-xl bg-styled-card rounded-3xl p-6 border border-slate-100 transition-all duration-300 flex flex-col md:flex-row gap-6 relative overflow-hidden ${
+              className={`group shadow-soft hover:shadow-xl bg-white rounded-[2rem] p-8 border border-border/40 transition-all duration-500 flex flex-col md:flex-row gap-8 relative overflow-hidden ${
                 inventory.isArchived
-                  ? 'opacity-60 cursor-not-allowed'
-                  : 'hover:border-primary/40 cursor-pointer'
+                  ? 'opacity-60 cursor-not-allowed bg-gray-50/50'
+                  : 'hover:border-secondary/40 cursor-pointer active:scale-[0.99]'
               }`}
             >
               {/* Left Side: Icon & Basic Info */}
-              <div className="flex flex-col md:w-1/4 gap-4">
-                <div className="w-16 h-16 rounded-2xl bg-white flex items-center justify-center text-primary group-hover:scale-110 transition-transform duration-500 shadow-sm border border-slate-100/50">
+              <div className="flex flex-col md:w-1/4 gap-5">
+                <div className="w-20 h-20 rounded-[1.5rem] bg-primary/20 flex items-center justify-center text-secondary group-hover:scale-110 transition-transform duration-500 shadow-sm border border-primary/20">
                   {getInventoryIcon(inventory.name)}
                 </div>
                 <div>
-                  <h4 className="font-bold text-xl text-slate-900 tracking-tight group-hover:text-primary transition-colors mb-1">{inventory.name}</h4>
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest opacity-60 line-clamp-1">{inventory.description || 'Global Storage Unit'}</p>
+                  <h4 className="font-bold text-2xl text-foreground tracking-tight group-hover:text-secondary transition-colors mb-1.5">{inventory.name}</h4>
+                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest opacity-80 line-clamp-2 leading-relaxed">{inventory.description || 'Smart Storage Hub'}</p>
                 </div>
               </div>
 
               {/* Middle: Items Preview */}
               <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between mb-4">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Inventory Content</span>
-                  <span className="text-[10px] font-bold text-primary uppercase tracking-widest">{inventory.itemCount || 0} Items</span>
+                <div className="flex items-center justify-between mb-5">
+                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Inventory Content</span>
+                  <div className="px-3 py-1 bg-primary/10 rounded-full border border-primary/20">
+                    <span className="text-[10px] font-bold text-secondary uppercase tracking-widest">{inventory.itemCount || 0} Items</span>
+                  </div>
                 </div>
-                <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+                <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
                   {itemsMap[inventory.id]?.length > 0 ? (
-                    itemsMap[inventory.id].slice(0, 6).map((item, idx) => (
+                    itemsMap[inventory.id].slice(0, 8).map((item, idx) => (
                       <div 
                         key={item.id || idx} 
-                        className="flex flex-col items-center justify-center bg-white p-3 rounded-2xl border border-slate-100 min-w-[100px] group/item hover:shadow-md transition-all sm:w-24 md:w-28"
+                        className="flex flex-col items-center justify-center bg-gray-50/50 p-4 rounded-2xl border border-border/30 min-w-[110px] group/item hover:bg-white hover:shadow-md transition-all sm:w-28 md:w-32"
                       >
-                        <div className="text-2xl mb-1 group-hover/item:scale-110 transition-transform">
+                        <div className="text-3xl mb-2 group-hover/item:scale-125 transition-transform duration-500 filter drop-shadow-sm">
                           {getItemEmoji(item.foodItem?.category)}
                         </div>
-                        <p className="text-[10px] font-bold text-slate-700 truncate w-full text-center">
+                        <p className="text-[11px] font-bold text-foreground truncate w-full text-center mb-1">
                           {item.customName || item.foodItem?.name}
                         </p>
-                        <p className="text-[9px] text-slate-400 font-medium">
-                          {item.quantity} {item.unit || 'pcs'}
-                        </p>
+                        <div className="px-2 py-0.5 bg-white rounded-full border border-border/40">
+                          <p className="text-[9px] text-secondary font-bold uppercase tracking-tighter">
+                            {item.quantity} {item.unit || 'pcs'}
+                          </p>
+                        </div>
                       </div>
                     ))
                   ) : (
-                    <div className="flex items-center gap-3 text-slate-300 italic text-xs py-4">
-                      <ArchiveX className="w-4 h-4" />
-                      No items in this pantry yet
+                    <div className="flex flex-col items-center justify-center gap-2 text-muted-foreground/30 italic text-sm py-10 w-full bg-gray-50/30 rounded-2xl border border-dashed border-border/40">
+                      <ArchiveX className="w-6 h-6" />
+                      <span className="text-xs font-medium">Empty pantry</span>
                     </div>
                   )}
                 </div>
               </div>
 
               {/* Right Side: Status, Owner, Members & Actions */}
-              <div className="md:w-1/4 flex flex-col items-end gap-4 border-t md:border-t-0 md:border-l border-slate-50 pt-4 md:pt-0 md:pl-6">
-                <div className="flex items-center justify-between w-full md:flex-col md:items-end gap-2">
-                  <div className="flex items-center gap-2">
-                    <div className={`w-2 h-2 rounded-full ${inventory.isArchived ? 'bg-slate-300' : 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]'}`}></div>
-                    <span className="text-[10px] font-bold text-slate-900 uppercase tracking-widest">{inventory.isArchived ? 'Archived' : 'Active'}</span>
+              <div className="md:w-1/4 flex flex-col items-end gap-5 border-t md:border-t-0 md:border-l border-border/20 pt-6 md:pt-0 md:pl-8">
+                <div className="flex items-center justify-between w-full md:flex-col md:items-end gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-2.5 h-2.5 rounded-full ${inventory.isArchived ? 'bg-muted-foreground' : 'bg-secondary shadow-[0_0_12px_rgba(210,105,30,0.5)]'}`}></div>
+                    <span className="text-[10px] font-bold text-foreground uppercase tracking-widest">{inventory.isArchived ? 'Archived' : 'Active'}</span>
                     
                     {inventory.accessRole === 'owner' && !inventory.isArchived && (
                       <button
                         onClick={(e) => handleEditInventory(inventory, e)}
-                        className="ml-2 p-1.5 hover:bg-slate-100 rounded-lg transition-colors"
+                        className="ml-2 p-2 hover:bg-primary/10 hover:text-secondary rounded-xl transition-all duration-300 border border-transparent hover:border-primary/20"
                       >
-                        <MoreHorizontal className="w-4 h-4 text-slate-600" />
+                        <MoreHorizontal className="w-4 h-4" />
                       </button>
                     )}
                     
@@ -420,72 +424,73 @@ export default function InventoryPage() {
                             setEditingInventory(null);
                           }
                         }}
-                        className="ml-2 px-2 py-1 bg-slate-100 text-slate-600 hover:bg-slate-200 rounded text-[9px] font-bold uppercase tracking-widest"
+                        className="ml-2 px-3 py-1.5 bg-primary/20 text-secondary hover:bg-primary/30 rounded-lg text-[9px] font-bold uppercase tracking-widest transition-colors"
                       >
-                        Unarchive
+                        Restore
                       </button>
                     )}
                   </div>
                   
                   {inventory.accessRole && (
                     <div className="flex flex-col items-end">
-                      <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-50 text-[9px] font-bold uppercase tracking-widest text-slate-500 border border-slate-100">
+                      <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-background/50 text-[9px] font-bold uppercase tracking-widest text-secondary border border-primary/20">
                         {inventory.accessRole === 'owner' ? (
                           <>
-                            <User className="w-3 h-3" />
+                            <User className="w-3.5 h-3.5" />
                             <span>Owner</span>
                           </>
                         ) : (
                           <>
-                            <User className="w-3 h-3" />
-                            <span>Shared with you</span>
+                            <User className="w-3.5 h-3.5" />
+                            <span>Collaborator</span>
                           </>
                         )}
                       </div>
                       {inventory.ownerName && inventory.accessRole === 'member' && (
-                        <p className="text-[9px] text-slate-400 mt-1 font-medium">Owned by {inventory.ownerName}</p>
+                        <p className="text-[10px] text-muted-foreground mt-2 font-medium italic opacity-70">Managed by {inventory.ownerName}</p>
                       )}
                     </div>
                   )}
 
                   {/* Members Preview */}
                   {inventory.members && inventory.members.length > 0 && !inventory.isArchived && (
-                    <div className="flex -space-x-2 mt-1">
-                      {inventory.members.slice(0, 3).map((_, i) => (
-                        <div key={i} className="w-6 h-6 rounded-full bg-white border-2 border-slate-50 flex items-center justify-center">
-                          <User className="w-3 h-3 text-slate-400" />
+                    <div className="flex -space-x-3 mt-2">
+                      {inventory.members.slice(0, 4).map((_, i) => (
+                        <div key={i} className="w-8 h-8 rounded-full bg-white border-2 border-primary/20 flex items-center justify-center shadow-sm">
+                          <User className="w-4 h-4 text-secondary/40" />
                         </div>
                       ))}
-                      {inventory.members.length > 3 && (
-                        <div className="w-6 h-6 rounded-full bg-slate-100 border-2 border-slate-50 flex items-center justify-center text-[8px] font-bold text-slate-500">
-                          +{inventory.members.length - 3}
+                      {inventory.members.length > 4 && (
+                        <div className="w-8 h-8 rounded-full bg-primary/30 border-2 border-white flex items-center justify-center text-[10px] font-bold text-secondary">
+                          +{inventory.members.length - 4}
                         </div>
                       )}
                     </div>
                   )}
                 </div>
 
-                {/* Stats Bar at the bottom of the right panel for Full Width */}
+                {/* Integrity Bar */}
                 <div className="mt-auto w-full">
-                  <div className="flex justify-between items-center mb-1.5">
-                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Integrity</span>
-                    <span className="text-[9px] font-bold text-primary">{(inventory.expiringCount || 0) > 0 ? '85%' : '100%'}</span>
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Efficiency</span>
+                    <span className="text-[10px] font-bold text-secondary">{(inventory.expiringCount || 0) > 0 ? '82%' : '100%'}</span>
                   </div>
-                  <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
+                  <div className="w-full bg-gray-100 h-2 rounded-full overflow-hidden p-0.5">
                     <div 
-                      className="bg-primary h-full rounded-full transition-all duration-1000" 
-                      style={{ width: (inventory.expiringCount || 0) > 0 ? '85%' : '100%' }}
+                      className="bg-secondary h-full rounded-full transition-all duration-1000 shadow-sm" 
+                      style={{ width: (inventory.expiringCount || 0) > 0 ? '82%' : '100%', backgroundColor: (inventory.expiringCount || 0) > 0 ? '#D2691E' : '#FFB88C' }}
                     ></div>
                   </div>
                 </div>
               </div>
 
-              {/* Hover Effect */}
+              {/* Hover Effect Bar */}
               {!inventory.isArchived && (
-                <div className="absolute right-0 top-0 h-full w-1.5 bg-primary transform translate-x-full group-hover:translate-x-0 transition-transform duration-300"></div>
+                <div className="absolute right-0 top-0 h-full w-2 bg-secondary/80 transform translate-x-full group-hover:translate-x-0 transition-transform duration-500 rounded-l-full shadow-lg shadow-secondary/20"></div>
               )}
             </div>
-          ))}
+          ))
+        }
         </div>
 
         
@@ -506,65 +511,72 @@ export default function InventoryPage() {
 
       {/* Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-md flex items-center justify-center z-[100] p-6 animate-in fade-in duration-300">
+        <div 
+          className="fixed inset-0 bg-foreground/30 backdrop-blur-md flex items-center justify-center z-[100] p-6 animate-in fade-in duration-300"
+          onClick={() => setShowAddModal(false)}
+        >
           <form
-            className="bg-white rounded-[2.5rem] shadow-2xl p-10 w-full max-w-lg border border-slate-100"
+            className="bg-white rounded-[3rem] shadow-2xl p-10 w-full max-w-lg border border-primary/20 animate-in zoom-in-95 duration-300 overflow-y-auto max-h-[90vh]"
             onSubmit={handleCreateInventory}
+            onClick={(e) => e.stopPropagation()}
           >
-            <div className="mb-8">
-                <h2 className="text-2xl font-bold text-slate-800 tracking-tight">New Pantry Hub</h2>
-                <p className="text-slate-400 text-sm font-medium mt-1">Initialize a new inventory tracking system.</p>
+            <div className="mb-10 text-center">
+                <div className="w-20 h-20 bg-primary/20 rounded-[2rem] flex items-center justify-center mx-auto mb-6 shadow-sm border border-primary/20">
+                  <Warehouse className="w-10 h-10 text-secondary" />
+                </div>
+                <h2 className="text-3xl font-bold text-foreground tracking-tight">New Pantry Hub</h2>
+                <p className="text-muted-foreground text-sm font-medium mt-2">Initialize a smart inventory system.</p>
             </div>
 
-            <div className="space-y-6">
-              <div>
-                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Hub Name</label>
+            <div className="space-y-8">
+              <div className="space-y-3">
+                <label className="block text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-2 px-1">Hub Name</label>
                 <input
                   name="name"
                   required
                   autoFocus
                   placeholder="e.g. Master Fridge"
-                  className="w-full px-5 py-4 border border-slate-100 rounded-xl text-secondary text-slate-800 font-bold focus:ring-4 focus:ring-primary/10 transition-all outline-none"
+                  className="w-full px-6 py-4.5 bg-gray-50 border border-border/40 rounded-2xl text-foreground font-bold focus:ring-4 focus:ring-primary/20 focus:bg-white transition-all outline-none placeholder:text-gray-300"
                 />
               </div>
 
-              <div>
-                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Description</label>
+              <div className="space-y-3">
+                <label className="block text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-2 px-1">Description</label>
                 <textarea
                   name="description"
                   placeholder="What's in this hub?"
                   rows={3}
-                  className="w-full px-5 py-4 border border-slate-100 rounded-xl text-secondary text-slate-800 font-bold focus:ring-4 focus:ring-primary/10 transition-all outline-none resize-none"
+                  className="w-full px-6 py-4.5 bg-gray-50 border border-border/40 rounded-2xl text-foreground font-bold focus:ring-4 focus:ring-primary/20 focus:bg-white transition-all outline-none resize-none placeholder:text-gray-300"
                 />
               </div>
 
-              <div>
-                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Share With Users</label>
+              <div className="space-y-3">
+                <label className="block text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-2 px-1">Collaborators</label>
                 
                 {/* Selected Users Chips */}
                 {selectedUsers.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mb-3">
+                  <div className="flex flex-wrap gap-2.5 mb-4 p-2">
                     {selectedUsers.map(user => (
                       <div
                         key={user.id}
-                        className="flex items-center gap-2 bg-styled-card/10 text-slate-800 px-3 py-2 rounded-lg text-sm font-medium"
+                        className="flex items-center gap-2 bg-primary/20 text-secondary px-3 py-2 rounded-xl text-xs font-bold border border-primary/20 shadow-sm animate-in scale-in duration-300"
                       >
                         {user.imageUrl ? (
                           <img
                             src={user.imageUrl}
                             alt={user.fullName || user.email}
-                            className="w-5 h-5 rounded-full"
+                            className="w-5 h-5 rounded-full border border-white"
                           />
                         ) : (
-                          <User className="w-4 h-4 text-slate-400" />
+                          <User className="w-3.5 h-3.5" />
                         )}
-                        <span className="text-xs font-bold">
+                        <span>
                           {user.fullName || user.email}
                         </span>
                         <button
                           type="button"
                           onClick={() => removeSelectedUser(user.id)}
-                          className="text-slate-400 hover:text-red-500 transition-colors"
+                          className="hover:text-red-500 transition-colors bg-white/50 p-1 rounded-full ml-1"
                         >
                           <X className="w-3 h-3" />
                         </button>
@@ -574,68 +586,72 @@ export default function InventoryPage() {
                 )}
 
                 {/* User Search Input */}
-                <div className="relative">
+                <div className="relative group">
+                  <div className="absolute left-5 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-secondary pointer-events-none transition-colors">
+                    <Search className="w-4 h-4" />
+                  </div>
                   <input
                     type="text"
                     value={userSearch}
                     onChange={handleUserSearchChange}
-                    placeholder="Search users by name or email..."
-                    className="w-full px-5 py-4 border border-slate-100 rounded-xl text-secondary text-slate-800 font-bold focus:ring-4 focus:ring-primary/10 transition-all outline-none"
+                    placeholder="Search by name or email..."
+                    className="w-full pl-12 pr-6 py-4.5 bg-gray-50 border border-border/40 rounded-2xl text-foreground font-bold focus:ring-4 focus:ring-primary/20 focus:bg-white transition-all outline-none placeholder:text-gray-300"
                   />
                   {isSearching && (
-                    <div className="absolute right-4 top-1/2 -translate-y-1/2">
-                      <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                    <div className="absolute right-5 top-1/2 -translate-y-1/2">
+                      <div className="w-5 h-5 border-3 border-secondary border-t-transparent rounded-full animate-spin" />
                     </div>
                   )}
 
                   {/* Search Results Dropdown */}
                   {userSearchResults.length > 0 && (
-                    <div className="absolute z-10 w-full mt-2 bg-white rounded-xl shadow-2xl border border-slate-100 max-h-60 overflow-y-auto">
+                    <div className="absolute z-[110] w-full mt-3 bg-white rounded-[2rem] shadow-2xl border border-primary/20 max-h-60 overflow-y-auto animate-in slide-in-from-top-2 duration-300">
                       {userSearchResults.map(user => (
                         <button
                           key={user.id}
                           type="button"
                           onClick={() => addSelectedUser(user)}
-                          className="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-50 transition-colors text-left"
+                          className="w-full flex items-center gap-4 px-5 py-4 hover:bg-primary/10 transition-colors text-left group/user"
                         >
                           {user.imageUrl ? (
                             <img
                               src={user.imageUrl}
                               alt={user.fullName || user.email}
-                              className="w-10 h-10 rounded-full object-cover"
+                              className="w-12 h-12 rounded-2xl object-cover border border-border/40"
                             />
                           ) : (
-                            <div className="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center">
-                              <User className="w-5 h-5 text-slate-400" />
+                            <div className="w-12 h-12 rounded-2xl bg-primary/20 flex items-center justify-center text-secondary">
+                              <User className="w-6 h-6" />
                             </div>
                           )}
                           <div className="flex-1">
-                            <p className="font-bold text-sm text-slate-900">
-                              {user.fullName || 'Unknown User'}
+                            <p className="font-bold text-sm text-foreground group-hover/user:text-secondary transition-colors">
+                              {user.fullName || 'Member'}
                             </p>
-                            <p className="text-xs text-slate-500">{user.email}</p>
+                            <p className="text-xs text-muted-foreground">{user.email}</p>
                           </div>
+                          <Plus className="w-4 h-4 text-primary opacity-0 group-hover/user:opacity-100 transition-opacity" />
                         </button>
                       ))}
                     </div>
                   )}
                 </div>
-                <p className="text-xs text-slate-400 mt-2">Search and select users to share this pantry with them.</p>
+                <p className="text-[10px] text-muted-foreground/60 mt-3 italic text-center">Your collaborators will have full view of this inventory hub.</p>
               </div>
             </div>
 
-            <div className="flex gap-4 mt-10">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-12">
               <button
                 type="submit"
                 disabled={createInventoryMutation.isPending}
-                className="flex-1 py-4 bg-secondary text-white rounded-lg font-bold hover:bg-secondary/90 transition-all shadow-lg"
+                className="py-5 bg-secondary text-white rounded-2xl font-bold hover:bg-secondary/90 transition-all shadow-lg hover:shadow-xl active:scale-[0.98] disabled:opacity-50 order-1 sm:order-2"
               >
                 {createInventoryMutation.isPending ? 'Processing...' : 'Create Hub'}
               </button>
               <button
                 type="button"
                 onClick={() => setShowAddModal(false)}
-                className="flex-1 py-4 bg-card text-muted-foreground rounded-lg hover:bg-muted transition-all font-medium border border-border"
+                className="py-5 bg-white text-muted-foreground rounded-2xl hover:bg-gray-50 transition-all font-bold border border-border/40 hover:border-border order-2 sm:order-1"
               >
                 Cancel
               </button>

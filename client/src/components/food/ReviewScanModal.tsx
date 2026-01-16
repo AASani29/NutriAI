@@ -106,7 +106,7 @@ export const ReviewScanModal: React.FC<ReviewScanModalProps> = ({
                       className="w-full mt-1 p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
                     />
                   </div>
-                  <div className="w-24">
+                  <div className="w-20">
                     <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Qty</label>
                     <input
                       type="number"
@@ -115,7 +115,7 @@ export const ReviewScanModal: React.FC<ReviewScanModalProps> = ({
                       className="w-full mt-1 p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
                     />
                   </div>
-                  <div className="w-24">
+                  <div className="w-20">
                     <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Unit</label>
                     <input
                       type="text"
@@ -124,7 +124,20 @@ export const ReviewScanModal: React.FC<ReviewScanModalProps> = ({
                       className="w-full mt-1 p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
                     />
                   </div>
-                  <button onClick={saveEdit} className="p-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                  <div className="w-24">
+                    <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Price (BDT)</label>
+                    <input
+                      type="number"
+                      value={editForm.basePrice || ''}
+                      placeholder="0.00"
+                      onChange={e => setEditForm({ ...editForm, basePrice: Number(e.target.value) })}
+                      className="w-full mt-1 p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                    />
+                  </div>
+                  <button onClick={() => setEditIndex(null)} className="p-3 text-gray-500 hover:bg-gray-100 rounded-lg" title="Cancel">
+                    <X className="w-4 h-4" />
+                  </button>
+                  <button onClick={saveEdit} className="p-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700" title="Save">
                     <Save className="w-4 h-4" />
                   </button>
                 </div>
@@ -135,7 +148,7 @@ export const ReviewScanModal: React.FC<ReviewScanModalProps> = ({
                     <h3 className="text-lg font-semibold text-gray-900">{item.name}</h3>
                     <div className="flex items-center gap-3 mt-1 text-sm text-gray-600">
                       <span className="bg-gray-100 px-2 py-0.5 rounded text-gray-700 font-medium">{item.quantity} {item.unit}</span>
-                      {item.basePrice && <span className="text-green-600 font-medium">Est. {item.basePrice} BDT</span>}
+                      {item.basePrice && <span className="text-green-600 font-medium">{item.basePrice} BDT</span>}
                       {item.nutrition && (
                         <div className="group relative">
                           <span className="bg-purple-100 text-purple-700 text-[10px] font-bold px-2 py-0.5 rounded-full cursor-help hover:bg-purple-200 transition-colors">

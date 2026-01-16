@@ -195,155 +195,144 @@ export default function NeighbourhoodPage() {
           <>
             <div className="grid grid-cols-12 gap-6">
               {/* Featured Hero Card */}
-              <div className="col-span-12 lg:col-span-8 bg-black rounded-[2.5rem] p-0 relative overflow-hidden shadow-2xl group min-h-[400px]">
+              <div className="col-span-12 lg:col-span-8 bg-black rounded-2xl p-0 relative overflow-hidden shadow-xl group min-h-[350px]">
                 <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent z-10" />
                 <img
                   alt="Featured Food"
                   className="absolute inset-0 w-full h-full object-cover opacity-60 transition-transform duration-700 group-hover:scale-105"
                   src={"https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&q=80&w=1200"}
                 />
-                <div className="relative z-20 h-full flex flex-col justify-end p-8 md:p-12 text-white">
-                  <div className="bg-white/10 backdrop-blur-md px-4 py-1.5 rounded-full w-fit mb-6 border border-white/20 text-xs font-bold uppercase tracking-widest flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                    {featuredListing ? 'Just Posted • 10 mins ago' : 'No items yet'}
+                <div className="relative z-20 h-full flex flex-col justify-end p-6 md:p-8 text-white">
+                  <div className="bg-white/10 backdrop-blur-md px-3 py-1 rounded-lg w-fit mb-4 border border-white/20 text-xs font-bold flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                    {featuredListing ? 'Just Posted' : 'No items yet'}
                   </div>
                   {featuredListing ? (
                     <>
-                      <h2 className="text-4xl md:text-5xl font-bold leading-tight mb-4 tracking-tighter">
+                      <h2 className="text-3xl md:text-4xl font-bold leading-tight mb-3 tracking-tight">
                         {featuredListing.title}
                       </h2>
-                      <p className="text-gray-300 max-w-md mb-8 font-medium text-lg leading-relaxed">
-                        {featuredListing.description || "Fresh food available for pickup in your neighbourhood. Perfectly preserved and ready for you."}
+                      <p className="text-gray-300 max-w-md mb-6 text-sm leading-relaxed">
+                        {featuredListing.description || "Fresh food available for pickup in your neighbourhood."}
                       </p>
-                      <div className="flex flex-col md:flex-row items-center gap-6">
-                        <div className="flex -space-x-3">
-                          <div className="w-10 h-10 rounded-full border-2 border-white bg-gray-800 flex items-center justify-center font-bold text-xs">A</div>
-                          <div className="w-10 h-10 rounded-full border-2 border-white bg-primary flex items-center justify-center font-bold text-xs text-black">+2</div>
-                        </div>
-                        <span className="text-sm font-bold opacity-80 uppercase tracking-wider">Interested neighbors</span>
+                      <div className="flex flex-col md:flex-row items-center gap-4">
                         <button
                           onClick={() => setSelectedListing(featuredListing)}
-                          className="md:ml-auto w-full md:w-auto bg-primary text-black hover:bg-white px-8 py-4 rounded-2xl font-bold transition-all flex items-center justify-center gap-2 shadow-xl shadow-primary/20 hover:scale-105"
+                          className="w-full md:w-auto bg-primary text-black hover:bg-white px-6 py-3 rounded-lg font-bold transition-all flex items-center justify-center gap-2"
                         >
                           Reserve Now
-                          <ArrowRight className="w-5 h-5" />
+                          <ArrowRight className="w-4 h-4" />
                         </button>
                       </div>
                     </>
                   ) : (
-                    <div className="text-center py-12">
-                      <p className="text-xl font-bold opacity-60">Start by sharing something with your community.</p>
+                    <div className="text-center py-8">
+                      <p className="text-lg font-bold opacity-60">Start by sharing something with your community.</p>
                     </div>
                   )}
                 </div>
               </div>
 
-              {/* Near You / Map Placeholder */}
-              <div className="col-span-12 lg:col-span-4 bg-gray-50 rounded-[2.5rem] p-8 relative flex flex-col shadow-soft border border-gray-100 overflow-hidden group">
-                <div className="flex justify-between items-center mb-6">
-                  <h3 className="text-xl font-bold text-black tracking-tight">Near You</h3>
-                  <div className="bg-white rounded-xl p-2.5 shadow-sm border border-gray-100 cursor-pointer hover:bg-black hover:text-white transition-all">
-                    <Filter className="w-5 h-5" />
+              {/* Near You / Map */}
+              <div className="col-span-12 lg:col-span-4 bg-gray-50 rounded-2xl p-6 relative flex flex-col shadow-sm border border-gray-100 overflow-hidden">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-lg font-bold text-black">Near You</h3>
+                  <div className="bg-white rounded-lg p-2 shadow-sm border border-gray-100">
+                    <Filter className="w-4 h-4" />
                   </div>
                 </div>
-                <div className="flex-1 rounded-[2rem] bg-white border border-gray-100 relative overflow-hidden shadow-inner group-hover:border-black/5 transition-colors">
+                <div className="flex-1 rounded-xl bg-white border border-gray-200 relative overflow-hidden z-0">
                   {/* Simulated Map Pattern */}
                   <div className="absolute inset-0 opacity-[0.03] bg-[radial-gradient(#000_1px,transparent_1px)] [background-size:20px_20px]" />
 
                   {listings.slice(0, 3).map((l, i) => (
                     <div key={l.id}
-                      className={`absolute transform hover:scale-125 transition-all cursor-pointer z-10`}
+                      className="absolute transform hover:scale-110 transition-all cursor-pointer"
                       style={{
                         top: `${20 + (i * 25)}%`,
                         left: `${20 + (i * 30)}%`
                       }}
                     >
-                      <div className={`w-10 h-10 ${i === 0 ? 'bg-primary' : 'bg-black'} rounded-2xl border-4 border-white shadow-xl flex items-center justify-center text-white`}>
-                        <MapPin className={`w-5 h-5 ${i === 0 ? 'text-black' : 'text-white'}`} />
+                      <div className={`w-8 h-8 ${i === 0 ? 'bg-secondary' : 'bg-gray-800'} rounded-lg border-2 border-white shadow-lg flex items-center justify-center`}>
+                        <MapPin className="w-4 h-4 text-white" />
                       </div>
                     </div>
                   ))}
 
-                  <div className="absolute bottom-4 left-4 right-4 bg-white p-4 rounded-2xl shadow-2xl border border-gray-50 flex items-center gap-4 animate-in slide-in-from-bottom-2">
-                    <div className="w-12 h-12 bg-primary/20 rounded-xl flex items-center justify-center">
-                      <Package className="w-6 h-6 text-black" />
+                  <div className="absolute bottom-3 left-3 right-3 bg-white p-3 rounded-lg shadow-lg border border-gray-100 flex items-center gap-3">
+                    <div className="w-10 h-10 bg-secondary/10 rounded-lg flex items-center justify-center">
+                      <Package className="w-5 h-5 text-secondary" />
                     </div>
-                    <div>
-                      <h4 className="text-sm font-bold text-black">{featuredListing?.title || 'No active pins'}</h4>
-                      <p className="text-xs text-muted-foreground font-bold">{featuredListing?.pickupLocation || 'Join to see locations'}</p>
+                    <div className="flex-1 min-w-0">
+                      <h4 className="text-xs font-bold text-black truncate">{featuredListing?.title || 'No active items'}</h4>
+                      <p className="text-[10px] text-gray-500 truncate">{featuredListing?.pickupLocation || 'No location'}</p>
                     </div>
-                    <button className="ml-auto bg-gray-50 p-2.5 rounded-xl hover:bg-black hover:text-white transition-all">
-                      <ArrowRight className="w-4 h-4" />
-                    </button>
                   </div>
                 </div>
               </div>
 
               {/* Categories */}
-              <div className="col-span-12 md:col-span-6 lg:col-span-4 bg-white rounded-[2.5rem] p-8 shadow-soft border border-gray-100 flex flex-col">
-                <div className="flex justify-between items-start mb-8">
+              <div className="col-span-12 md:col-span-6 lg:col-span-4 bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex flex-col">
+                <div className="flex justify-between items-center mb-6">
                   <div>
-                    <h3 className="text-xl font-bold text-black tracking-tight">Categories</h3>
-                    <p className="text-sm text-muted-foreground font-medium mt-1">What are you looking for?</p>
-                  </div>
-                  <div className="w-10 h-10 bg-gray-50 rounded-xl flex items-center justify-center">
-                    <Filter className="w-5 h-5 text-black" />
+                    <h3 className="text-lg font-bold text-black">Categories</h3>
+                    <p className="text-sm text-gray-500 mt-1">What are you looking for?</p>
                   </div>
                 </div>
-                <div className="space-y-3">
+                <div className="space-y-2">
                   {categories.length > 0 ? categories.map((cat) => (
-                    <div key={cat.name} className="flex items-center justify-between p-4 rounded-2xl bg-gray-50 hover:bg-primary transition-all cursor-pointer group">
-                      <div className="flex items-center gap-4">
-                        <div className="bg-white p-2.5 rounded-xl shadow-sm group-hover:scale-110 transition-transform">
-                          <Package className="w-5 h-5 text-black" />
+                    <div key={cat.name} className="flex items-center justify-between p-3 rounded-lg bg-gray-50 hover:bg-secondary/10 transition-all cursor-pointer group">
+                      <div className="flex items-center gap-3">
+                        <div className="bg-white p-2 rounded-lg shadow-sm">
+                          <Package className="w-4 h-4 text-secondary" />
                         </div>
-                        <span className="font-bold text-black capitalize">{cat.name}</span>
+                        <span className="font-semibold text-gray-900 capitalize text-sm">{cat.name}</span>
                       </div>
-                      <span className="text-sm font-bold bg-black text-white px-3 py-1 rounded-full group-hover:bg-white group-hover:text-black transition-colors">{cat.count}</span>
+                      <span className="text-xs font-bold bg-secondary text-white px-2 py-1 rounded-full">{cat.count}</span>
                     </div>
                   )) : (
-                    <p className="text-center text-muted-foreground font-medium py-4">No categories yet</p>
+                    <p className="text-center text-gray-500 py-4 text-sm">No categories yet</p>
                   )}
                 </div>
               </div>
 
               {/* Your Impact */}
-              <div className="col-span-12 md:col-span-6 lg:col-span-4 bg-white rounded-[2.5rem] p-8 shadow-soft border border-gray-100">
-                <div className="flex justify-between items-center mb-10">
-                  <h3 className="text-xl font-bold text-black tracking-tight">Your Impact</h3>
-                  <div className="bg-black text-white px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest">Personal Stats</div>
+              <div className="col-span-12 md:col-span-6 lg:col-span-4 bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                <div className="flex justify-between items-center mb-6">
+                  <h3 className="text-lg font-bold text-black">Your Impact</h3>
+                  <div className="bg-secondary text-white px-3 py-1 rounded-lg text-[10px] font-bold">Stats</div>
                 </div>
-                <div className="flex flex-col gap-8">
-                  <div className="flex items-end gap-3">
-                    <span className="text-6xl font-bold text-black tracking-tighter">{yourImpactCount}</span>
-                    <span className="text-lg font-bold text-muted-foreground mb-2">items shared</span>
+                <div className="flex flex-col gap-6">
+                  <div className="flex items-end gap-2">
+                    <span className="text-5xl font-bold text-black">{yourImpactCount}</span>
+                    <span className="text-sm font-medium text-gray-500 mb-1">items shared</span>
                   </div>
 
-                  <div className="relative h-28 w-full flex items-end justify-between gap-3 px-1">
+                  <div className="relative h-24 w-full flex items-end justify-between gap-2 px-1">
                     {weeklyStats.map((count, i) => (
                       <div key={i}
-                        className={`w-full ${i === 4 ? 'bg-primary' : 'bg-gray-100'} rounded-t-2xl transition-all duration-500 hover:bg-black group relative cursor-help`}
+                        className={`w-full ${i === 4 ? 'bg-secondary' : 'bg-gray-100'} rounded-t-lg transition-all duration-500 hover:bg-secondary/80 group relative cursor-help`}
                         style={{ height: `${maxStat > 0 ? (count / maxStat) * 100 : 0}%`, minHeight: '4px' }}
                       >
-                        <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-black text-white text-[10px] font-bold px-2 py-1 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50">
-                          {count} listings
+                        <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-black text-white text-[10px] font-bold px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                          {count}
                         </div>
                       </div>
                     ))}
                   </div>
 
-                  <div className="flex justify-between text-[10px] text-muted-foreground font-bold uppercase tracking-widest">
+                  <div className="flex justify-between text-[10px] text-gray-400 font-medium">
                     <span>Wk 1</span>
                     <span>Wk 2</span>
                     <span>Wk 3</span>
                     <span>Wk 4</span>
-                    <span className="text-secondary">Now</span>
+                    <span className="text-secondary font-bold">Now</span>
                   </div>
                 </div>
               </div>
 
               {/* Active Bookings Feed */}
-              <div className="col-span-12 lg:col-span-4 bg-white rounded-[2.5rem] p-8 shadow-soft border border-gray-100 flex flex-col">
+              <div className="col-span-12 lg:col-span-4 bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex flex-col">
                 <div className="flex justify-between items-center mb-8">
                   <h3 className="text-xl font-bold text-black tracking-tight">Your Bookings</h3>
                   <button

@@ -11,7 +11,7 @@ export function RecommendationBadge({ reason }: RecommendationBadgeProps) {
         if (reasonLower.includes('budget')) {
             return {
                 icon: DollarSign,
-                color: 'bg-blue-100 text-blue-700 border-blue-200',
+                color: 'bg-primary/20 text-secondary border-primary/30',
                 label: 'Budget-Friendly',
             };
         }
@@ -19,7 +19,7 @@ export function RecommendationBadge({ reason }: RecommendationBadgeProps) {
         if (reasonLower.includes('waste')) {
             return {
                 icon: Leaf,
-                color: 'bg-green-100 text-green-700 border-green-200',
+                color: 'bg-secondary/10 text-secondary border-secondary/20',
                 label: 'Waste Reduction',
             };
         }
@@ -27,7 +27,7 @@ export function RecommendationBadge({ reason }: RecommendationBadgeProps) {
         if (reasonLower.includes('nutrition')) {
             return {
                 icon: Heart,
-                color: 'bg-pink-100 text-pink-700 border-pink-200',
+                color: 'bg-orange-50 text-orange-700 border-orange-100',
                 label: 'Nutrition',
             };
         }
@@ -35,7 +35,7 @@ export function RecommendationBadge({ reason }: RecommendationBadgeProps) {
         if (reasonLower.includes('meal')) {
             return {
                 icon: Utensils,
-                color: 'bg-purple-100 text-purple-700 border-purple-200',
+                color: 'bg-amber-50 text-amber-700 border-amber-100',
                 label: 'Meal Planning',
             };
         }
@@ -43,7 +43,7 @@ export function RecommendationBadge({ reason }: RecommendationBadgeProps) {
         // Default
         return {
             icon: Sparkles,
-            color: 'bg-yellow-100 text-yellow-700 border-yellow-200',
+            color: 'bg-gray-50 text-muted-foreground border-gray-100',
             label: reason,
         };
     };

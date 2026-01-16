@@ -1,25 +1,23 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import {
   Calendar,
   Utensils,
   Sparkles,
-  DollarSign,
   Brain,
   ArrowRight,
   ShoppingBag,
   ShoppingBasket,
   ChefHat,
   X,
-  ListChecks,
   MessageSquare,
-  Search,
-  ChevronRight,
-  Info,
   Sunrise,
   Sun,
   Moon,
   CheckCircle2,
-  AlertCircle
+  History,
+  LayoutDashboard,
+  Target,
+  Zap
 } from 'lucide-react';
 import { useProfile } from '../context/ProfileContext';
 import { useApi } from '../hooks/useApi';
@@ -56,101 +54,79 @@ export default function MealPlannerPage() {
   const { profile } = useProfile();
   const api = useApi();
   const { useGetConsumptionLogs, useGetHydration } = useInventory();
+  const [selectedDate] = useState(new Date());
+  const [activeTab, setActiveTab ] = useState<'optimizer' | 'saved'>('optimizer');
   const [loading, setLoading] = useState(false);
-  const [selectedDate, setSelectedDate] = useState(new Date());
-  const [showConfig, setShowConfig] = useState(false);
-  const [mealPlan, setMealPlan] = useState<MealPlan | null>(() => {
-    const saved = localStorage.getItem('current_meal_plan');
-    return saved ? JSON.parse(saved) : null;
-  });
+  const [mealPlan, setMealPlan] = useState<MealPlan | null>(null);
+  
+  // No auto-switch for now as we use modal
+  
   const [rawResponse, setRawResponse] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<'current' | 'saved'>('current');
+  const [notification, setNotification] = useState<{message: string, type: 'success' | 'error'} | null>(null);
+  
+  useEffect(() => {
+    if (notification) {
+      const timer = setTimeout(() => setNotification(null), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [notification]);
   const [savedPlans, setSavedPlans] = useState<any[]>([]);
   const [consuming, setConsuming] = useState<string | null>(null);
   const [consumedMeals, setConsumedMeals] = useState<Set<string>>(new Set());
-  const [selectedRecipe, setSelectedRecipe] = useState<any | null>(null);
-  const [isRecipeLoading, setIsRecipeLoading] = useState(false);
-  const [activeMeal, setActiveMeal] = useState<{ name: string; items: string[]; nutrition: any; type: string } | null>(null);
+  const [activeMeal, setActiveMeal] = useState<{name: string, items: string[], nutrition: any, type: string} | null>(null);
   const [modalTab, setModalTab] = useState<'nutrition' | 'recipe'>('nutrition');
-  
+  const [selectedRecipe, setSelectedRecipe] = useState<any>(null);
+  const [isRecipeLoading, setIsRecipeLoading] = useState(false);
   const [config, setConfig] = useState({
-    budget: 200,
+    budget: 2000,
     timePeriod: 'one_day',
-    notes: '',
+    notes: ''
   });
 
-  // Normalize selected date to full-day window to match backend filters
-  const startOfDay = useMemo(() => {
-    const d = new Date(selectedDate);
-    d.setHours(0, 0, 0, 0);
-    return d;
-  }, [selectedDate]);
+  const { data: logsData } = useGetConsumptionLogs({
+    startDate: new Date(selectedDate.setHours(0,0,0,0)),
+    endDate: new Date(selectedDate.setHours(23,59,59,999))
+  });
 
-  const endOfDay = useMemo(() => {
-    const d = new Date(selectedDate);
-    d.setHours(23, 59, 59, 999);
-    return d;
-  }, [selectedDate]);
+  useGetHydration(selectedDate);
 
-  // Fetch consumption logs for the full selected day
-  const { data: consumptionResult } = useGetConsumptionLogs({
-    startDate: startOfDay,
-    endDate: endOfDay
-  }) || { data: null };
-
-  // Fetch hydration data for selected date
-  const { data: hydrationData } = useGetHydration(selectedDate);
-
-  const consumptionLogs = consumptionResult?.consumptionLogs || [];
-
-  // Calculate consumed nutrition from consumption logs
   const consumedNutrition = useMemo(() => {
-    let calories = 0;
-    let protein = 0;
-    let carbs = 0;
-    let fat = 0;
+    if (!logsData?.consumptionLogs) return { calories: 0, protein: 0, carbs: 0, fat: 0 };
+    return logsData.consumptionLogs.reduce((acc: any, log: any) => ({
+      calories: acc.calories + (log.calories || 0),
+      protein: acc.protein + (log.protein || 0),
+      carbs: acc.carbs + (log.carbs || 0),
+      fat: acc.fat + (log.fat || 0),
+    }), { calories: 0, protein: 0, carbs: 0, fat: 0 });
+  }, [logsData]);
 
-    if (Array.isArray(consumptionLogs)) {
-      consumptionLogs.forEach((log: any) => {
-        calories += log.calories || 0;
-        protein += log.protein || 0;
-        carbs += log.carbohydrates || 0;
-        fat += log.fat || 0;
-      });
+  const fetchSavedPlans = async () => {
+    try {
+      const response = await api.getSavedMealPlans();
+      setSavedPlans(response.data || response || []);
+    } catch (error) {
+      console.error('Error fetching saved plans:', error);
     }
+  };
 
-    return { calories, protein, carbs, fat };
-  }, [consumptionLogs]);
+  useMemo(() => {
+    fetchSavedPlans();
+  }, []);
 
-  // Generate personalized AI insights based on health metrics and lowest nutrient
   const aiInsight = useMemo(() => {
-    const userGoals = profile?.profile;
-    const weight = userGoals?.weight || 70;
-    const proteinGoal = userGoals?.proteinGoal || 180;
-    const energyGoal = userGoals?.energyGoal || 2500;
-    
-    // Calculate percentages for each nutrient
-    const carbsGoal = Math.round(energyGoal * 0.45 / 4);
-    const fatsGoal = Math.round(energyGoal * 0.25 / 9);
-    
-    const caloriePercent = (consumedNutrition.calories / energyGoal) * 100;
-    const proteinPercent = (consumedNutrition.protein / proteinGoal) * 100;
-    const carbsPercent = (consumedNutrition.carbs / carbsGoal) * 100;
-    const fatsPercent = (consumedNutrition.fat / fatsGoal) * 100;
-    
-    // Find the lowest percentage
-    const percentages = [
-      { name: 'Calories', percent: caloriePercent },
-      { name: 'Protein', percent: proteinPercent },
-      { name: 'Carbs', percent: carbsPercent },
-      { name: 'Fats', percent: fatsPercent }
+    const energyGoal = profile?.profile?.energyGoal || 2500;
+    const proteinGoal = profile?.profile?.proteinGoal || 180;
+    const items = [
+      { name: 'Calories', current: consumedNutrition.calories, goal: energyGoal },
+      { name: 'Protein', current: consumedNutrition.protein, goal: proteinGoal },
+      { name: 'Carbs', current: consumedNutrition.carbs, goal: (energyGoal * 0.45) / 4 },
+      { name: 'Fats', current: consumedNutrition.fat, goal: (energyGoal * 0.25) / 9 },
     ];
     
-    const lowestNutrient = percentages.reduce((min, curr) => 
-      curr.percent < min.percent ? curr : min
+    const lowestNutrient = items.reduce((prev, curr) => 
+      (curr.current / curr.goal) < (prev.current / prev.goal) ? curr : prev
     );
     
-    // Generate insight based on lowest nutrient
     let recommendation = '';
     let subtitle = '';
     
@@ -177,20 +153,11 @@ export default function MealPlannerPage() {
     return {
       title: `Focus on ${recommendation} this week!`,
       subtitle: subtitle,
-      metrics: {
-        calories: 65,
-        protein: 58,
-        hydration: 70,
-        steps: 45
-      }
     };
   }, [profile, consumedNutrition]);
 
-  // Banner text follows AI insight; meal plan summary is not used to override it
   const displayTitle = aiInsight.title;
-  const displaySubtitle = aiInsight.subtitle;
-
-  // Explain why these meals are suggested based on current macro gaps
+  
   const displayPlanSummary = useMemo(() => {
     const energyGoal = profile?.profile?.energyGoal || 2500;
     const proteinGoal = profile?.profile?.proteinGoal || 180;
@@ -217,46 +184,27 @@ export default function MealPlannerPage() {
 
   const hasHealthMetrics = profile?.profile?.height && profile?.profile?.weight;
 
-  const fetchSavedPlans = async () => {
-    try {
-      const response = await api.getSavedMealPlans();
-      setSavedPlans(response.data);
-    } catch (error) {
-      console.error('Error fetching saved plans:', error);
-    }
-  };
-
   const generatePlan = async () => {
     setLoading(true);
-    setShowConfig(false);
-    setMealPlan(null);
     setRawResponse(null);
     try {
-      // Calculate current nutritional status and gaps
       const energyGoal = profile?.profile?.energyGoal || 2500;
       const proteinGoal = profile?.profile?.proteinGoal || 180;
       const carbsGoal = Math.round(energyGoal * 0.45 / 4);
       const fatsGoal = Math.round(energyGoal * 0.25 / 9);
-      const hydrationGoal = 2.5; // L
+      const hydrationGoal = 2.5;
 
-      console.log('Generating meal plan with config:', config);
       const response = await api.getOptimizedMealPlan({
         budget: config.budget,
         timePeriod: config.timePeriod,
         notes: config.notes,
-        // Pass comprehensive health stats for AI consideration
         userStats: {
           energyGoal,
           proteinGoal,
           carbsGoal,
           fatsGoal,
           hydrationGoal,
-          consumed: {
-            calories: consumedNutrition.calories,
-            protein: consumedNutrition.protein,
-            carbs: consumedNutrition.carbs,
-            fat: consumedNutrition.fat,
-          },
+          consumed: consumedNutrition,
           remaining: {
             calories: Math.max(0, energyGoal - consumedNutrition.calories),
             protein: Math.max(0, proteinGoal - consumedNutrition.protein),
@@ -268,59 +216,33 @@ export default function MealPlannerPage() {
         },
       });
       
-      console.log('API Response received:', response);
-
-      if (!response.data || (!response.data.response && !response.data.mealPlan)) {
-        throw new Error('AI service returned an empty or invalid response. Please try again.');
-      }
-
       const content = response.data.response || JSON.stringify(response.data.mealPlan);
-      
-      console.log('Extracting JSON from content:', content.substring(0, 100) + '...');
-
-      // Try to extract JSON from the AI response
       const jsonMatch = content.match(/(\{[\s\S]*\})/);
+      
       if (jsonMatch) {
          try {
-           let jsonString = jsonMatch[1];
-           
-           // Basic cleaning of common AI artifacts
-           jsonString = jsonString.replace(/\\n/g, ' ')
-                                .replace(/\r?\n|\r/g, ' ')
-                                .trim();
-
+           let jsonString = jsonMatch[1].replace(/\\n/g, ' ').replace(/\r?\n|\r/g, ' ').trim();
            const parsed = JSON.parse(jsonString);
-           
-           console.log('Successfully parsed JSON:', parsed);
 
-           // Validation and repair
            if (!parsed.isMealPlan && (parsed.meals || parsed.mealPlan)) {
              parsed.isMealPlan = true;
-             // Handle case where AI wraps it in another object
-             if (parsed.mealPlan && !parsed.meals) {
-               Object.assign(parsed, parsed.mealPlan);
-             }
+             if (parsed.mealPlan && !parsed.meals) Object.assign(parsed, parsed.mealPlan);
            }
 
-           if (parsed.isMealPlan && parsed.meals) {
-             setMealPlan(parsed);
-             localStorage.setItem('current_meal_plan', JSON.stringify(parsed));
-             setViewMode('current'); // Switch to current view to show the generated plan
-           } else {
-             console.warn('Parsed object is not a valid meal plan structure:', parsed);
+            if (parsed.isMealPlan && parsed.meals) {
+              setMealPlan(parsed);
+            } else {
              setRawResponse(content);
            }
          } catch (e) {
-           console.error('JSON Parse Error Detail:', e, 'Raw content block:', content.substring(0, 200));
            setRawResponse(content);
          }
       } else {
-        console.warn('No JSON structure found in AI response text');
         setRawResponse(content);
       }
     } catch (error: any) {
-      console.error('Final generation error:', error);
-      alert(error.message || 'Failed to generate meal plan. The AI might be busy, please try again in a moment.');
+      console.error(error);
+      setNotification({ message: 'Failed to generate meal plan. Please try again.', type: 'error' });
     } finally {
       setLoading(false);
     }
@@ -329,7 +251,7 @@ export default function MealPlannerPage() {
   const savePlan = async (plan: MealPlan) => {
     try {
       await api.saveMealPlan(plan);
-      alert('Meal plan saved successfully!');
+      setNotification({ message: 'Meal plan saved successfully!', type: 'success' });
       fetchSavedPlans();
     } catch (error) {
       console.error('Error saving meal plan:', error);
@@ -340,25 +262,20 @@ export default function MealPlannerPage() {
     if (!mealPlan) return;
     const meal = mealPlan.meals[idx];
     const items = option === 'option1' ? meal.option1?.items : meal.option2.items;
-    
     if (!items) return;
 
     setConsuming(`${idx}-${option}`);
     try {
-      // Pass isMarketPurchase flag for option2 (market purchases)
       const isMarketPurchase = option === 'option2';
       await api.consumeMeal(meal.name, items, isMarketPurchase);
-      
-      // Mark as consumed
       setConsumedMeals(prev => new Set(prev).add(`${idx}-${option}`));
-      
-      const message = isMarketPurchase 
-        ? `${meal.name} purchased and added to inventory, then consumed!`
-        : `Consumed ${meal.name} from inventory!`;
-      alert(message);
+      setNotification({ 
+        message: isMarketPurchase ? `${meal.name} purchased and consumed!` : `Consumed ${meal.name} from inventory!`, 
+        type: 'success' 
+      });
     } catch (error) {
-      console.error('Error consuming meal:', error);
-      alert('Failed to consume meal: ' + (error instanceof Error ? error.message : 'Unknown error'));
+      console.error(error);
+      setNotification({ message: 'Failed to consume meal.', type: 'error' });
     } finally {
       setConsuming(null);
     }
@@ -369,10 +286,11 @@ export default function MealPlannerPage() {
     try {
       const response = await api.getRecipe(dishName, ingredients);
       setSelectedRecipe(response.data);
+      setNotification({ message: 'Recipe instructions loaded!', type: 'success' });
       setModalTab('recipe');
     } catch (error) {
-      console.error('Error fetching recipe:', error);
-      alert('Failed to load recipe. Please try again.');
+      console.error(error);
+      setNotification({ message: 'Failed to load recipe.', type: 'error' });
     } finally {
       setIsRecipeLoading(false);
     }
@@ -386,657 +304,450 @@ export default function MealPlannerPage() {
 
   if (!hasHealthMetrics) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center max-w-2xl mx-auto space-y-6">
-        <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center">
-          <Brain className="w-10 h-10 text-primary" />
+      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center max-w-2xl mx-auto space-y-8 animate-in fade-in duration-700">
+        <div className="w-24 h-24 bg-primary/20 rounded-[2.5rem] flex items-center justify-center shadow-inner border border-primary/20">
+          <Brain className="w-12 h-12 text-secondary" />
         </div>
-        <h1 className="text-3xl font-bold text-foreground">Complete Your Health Profile</h1>
-        <p className="text-muted-foreground">
-          To generate a "Price-Smart Meal Plan" tailored to your metabolism and health goals, we need your height, weight, and preferences.
-        </p>
+        <div>
+          <h1 className="text-4xl font-bold text-foreground tracking-tight mb-4">Complete Your Health Profile</h1>
+          <p className="text-muted-foreground font-medium text-lg leading-relaxed">
+            To generate a price-smart meal plan tailored to your metabolism and health goals, we need your height, weight, and preferences.
+          </p>
+        </div>
         <Link
           to="/profile/edit"
-          className="inline-flex items-center gap-2 px-6 py-3 bg-black text-white rounded-xl hover:bg-gray-900 transition-all font-bold shadow-lg"
+          className="inline-flex items-center gap-3 px-10 py-5 bg-secondary text-white rounded-2xl hover:bg-secondary/90 transition-all font-bold shadow-lg shadow-secondary/20 active:scale-95 group"
         >
           Setup My Profile
-          <ArrowRight className="w-4 h-4" />
+          <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
         </Link>
       </div>
     );
   }
 
   return (
-    <main className="flex-1 overflow-y-auto">
-      <div className="container mx-auto px-4 py-8 max-w-7xl">
-      <header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground tracking-tight">Weekly Meal Plan</h1>
-          <p className="text-muted-foreground text-sm mt-1">Plan your nutrition for a healthier week, {profile?.profile?.fullName || 'User'}!</p>
-        </div>
-        <div className="flex items-center gap-4 w-full md:w-auto">
-          <div className="relative flex-1 md:w-80">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
-            <input 
-              className="w-full pl-12 pr-4 py-3 rounded-full border-none bg-white text-foreground shadow-soft focus:ring-2 focus:ring-primary/50 placeholder-gray-400 transition-all text-sm font-medium" 
-              placeholder="Search for recipes or ingredients" 
-              type="text"
-            />
+    <main className="flex-1 overflow-y-auto bg-[#FFF8F0]/30 px-6">
+      <div className="max-w-7xl mx-auto py-8">
+        {/* Header */}
+        <header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-6">
+          <div>
+            <h1 className="text-4xl font-bold text-gray-900 tracking-tight">Smart Meal Planner</h1>
+            <p className="text-secondary/60 font-bold text-[10px] uppercase tracking-widest mt-2">Personalized nutritional strategies for {profile?.profile?.fullName || 'User'}</p>
           </div>
-          <button 
-            onClick={() => setShowConfig(true)}
-            className="bg-black text-white px-6 py-3 rounded-full font-bold flex items-center gap-2 shadow-lg hover:shadow-xl transition-all whitespace-nowrap active:scale-95"
-          >
-            <Sparkles className="text-primary w-4 h-4" />
-            <span>Generate Plan</span>
-          </button>
-        </div>
-      </header>
-
-      <div className="grid grid-cols-8 gap-8">
-        {/* Left Column */}
-        <div className="col-span-12 lg:col-span-8 flex flex-col gap-8">
-          {/* Hero Banner */}
-          <div className="bg-gradient-to-r from-teal-500 to-emerald-500 rounded-[2.5rem] p-10 text-white relative overflow-hidden shadow-soft flex flex-col justify-between min-h-[300px]">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-10 rounded-full -mr-16 -mt-16 blur-3xl"></div>
-            <div className="absolute bottom-0 left-20 w-40 h-40 bg-yellow-300 opacity-20 rounded-full blur-3xl"></div>
-            
-            <div className="relative z-10 flex justify-between items-start">
-              <div>
-                
-                <h2 className="text-3xl font-bold max-w-sm leading-[1.1] mb-2 tracking-tightest">{displayTitle}</h2>
-                <p className="text-white/80 font-medium max-w-sm">{displaySubtitle}</p>
-              </div>
-              
-              <div className="hidden sm:block lg:flex lg:gap-4">
-                {/* Calorie Goal */}
-                <div className="bg-white/60 backdrop-blur-md p-6 rounded-[2rem] border border-white/10 shadow-xl">
-                  <div className="text-[10px] font-bold text-secondary uppercase tracking-[0.2em]  mb-2 text-center">Calories</div>
-                  <div className="text-xl font-bold text-center text-secondary">{Math.round(consumedNutrition.calories)}/{profile?.profile?.energyGoal || 2500}</div>
-                  <div className="text-xl text-secondary font-bold text-center mb-2">kcal</div>
-                  <div className="w-24 h-2 bg-black/20 rounded-full mt-2 overflow-hidden p-0.5">
-                    <div className="bg-white h-full rounded-full" style={{ width: `${Math.min(100, (consumedNutrition.calories / (profile?.profile?.energyGoal || 2500)) * 100)}%` }}></div>
-                  </div>
-                  <div className="text-[14px] text-center text-secondary font-bold mt-2">{Math.round((consumedNutrition.calories / (profile?.profile?.energyGoal || 2500)) * 100)}%</div>
-                </div>
-
-                {/* Protein Goal */}
-                <div className="bg-white/50 backdrop-blur-md p-6 rounded-[2rem] border border-white/10 shadow-xl">
-                  <div className="text-[10px] font-bold text-secondary uppercase tracking-[0.2em] mb-2 text-center">Protein</div>
-                  <div className="text-xl font-bold text-center text-secondary">{Math.round(consumedNutrition.protein)}/{profile?.profile?.proteinGoal || 180}</div>
-                  <div className="text-xl text-secondary font-bold text-center mb-2">g</div>                  
-                  <div className="w-24 h-2 bg-black/20 rounded-full mt-2 overflow-hidden p-0.5">
-                    <div className="bg-white h-full rounded-full" style={{ width: `${Math.min(100, (consumedNutrition.protein / (profile?.profile?.proteinGoal || 180)) * 100)}%` }}></div>
-                  </div>
-                  <div className="text-[14px] text-center text-secondary font-bold  mt-2">{Math.round((consumedNutrition.protein / (profile?.profile?.proteinGoal || 180)) * 100)}%</div>
-                </div>
-
-                {/* Carbs Goal */}
-                <div className="bg-white/40 backdrop-blur-md p-6 rounded-[2rem] border border-white/10 shadow-xl">
-                  <div className="text-[10px] font-bold text-secondary uppercase tracking-[0.2em]  mb-2 text-center">Carbs</div>
-                  <div className="text-xl font-bold text-center text-secondary">{Math.round(consumedNutrition.carbs)}/{Math.round((profile?.profile?.energyGoal || 2500) * 0.45 / 4)}</div>
-                  <div className="text-xl text-secondary font-bold text-center mb-2">g</div>                  
-                  <div className="w-24 h-2 bg-black/20 rounded-full mt-2 overflow-hidden p-0.5">
-                    <div className="bg-white h-full rounded-full" style={{ width: `${Math.min(100, (consumedNutrition.carbs / (Math.round((profile?.profile?.energyGoal || 2500) * 0.45 / 4))) * 100)}%` }}></div>
-                  </div>
-                  <div className="text-[14px] text-center  text-secondary font-bold mt-2">{Math.round((consumedNutrition.carbs / (Math.round((profile?.profile?.energyGoal || 2500) * 0.45 / 4))) * 100)}%</div>
-                </div>
-
-                {/* Fats Goal */}
-                <div className="bg-white/30 backdrop-blur-md p-6 rounded-[2rem] border border-white/10 shadow-xl">
-                  <div className="text-[10px] font-bold text-white uppercase tracking-[0.2em] mb-2 text-center">Fats</div>
-                  <div className="text-xl font-bold text-center text-white">{Math.round(consumedNutrition.fat)}/{Math.round((profile?.profile?.energyGoal || 2500) * 0.25 / 9)}</div>
-                  <div className="text-xl text-white font-bold text-center mb-2">g</div>                  
-                  <div className="w-24 h-2 bg-black/20 rounded-full mt-2 overflow-hidden p-0.5">
-                    <div className="bg-white h-full rounded-full" style={{ width: `${Math.min(100, (consumedNutrition.fat / (Math.round((profile?.profile?.energyGoal || 2500) * 0.25 / 9))) * 100)}%` }}></div>
-                  </div>
-                  <div className="text-[14px] font-bold text-center mt-2">{Math.round((consumedNutrition.fat / (Math.round((profile?.profile?.energyGoal || 2500) * 0.25 / 9))) * 100)}%</div>
-                </div>
-
-                {/* Hydration Goal */}
-                <div className="bg-white/20 backdrop-blur-md p-6 rounded-[2rem] border border-white/10 shadow-xl">
-                  <div className="text-[10px] font-bold text-white uppercase tracking-[0.2em] mb-2 text-center">Hydration</div>
-                  <div className="text-xl font-bold text-center text-white">{(hydrationData?.amount || 0).toFixed(1)}/{hydrationData?.goal || 2.5}</div>
-                  <div className="text-xl text-white font-bold text-center mb-2">L</div>                  
-                  <div className="w-24 h-2 bg-black/20 rounded-full mt-2 overflow-hidden p-0.5">
-                    <div className="bg-white h-full rounded-full" style={{ width: `${Math.min(100, ((hydrationData?.amount || 0) / (hydrationData?.goal || 2.5)) * 100)}%` }}></div>
-                  </div>
-                  <div className="text-[14px] font-bold text-center mt-2">{Math.round(((hydrationData?.amount || 0) / (hydrationData?.goal || 2.5)) * 100)}%</div>
-                </div>
-              </div>
-            </div>
-
-            <div className="relative z-10 flex items-end justify-between mt-auto pt-8">
-              
-              <button 
-                onClick={() => setViewMode(viewMode === 'current' ? 'saved' : 'current')}
-                className="bg-black text-white px-8 py-4 rounded-full font-bold flex items-center gap-3 hover:scale-105 transition-transform shadow-2xl active:scale-95 text-xs uppercase tracking-widest"
-              >
-                <span>{viewMode === 'current' ? 'View Saved Plans' : 'View Current Plan'}</span>
-                <div className="bg-white rounded-full p-1.5">
-                  <ArrowRight className="w-3.5 h-3.5 text-black" />
-                </div>
-              </button>
-            </div>
+          
+          <div className="flex items-center gap-2 bg-white p-1 rounded-2xl shadow-soft border border-gray-100">
+             <button 
+                onClick={() => setActiveTab('optimizer')}
+                className={`flex items-center gap-2 px-6 py-3 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all ${activeTab === 'optimizer' ? 'bg-secondary text-white shadow-lg' : 'text-gray-500 hover:text-secondary hover:bg-gray-50'}`}
+             >
+                <Sparkles className="w-4 h-4" />
+                Planner
+             </button>
+             <button 
+                onClick={() => setActiveTab('saved')}
+                className={`flex items-center gap-2 px-6 py-3 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all ${activeTab === 'saved' ? 'bg-secondary text-white shadow-lg' : 'text-gray-500 hover:text-secondary hover:bg-gray-50'}`}
+             >
+                <ShoppingBag className="w-4 h-4" />
+                Saved Plans
+             </button>
           </div>
+        </header>
 
-          {/* Meal Section Content (Loading/Saved/Current) */}
-          {loading ? (
-            <div className="bg-white rounded-[2.5rem] border border-gray-100 p-20 flex flex-col items-center justify-center space-y-6 shadow-soft">
-              <div className="relative">
-                <div className="w-20 h-20 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-                <Sparkles className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 text-primary animate-pulse" />
-              </div>
-              <div className="text-center">
-                <p className="font-bold text-2xl mb-2 text-black tracking-tight">AI is crafting your plan...</p>
-                <p className="text-muted-foreground font-medium max-w-xs">Optimizing for metabolic health and current market prices.</p>
-              </div>
-            </div>
-          ) : viewMode === 'saved' ? (
-            <div className="space-y-6">
-              {savedPlans.length > 0 ? (
-                <div className="grid grid-cols-1 gap-6">
-                  {savedPlans.map((plan) => (
-                    <div key={plan.id} className="bg-white border border-gray-100 rounded-[2rem] p-8 hover:shadow-xl transition-all group relative overflow-hidden">
-                      <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 blur-2xl"></div>
-                      <div className="flex justify-between items-center relative z-10">
-                        <div>
-                          <h3 className="text-xl font-bold text-black">Meal Plan from {new Date(plan.createdAt).toLocaleDateString()}</h3>
-                          <div className="flex items-center gap-4 mt-2">
-                            <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground bg-gray-50 px-3 py-1 rounded-full border border-gray-100">
-                              {Array.isArray(plan.meals) ? plan.meals.length : 0} meals
-                            </span>
-                            <span className="text-[10px] font-bold uppercase tracking-widest text-primary bg-primary/10 px-3 py-1 rounded-full border border-primary/20">
-                              ৳{plan.budget} budget
-                            </span>
-                          </div>
+        {activeTab === 'optimizer' && (
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+             <div className="lg:col-span-4 space-y-6">
+                <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-soft">
+                   <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-3">
+                      <Target className="w-5 h-5 text-secondary" />
+                      Plan Configuration
+                   </h3>
+                   
+                   <div className="space-y-6">
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 ml-1">Budget (BDT)</label>
+                        <div className="relative">
+                          <span className="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-secondary">৳</span>
+                          <input 
+                            type="number" 
+                            className="w-full pl-10 pr-4 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-4 focus:ring-primary/20 focus:bg-white transition-all font-bold text-gray-900"
+                            value={config.budget}
+                            onChange={(e) => setConfig({...config, budget: parseInt(e.target.value)})}
+                          />
                         </div>
-                        <button 
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 ml-1">Time Period</label>
+                        <select 
+                           className="w-full px-4 py-4 bg-gray-50 border border-gray-100 rounded-2xl font-bold text-gray-900 appearance-none cursor-pointer"
+                           value={config.timePeriod}
+                           onChange={(e) => setConfig({...config, timePeriod: e.target.value})}
+                        >
+                           <option value="one_day">Single Day</option>
+                           <option value="one_week">Full Week</option>
+                           <option value="breakfast">Breakfast Only</option>
+                           <option value="lunch">Lunch Only</option>
+                           <option value="dinner">Dinner Only</option>
+                        </select>
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 ml-1">Specific Goals / Notes</label>
+                        <textarea 
+                           className="w-full px-4 py-4 bg-gray-50 border border-gray-100 rounded-2xl font-bold text-gray-900 h-32 resize-none placeholder:text-gray-300"
+                           placeholder="e.g. Low sodium, high protein, avoiding lentils..."
+                           value={config.notes}
+                           onChange={(e) => setConfig({...config, notes: e.target.value})}
+                        />
+                      </div>
+
+                      <button 
+                        onClick={generatePlan}
+                        disabled={loading}
+                        className="w-full py-5 bg-secondary text-white rounded-2xl font-bold uppercase tracking-[0.2em] text-[10px] shadow-lg shadow-secondary/20 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center gap-3"
+                      >
+                        {loading ? <Zap className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+                        {loading ? 'Optimizing...' : 'Generate AI Plan'}
+                      </button>
+                   </div>
+                </div>
+
+                <div className="bg-primary/10 rounded-3xl p-8 border border-primary/20">
+                   <h4 className="text-sm font-bold text-secondary mb-4 flex items-center gap-2">
+                      <Brain className="w-4 h-4" />
+                      Dynamic Intelligence
+                   </h4>
+                   <p className="text-xs text-secondary/70 font-medium leading-relaxed">
+                      Our engine analyzes your current inventory stock, real-time bazaar prices, and metabolic gaps to craft the most cost-effective nutritional strategy.
+                   </p>
+                </div>
+             </div>
+
+             <div className="lg:col-span-8">
+                {loading ? (
+                  <div className="bg-white rounded-3xl border border-gray-100 shadow-soft p-20 flex flex-col items-center justify-center text-center space-y-6 min-h-[500px]">
+                    <div className="relative">
+                      <div className="w-20 h-20 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+                      <Sparkles className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 text-secondary animate-pulse" />
+                    </div>
+                    <div>
+                      <h3 className="text-2xl font-bold text-gray-900 mb-2">Consulting NutriAI Engine</h3>
+                      <p className="text-gray-500 font-medium max-w-sm">Generating your personalized, price-smart meal protocol based on your health metrics...</p>
+                    </div>
+                  </div>
+                ) : mealPlan ? (
+                   <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500 pb-10">
+                      {/* Simple Insights Header */}
+                      <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-soft flex flex-col md:flex-row justify-between items-center gap-6 relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -mr-32 -mt-32"></div>
+                        
+                        <div className="relative z-10 max-w-xl">
+                           <span className="text-[10px] font-bold uppercase tracking-widest text-secondary mb-2 block">AI Strategy Analysis</span>
+                           <h2 className="text-2xl font-bold text-gray-900 tracking-tight mb-3">{displayTitle}</h2>
+                           <p className="text-gray-500 font-medium text-xs leading-relaxed">{displayPlanSummary}</p>
+                        </div>
+
+                        <div className="relative z-10 flex items-center gap-6 bg-gray-50/50 p-6 rounded-2xl border border-gray-100">
+                           <div className="text-center">
+                              <span className="text-[9px] font-bold uppercase tracking-widest text-gray-400 block mb-0.5">Total Cost</span>
+                              <span className="text-3xl font-bold text-gray-900 italic">৳{mealPlan.totalEstimatedCost}</span>
+                           </div>
+                           <div className="w-px h-10 bg-gray-200"></div>
+                           <button 
+                              onClick={() => savePlan(mealPlan)}
+                              className="px-6 py-3 bg-secondary text-white rounded-xl font-bold uppercase tracking-widest text-[9px] shadow-lg shadow-secondary/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center gap-2"
+                           >
+                              <ShoppingBag className="w-3.5 h-3.5" />
+                              Save Plan
+                           </button>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {mealPlan.meals.map((meal, idx) => (
+                          <div key={idx} className="group bg-white rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden flex flex-col">
+                             <div className="p-6 border-b border-gray-50 flex justify-between items-center bg-gray-50/30">
+                                <div className="flex items-center gap-3">
+                                   <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-sm border border-gray-100">
+                                      {meal.type.toLowerCase().includes('breakfast') && <Sunrise className="w-6 h-6 text-orange-400" />}
+                                      {meal.type.toLowerCase().includes('lunch') && <Sun className="w-6 h-6 text-primary" />}
+                                      {meal.type.toLowerCase().includes('dinner') && <Moon className="w-6 h-6 text-indigo-400" />}
+                                   </div>
+                                   <div>
+                                      <span className="text-[9px] font-bold uppercase tracking-widest text-secondary/60">{meal.type}</span>
+                                      <h4 onClick={() => handleMealClick(meal.name, [], meal.nutrition, meal.type)} className="text-md font-bold text-gray-900 cursor-pointer hover:text-secondary transition-colors line-clamp-1">{meal.name}</h4>
+                                   </div>
+                                </div>
+                                <div className="text-right">
+                                   <div className="text-sm font-bold text-gray-900">{meal.nutrition.calories} kcal</div>
+                                   <div className="text-[8px] font-bold text-gray-400 uppercase tracking-widest">{meal.nutrition.protein}P • {meal.nutrition.carbs}C</div>
+                                </div>
+                             </div>
+
+                             <div className="p-6 space-y-4 flex-1 flex flex-col justify-between">
+                                <div className="space-y-4">
+                                  {meal.option1 && (
+                                    <div className="relative p-4 bg-[#FFF8F0] rounded-xl border border-primary/20 group/opt hover:bg-white hover:shadow-sm transition-all cursor-default text-xs">
+                                       <div className="absolute top-0 right-0 bg-secondary text-[7px] text-white px-2 py-0.5 rounded-bl-lg font-bold uppercase tracking-widest">In Stock</div>
+                                       <div className="flex justify-between items-center mb-2">
+                                          <span className="text-[8px] font-bold uppercase tracking-widest text-gray-400 flex items-center gap-1.5">
+                                             <CheckCircle2 className="w-3 h-3 text-secondary" />
+                                             Inventory
+                                          </span>
+                                          <span className="font-bold text-gray-900 font-mono italic">৳{meal.option1.cost}</span>
+                                       </div>
+                                       <p className="font-bold text-gray-900 line-clamp-1">{meal.option1.name}</p>
+                                       <button 
+                                        onClick={() => consumeMeal(idx, 'option1')}
+                                        disabled={consuming === `${idx}-option1` || consumedMeals.has(`${idx}-option1`)}
+                                        className="mt-3 w-full py-2 bg-gray-900 text-white rounded-lg text-[8px] font-bold uppercase tracking-widest hover:bg-secondary transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                                       >
+                                         {consuming === `${idx}-option1` ? <Zap className="w-2.5 h-2.5 animate-spin" /> : consumedMeals.has(`${idx}-option1`) ? <CheckCircle2 className="w-2.5 h-2.5" /> : <Utensils className="w-2.5 h-2.5" />}
+                                         {consumedMeals.has(`${idx}-option1`) ? 'Logged' : 'Log Use'}
+                                       </button>
+                                    </div>
+                                  )}
+
+                                  <div className="p-4 bg-gray-50 rounded-xl border border-gray-100 group/opt hover:bg-white hover:shadow-sm transition-all cursor-default text-xs">
+                                     <div className="flex justify-between items-center mb-2">
+                                        <span className="text-[8px] font-bold uppercase tracking-widest text-gray-400 flex items-center gap-1.5">
+                                           <ShoppingBasket className="w-3 h-3 text-gray-300" />
+                                           Market
+                                        </span>
+                                        <span className="font-bold text-gray-900 font-mono italic">৳{meal.option2.cost}</span>
+                                     </div>
+                                     <p className="font-bold text-gray-900 line-clamp-1">{meal.option2.name}</p>
+                                     <button 
+                                        onClick={() => consumeMeal(idx, 'option2')}
+                                        disabled={consuming === `${idx}-option2` || consumedMeals.has(`${idx}-option2`)}
+                                        className="mt-3 w-full py-2 bg-white border border-gray-200 text-gray-900 rounded-lg text-[8px] font-bold uppercase tracking-widest hover:bg-gray-900 hover:text-white transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                                     >
+                                        {consuming === `${idx}-option2` ? <Zap className="w-2.5 h-2.5 animate-spin" /> : consumedMeals.has(`${idx}-option2`) ? <CheckCircle2 className="w-2.5 h-2.5" /> : <ShoppingBag className="w-2.5 h-2.5" />}
+                                        {consumedMeals.has(`${idx}-option2`) ? 'Purchased' : 'Buy & Log'}
+                                     </button>
+                                  </div>
+                                </div>
+                             </div>
+                          </div>
+                        ))}
+                      </div>
+                   </div>
+                ) : rawResponse ? (
+                   <div className="bg-white rounded-3xl border border-gray-100 shadow-soft p-10 prose prose-slate max-w-none">
+                      <div className="flex items-center gap-3 mb-6 pb-6 border-b border-gray-50">
+                         <div className="w-10 h-10 bg-primary/20 rounded-xl flex items-center justify-center">
+                            <MessageSquare className="w-5 h-5 text-secondary" />
+                         </div>
+                         <h3 className="text-xl font-bold text-gray-900 m-0">AI Recommendations</h3>
+                      </div>
+                      <div className="whitespace-pre-wrap font-medium text-gray-600 leading-relaxed italic">
+                        {rawResponse}
+                      </div>
+                   </div>
+                ) : (
+                  <div className="bg-white rounded-3xl border-2 border-dashed border-gray-200 p-20 flex flex-col items-center justify-center text-center space-y-8 min-h-[500px]">
+                    <div className="w-24 h-24 bg-gray-50 rounded-3xl flex items-center justify-center">
+                      <LayoutDashboard className="w-12 h-12 text-gray-200" />
+                    </div>
+                    <div className="max-w-md">
+                      <h3 className="text-2xl font-bold text-gray-900 mb-3">Ready to start planning?</h3>
+                      <p className="text-gray-500 font-medium">Adjust your parameters on the left and hit 'Generate' to create a weekly nutrition protocol tailored just for you.</p>
+                    </div>
+                  </div>
+                )}
+             </div>
+          </div>
+        )}
+        {activeTab === 'saved' && (
+          <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+             {savedPlans.length > 0 ? (
+               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                 {savedPlans.map((plan) => (
+                   <div key={plan.id} className="bg-white rounded-3xl p-8 border border-gray-100 shadow-soft hover:shadow-xl transition-all group overflow-hidden relative">
+                      <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 group-hover:bg-primary/10 transition-all"></div>
+                      <div className="relative z-10">
+                         <div className="flex items-center gap-3 mb-4">
+                            <Calendar className="w-4 h-4 text-secondary/40" />
+                            <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">{new Date(plan.createdAt).toLocaleDateString()}</span>
+                         </div>
+                         <h3 className="text-xl font-bold text-gray-900 mb-6">Protocols Strategy</h3>
+                         <div className="flex items-baseline gap-1 mb-8">
+                            <span className="text-3xl font-bold text-gray-900">৳{plan.budget}</span>
+                            <span className="text-xs text-gray-400 font-medium font-bold uppercase">Budget</span>
+                         </div>
+                         <button 
                           onClick={() => {
                             setMealPlan({
                               isMealPlan: true,
-                              summary: "Saved Plan",
+                              summary: "Archived Plan",
                               meals: plan.meals,
-                              totalEstimatedCost: plan.totalCost
+                            totalEstimatedCost: plan.totalCost
                             });
-                            setViewMode('current');
+                            setActiveTab('optimizer');
                           }}
-                          className="px-8 py-3 bg-black text-white rounded-full text-xs font-bold uppercase tracking-widest hover:bg-primary hover:text-black transition-all shadow-lg active:scale-95"
-                        >
-                          Load Plan
-                        </button>
+                          className="w-full py-4 bg-gray-50 text-gray-900 rounded-2xl text-[10px] font-bold uppercase tracking-widest hover:bg-secondary hover:text-white transition-all shadow-sm"
+                         >
+                           View Plan
+                         </button>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="bg-white rounded-[2.5rem] border-2 border-dashed border-gray-100 p-20 text-center">
-                   <Calendar className="w-16 h-16 text-gray-200 mx-auto mb-6" />
-                   <h3 className="text-xl font-bold text-black">No saved plans yet</h3>
-                   <p className="text-muted-foreground font-medium max-w-xs mx-auto mt-2">Generate and save a plan to see it archived here for future reference.</p>
-                </div>
-              )}
-            </div>
-          ) : mealPlan ? (
-             <div className="space-y-8">
-               <div className="bg-white rounded-[2.5rem] p-10 shadow-soft border border-gray-50/50 flex flex-col md:flex-row justify-between items-center gap-8 relative overflow-hidden">
-                 <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full -mr-32 -mt-32 blur-3xl"></div>
-                 <div className="relative z-10 flex-1">
-                   <h3 className="text-2xl font-bold text-black flex items-center gap-3 mb-4">
-                     <Info className="w-6 h-6 text-primary" />
-                     NutriAI Insights
-                   </h3>
-                   <p className="text-muted-foreground font-medium leading-relaxed italic border-l-4 border-primary pl-6 py-2">
-                      {displayPlanSummary}
-                   </p>
-                 </div>
-                 <div className="relative z-10 flex flex-col items-center gap-4">
-                   <div className="bg-black text-white px-8 py-4 rounded-[1.5rem] shadow-2xl flex flex-col items-center">
-                     <span className="text-[10px] font-bold uppercase tracking-[0.2em] opacity-60 mb-1">Estimated Cost</span>
-                     <span className="text-3xl font-bold">৳{mealPlan.totalEstimatedCost}</span>
-                   </div>
-                   <button
-                      onClick={() => savePlan(mealPlan)}
-                      className="flex items-center gap-3 px-8 py-3 bg-gray-50 border border-gray-100 text-black rounded-full hover:bg-black hover:text-white transition-all font-bold text-xs uppercase tracking-widest shadow-sm active:scale-95"
-                    >
-                      <ShoppingBag className="w-4 h-4" />
-                      Save Plan
-                    </button>
-                 </div>
-               </div>
-
-               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                 {mealPlan.meals.map((meal, idx) => (
-                   <div key={idx} className="bg-white rounded-[2.5rem] border border-gray-50/50 overflow-hidden shadow-soft hover:shadow-xl transition-all group">
-                     <div className="p-8 border-b border-gray-50 bg-gray-50/50 flex justify-between items-center">
-                       <div>
-                         <div className="flex items-center gap-3 mb-2">
-                           {meal.type.toLowerCase().includes('breakfast') ? <Sunrise className="w-4 h-4 text-orange-400" /> : 
-                            meal.type.toLowerCase().includes('lunch') ? <Sun className="w-4 h-4 text-primary" /> : 
-                            <Moon className="w-4 h-4 text-indigo-400" />}
-                           <span className="text-[10px] font-bold text-black uppercase tracking-[0.2em] bg-white px-3 py-1 rounded-full border border-gray-100">{meal.type}</span>
-                         </div>
-                         <h4 className="text-2xl font-bold text-black leading-tight">
-                           <span 
-                             className="cursor-pointer hover:text-primary transition-colors" 
-                             onClick={() => handleMealClick(meal.name, [], meal.nutrition, meal.type)}
-                           >
-                             {meal.name}
-                           </span>
-                         </h4>
-                       </div>
-                     </div>
-                     
-                     <div className="p-8 space-y-6">
-                       <div className="flex flex-wrap gap-3">
-                         <div className="text-[10px] font-bold uppercase tracking-widest bg-gray-50 text-gray-600 px-4 py-2 rounded-full border border-gray-100">
-                           {meal.nutrition.calories} <span className="text-muted-foreground/60 ml-1">kcal</span>
-                         </div>
-                         <div className="text-[10px] font-bold uppercase tracking-widest bg-gray-50 text-gray-600 px-4 py-2 rounded-full border border-gray-100">
-                            {meal.nutrition.protein} <span className="text-muted-foreground/60 ml-1">Protein</span>
-                         </div>
-                         <div className="text-[10px] font-bold uppercase tracking-widest bg-gray-50 text-gray-600 px-4 py-2 rounded-full border border-gray-100">
-                            {meal.nutrition.carbs} <span className="text-muted-foreground/60 ml-1">Carbs</span>
-                         </div>
-                         <div className="text-[10px] font-bold uppercase tracking-widest bg-gray-50 text-gray-600 px-4 py-2 rounded-full border border-gray-100">
-                            {meal.nutrition.fat} <span className="text-muted-foreground/60 ml-1">Fats</span>
-                         </div>
-                       </div>
-
-                       <div className="space-y-4 pt-2">
-                         {meal.option1 && meal.option1.items && meal.option1.items.length > 0 ? (
-                           <div className="p-6 bg-primary/5 rounded-[2rem] border border-primary/20 relative overflow-hidden group/opt hover:bg-primary/10 transition-colors">
-                             <div className="absolute top-0 right-0 bg-black text-[8px] text-white px-4 py-1.5 rounded-bl-2xl font-bold uppercase tracking-[0.2em]">
-                               STOCK CONFIRMED
-                             </div>
-                             <div className="flex justify-between items-center mb-3">
-                               <span className="text-[10px] font-bold text-black uppercase tracking-widest flex items-center gap-2">
-                                 <CheckCircle2 className="w-4 h-4 text-primary" />
-                                 Inventory Option
-                               </span>
-                               <span className="text-sm font-bold text-black tracking-tight">৳{meal.option1.cost}</span>
-                             </div>
-                             <p className="text-lg font-bold text-black mb-1">
-                               <span 
-                                 className="cursor-pointer hover:text-primary hover:underline transition-colors" 
-                                 onClick={() => handleMealClick(meal.option1?.name || '', meal.option1?.items || [], meal.nutrition, meal.type)}
-                               >
-                                 {meal.option1?.name}
-                               </span>
-                             </p>
-                             <p className="text-xs text-muted-foreground font-medium mb-5 line-clamp-1">
-                               Uses: {meal.option1.items.join(', ')}
-                             </p>
-                             <button
-                               onClick={() => consumeMeal(idx, 'option1')}
-                               disabled={consuming === `${idx}-option1` || consumedMeals.has(`${idx}-option1`)}
-                               className="w-full py-4 bg-black text-white text-[10px] font-bold rounded-2xl hover:bg-primary hover:text-black transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed uppercase tracking-widest shadow-xl active:scale-95"
-                             >
-                               {consuming === `${idx}-option1` ? (
-                                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                               ) : consumedMeals.has(`${idx}-option1`) ? (
-                                 <>
-                                   <CheckCircle2 className="w-4 h-4" />
-                                   Marked as Consumed
-                                 </>
-                               ) : (
-                                 <>
-                                   <Utensils className="w-4 h-4" />
-                                   Mark as Consumed
-                                 </>
-                               )}
-                             </button>
-                           </div>
-                         ) : (
-                           <div className="p-6 bg-amber-50 rounded-[2rem] border border-amber-100">
-                             <p className="text-xs text-amber-700 font-bold flex items-center gap-3">
-                               <AlertCircle className="w-4 h-4" />
-                               No direct inventory match found
-                             </p>
-                           </div>
-                         )}
-
-                          <div className="p-6 bg-gray-50 rounded-[2rem] border border-gray-100 group/opt hover:bg-gray-100 transition-colors">
-                            <div className="flex justify-between items-center mb-3">
-                              <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest flex items-center gap-2">
-                                <ShoppingBag className="w-4 h-4" />
-                                Market Option
-                              </span>
-                              <span className="text-sm font-bold text-black tracking-tight">৳{meal.option2.cost}</span>
-                            </div>
-                            <p className="text-lg font-bold text-black mb-1">
-                              <span className="cursor-pointer hover:text-primary transition-colors" onClick={() => handleMealClick(meal.option2.name, meal.option2.items, meal.nutrition, meal.type)}>
-                                {meal.option2.name}
-                              </span>
-                            </p>
-                            <p className="text-xs text-muted-foreground font-medium mb-5 line-clamp-1">
-                              Buy: {meal.option2.items.join(', ')}
-                            </p>
-                            <button
-                              onClick={() => consumeMeal(idx, 'option2')}
-                              disabled={consuming === `${idx}-option2` || consumedMeals.has(`${idx}-option2`)}
-                              className="w-full py-4 bg-white border border-gray-200 text-black text-[10px] font-bold rounded-2xl hover:bg-black hover:text-white transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed uppercase tracking-widest shadow-sm active:scale-95"
-                            >
-                              {consuming === `${idx}-option2` ? (
-                                <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
-                              ) : consumedMeals.has(`${idx}-option2`) ? (
-                                <>
-                                  <CheckCircle2 className="w-4 h-4" />
-                                  Purchased and Consumed
-                                </>
-                              ) : (
-                                <>
-                                  <Utensils className="w-4 h-4" />
-                                  Purchase & Consume
-                                </>
-                              )}
-                            </button>
-                          </div>
-                       </div>
-                     </div>
                    </div>
                  ))}
                </div>
-
-               {/* Shopping List Card */}
-               <div className="bg-white rounded-[2.5rem] p-8 shadow-soft border border-gray-50/50 flex items-center justify-between group cursor-pointer hover:border-black transition-all">
-                 <div className="flex items-center gap-6">
-                   <div className="bg-primary/10 text-primary p-5 rounded-[1.5rem] group-hover:scale-110 transition-transform">
-                     <ShoppingBasket className="w-8 h-8" />
-                   </div>
-                   <div>
-                     <h3 className="text-2xl font-bold text-black tracking-tight">Generate Shopping List</h3>
-                     <p className="text-muted-foreground font-medium mt-1">Export ingredients needed for the entire week.</p>
-                   </div>
-                 </div>
-                 <button className="bg-gray-50 text-black w-14 h-14 rounded-full flex items-center justify-center transition-all group-hover:bg-black group-hover:text-white group-hover:translate-x-2">
-                   <ChevronRight className="w-6 h-6" />
-                 </button>
+             ) : (
+               <div className="bg-white rounded-3xl border-2 border-dashed border-gray-200 p-24 text-center">
+                  <History className="w-16 h-16 text-gray-200 mx-auto mb-6" />
+                  <h3 className="text-2xl font-bold text-gray-900 mb-2">No Saved Protocols</h3>
+                  <p className="text-gray-500 font-medium">Your nutritional history will appear here once you save generated plans.</p>
                </div>
-             </div>
-          ) : rawResponse ? (
-            <div className="bg-white rounded-[2.5rem] border border-gray-50 p-10 prose prose-slate max-w-none shadow-soft whitespace-pre-wrap font-medium text-black/80 leading-relaxed">
-              {rawResponse}
-            </div>
-          ) : (
-            <div className="bg-white rounded-[2.5rem] border-2 border-dashed border-gray-100 p-20 flex flex-col items-center justify-center text-center space-y-8">
-              <div className="p-8 bg-gray-50 rounded-full shadow-inner">
-                <Utensils className="w-20 h-20 text-gray-200" />
-              </div>
-              <div>
-                <h2 className="text-3xl font-bold text-black tracking-tight mb-4">No Active Meal Plan</h2>
-                <p className="text-muted-foreground font-medium max-w-md mx-auto">
-                  Get a personalized, price-smart meal plan optimized for your metabolism and local bazaar prices.
-                </p>
-              </div>
-              <button
-                onClick={() => setShowConfig(true)}
-                className="px-12 py-5 bg-black text-white rounded-full font-bold text-xs uppercase tracking-widest hover:bg-primary hover:text-black transition-all shadow-2xl active:scale-95 flex items-center gap-3"
-              >
-                <Sparkles className="w-5 h-5" />
-                Get Started Now
-              </button>
-            </div>
-          )}
-        </div>
-
-        {/* Sidebar Mini Dashboard (Right Column) */}
-        
-      </div>
-
-      {/* Configuration Modal */}
-      {showConfig && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-card w-full max-w-md rounded-[2.5rem] border border-gray-100 p-10 shadow-2xl animate-in zoom-in-95 duration-200 bg-white">
-            <div className="flex items-center gap-4 mb-8">
-              <div className="p-3 bg-primary/10 rounded-2xl">
-                <Sparkles className="w-6 h-6 text-primary" />
-              </div>
-              <h2 className="text-3xl font-bold text-black tracking-tight">Plan Setup</h2>
-            </div>
-
-            <div className="space-y-8">
-              <div>
-                <label className="block text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground mb-3 flex items-center gap-2">
-                  <DollarSign className="w-3.5 h-3.5" />
-                  Total Budget (BDT)
-                </label>
-                <div className="relative">
-                  <span className="absolute left-6 top-1/2 -translate-y-1/2 font-bold text-black text-lg">৳</span>
-                  <input
-                    type="number"
-                    value={config.budget}
-                    onChange={(e) => setConfig({ ...config, budget: parseInt(e.target.value) })}
-                    className="w-full pl-12 pr-6 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-primary outline-none transition-all font-bold text-lg text-black"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground mb-3 flex items-center gap-2">
-                  <Calendar className="w-3.5 h-3.5" />
-                  Time Period
-                </label>
-                <select
-                  value={config.timePeriod}
-                  onChange={(e) => setConfig({ ...config, timePeriod: e.target.value })}
-                  className="w-full px-6 py-4 bg-gray-50 border-none rounded-2xl outline-none font-bold text-black focus:ring-2 focus:ring-primary appearance-none cursor-pointer"
-                >
-                  <optgroup label="Single Meals">
-                    <option value="breakfast">Breakfast Only</option>
-                    <option value="lunch">Lunch Only</option>
-                    <option value="dinner">Dinner Only</option>
-                  </optgroup>
-                  <optgroup label="Full Plans">
-                    <option value="one_day">Full Day (5 Meals)</option>
-                    <option value="one_week">Full Week (35 Meals)</option>
-                  </optgroup>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground mb-3 flex items-center gap-2">
-                  <MessageSquare className="w-3.5 h-3.5" />
-                  Notes / Focus
-                </label>
-                <textarea
-                  value={config.notes}
-                  onChange={(e) => setConfig({ ...config, notes: e.target.value })}
-                  placeholder="e.g. High protein, low carb, or avoiding nuts..."
-                  className="w-full px-6 py-4 bg-gray-50 border-none rounded-2xl outline-none focus:ring-2 focus:ring-primary h-32 resize-none text-sm font-medium text-black"
-                />
-              </div>
-
-              <div className="flex gap-4 pt-4">
-                <button
-                  onClick={() => setShowConfig(false)}
-                  className="flex-1 py-4 bg-gray-100 text-black font-bold uppercase tracking-widest text-[10px] rounded-full hover:bg-gray-200 transition-all"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={generatePlan}
-                  className="flex-1 py-4 bg-black text-white font-bold uppercase tracking-widest text-[10px] rounded-full hover:bg-primary hover:text-black shadow-xl transition-all active:scale-95"
-                >
-                  Generate
-                </button>
-              </div>
-            </div>
+             )}
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Meal Detail Modal */}
-      {activeMeal && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/80 backdrop-blur-xl">
-          <div className="bg-white w-full max-w-3xl max-h-[90vh] rounded-[3rem] overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-300 flex flex-col border border-white/20">
-            {/* Modal Header */}
-            <div className="p-10 pb-6 flex justify-between items-start">
-              <div>
-                <div className="flex items-center gap-3 mb-2">
-                  <span className="text-[10px] font-bold text-black uppercase tracking-[0.2em] bg-primary/10 px-3 py-1 rounded-full border border-primary/20">
-                    {activeMeal.type}
-                  </span>
+
+
+        {/* Meal Detail Modal */}
+        {activeMeal && (
+          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-gray-900/40 backdrop-blur-md animate-in fade-in duration-300">
+            <div className="bg-white w-full max-w-3xl max-h-[90vh] rounded-[2.5rem] overflow-hidden shadow-2xl animate-in zoom-in-95 duration-500 flex flex-col border border-gray-100">
+              <div className="p-8 pb-4 flex justify-between items-start">
+                <div>
+                   <span className="text-[10px] font-bold text-secondary uppercase tracking-widest bg-primary/10 px-3 py-1 rounded-lg">{activeMeal.type}</span>
+                   <h2 className="text-3xl font-bold text-gray-900 mt-2">{activeMeal.name}</h2>
                 </div>
-                <h2 className="text-4xl font-bold text-black tracking-tight leading-tight">{activeMeal.name}</h2>
+                <button onClick={() => setActiveMeal(null)} className="p-2 hover:bg-gray-100 rounded-xl transition-all">
+                  <X className="w-6 h-6 text-gray-400" />
+                </button>
               </div>
-              <button 
-                onClick={() => setActiveMeal(null)}
-                className="w-12 h-12 bg-gray-50 flex items-center justify-center text-muted-foreground hover:bg-black hover:text-white rounded-full transition-all active:scale-95"
-              >
-                <X className="w-6 h-6" />
-              </button>
-            </div>
 
-            {/* Tabs */}
-            <div className="flex bg-gray-50 p-1.5 mx-10 rounded-2xl mb-8">
-              <button
-                onClick={() => setModalTab('nutrition')}
-                className={`flex-1 py-3 text-[10px] font-bold uppercase tracking-widest rounded-[1rem] transition-all flex items-center justify-center gap-2 ${
-                  modalTab === 'nutrition' ? 'bg-white text-black shadow-lg shadow-black/5' : 'text-muted-foreground hover:text-black'
-                }`}
-              >
-                <Brain className="w-4 h-4" /> Nutrition
-              </button>
-              <button
-                onClick={() => setModalTab('recipe')}
-                className={`flex-1 py-3 text-[10px] font-bold uppercase tracking-widest rounded-[1rem] transition-all flex items-center justify-center gap-2 ${
-                  modalTab === 'recipe' ? 'bg-white text-black shadow-lg shadow-black/5' : 'text-muted-foreground hover:text-black'
-                }`}
-              >
-                <ChefHat className="w-4 h-4" /> Cooking Guide
-              </button>
-            </div>
+              <div className="flex gap-2 p-1.5 bg-gray-50 mx-8 rounded-2xl mb-8 border border-gray-100">
+                <button onClick={() => setModalTab('nutrition')} className={`flex-1 py-3 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all ${modalTab === 'nutrition' ? 'bg-white text-secondary shadow-sm' : 'text-gray-400'}`}>Nutrition</button>
+                <button onClick={() => setModalTab('recipe')} className={`flex-1 py-3 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all ${modalTab === 'recipe' ? 'bg-white text-secondary shadow-sm' : 'text-gray-400'}`}>Cooking Guide</button>
+              </div>
 
-            <div className="flex-1 overflow-y-auto px-10 pb-10">
-              {modalTab === 'nutrition' ? (
-                <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
-                    <div className="p-6 bg-gray-50 rounded-[2rem] border border-gray-100 text-center">
-                      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] mb-2">Calories</p>
-                      <p className="text-2xl font-bold text-black">{activeMeal.nutrition.calories}</p>
-                    </div>
-                    <div className="p-6 bg-gray-50 rounded-[2rem] border border-gray-100 text-center">
-                      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] mb-2">Protein</p>
-                      <p className="text-2xl font-bold text-black">{activeMeal.nutrition.protein}</p>
-                    </div>
-                    <div className="p-6 bg-gray-50 rounded-[2rem] border border-gray-100 text-center">
-                      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] mb-2">Carbs</p>
-                      <p className="text-2xl font-bold text-black">{activeMeal.nutrition.carbs}</p>
-                    </div>
-                    <div className="p-6 bg-gray-50 rounded-[2rem] border border-gray-100 text-center">
-                      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] mb-2">Fat</p>
-                      <p className="text-2xl font-bold text-black">{activeMeal.nutrition.fat}</p>
-                    </div>
-                  </div>
+              <div className="flex-1 overflow-y-auto px-8 pb-10 scrollbar-hide">
+                 {modalTab === 'nutrition' ? (
+                   <div className="space-y-8 animate-in fade-in duration-500">
+                      <div className="grid grid-cols-4 gap-4">
+                         <div className="bg-gray-50 p-6 rounded-2xl text-center">
+                            <div className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1">Calories</div>
+                            <div className="text-2xl font-bold text-gray-900">{activeMeal.nutrition.calories}</div>
+                         </div>
+                         <div className="bg-gray-50 p-6 rounded-2xl text-center">
+                            <div className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1">Protein</div>
+                            <div className="text-2xl font-bold text-gray-900">{activeMeal.nutrition.protein}g</div>
+                         </div>
+                         <div className="bg-gray-50 p-6 rounded-2xl text-center">
+                            <div className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1">Carbs</div>
+                            <div className="text-2xl font-bold text-gray-900">{activeMeal.nutrition.carbs}g</div>
+                         </div>
+                         <div className="bg-gray-50 p-6 rounded-2xl text-center">
+                            <div className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1">Fat</div>
+                            <div className="text-2xl font-bold text-gray-900">{activeMeal.nutrition.fat}g</div>
+                         </div>
+                      </div>
 
-                  <div className="space-y-6">
-                    <h3 className="text-xl font-bold flex items-center gap-3">
-                       <ShoppingBag className="w-6 h-6 text-primary" />
-                       Included Ingredients
-                    </h3>
-                    <div className="flex flex-wrap gap-3">
-                      {activeMeal?.items && activeMeal.items.length > 0 ? (
-                        activeMeal.items.map((item, i) => (
-                          <span key={i} className="px-6 py-2.5 bg-white rounded-full border border-gray-100 shadow-sm text-sm font-bold tracking-tight hover:border-black transition-colors">
-                            {item}
-                          </span>
-                        ))
+                      <div className="space-y-4">
+                         <h4 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                            <ShoppingBag className="w-5 h-5 text-secondary" />
+                            Core Ingredients
+                         </h4>
+                         <div className="flex flex-wrap gap-2">
+                            {activeMeal.items.map((item, i) => (
+                              <span key={i} className="px-5 py-2 bg-white border border-gray-100 rounded-xl text-sm font-bold text-gray-600 shadow-sm">{item}</span>
+                            ))}
+                         </div>
+                      </div>
+                   </div>
+                 ) : (
+                   <div className="animate-in fade-in duration-500">
+                      {selectedRecipe ? (
+                        <div className="space-y-10">
+                           <div className="bg-[#FFF8F0] p-8 rounded-3xl border border-primary/10 italic text-secondary/80 font-medium text-lg leading-relaxed">
+                             "{selectedRecipe.description}"
+                           </div>
+                           <div className="grid grid-cols-2 gap-10">
+                              <div className="space-y-6">
+                                 <h4 className="text-sm font-bold uppercase tracking-widest text-gray-400">Ingredients list</h4>
+                                 <div className="space-y-3">
+                                    {selectedRecipe.ingredients.map((ing: any, i: number) => (
+                                      <div key={i} className="flex justify-between items-center p-4 bg-gray-50 rounded-xl border border-gray-50">
+                                         <span className="font-bold text-gray-900">{ing.item}</span>
+                                         <span className="text-[9px] font-bold uppercase tracking-widest text-secondary bg-white px-3 py-1 rounded-lg border border-gray-100">{ing.amount}</span>
+                                      </div>
+                                    ))}
+                                 </div>
+                              </div>
+                              <div className="space-y-6">
+                                 <h4 className="text-sm font-bold uppercase tracking-widest text-gray-400">Preparation Steps</h4>
+                                 <div className="space-y-6">
+                                    {selectedRecipe.instructions.map((step: string, i: number) => (
+                                       <div key={i} className="flex gap-4">
+                                          <span className="flex-shrink-0 w-8 h-8 bg-secondary text-white text-xs font-bold rounded-lg flex items-center justify-center">{i+1}</span>
+                                          <p className="text-sm font-medium text-gray-600 leading-relaxed">{step}</p>
+                                       </div>
+                                    ))}
+                                 </div>
+                              </div>
+                           </div>
+                        </div>
                       ) : (
-                        <p className="text-sm text-muted-foreground font-medium italic bg-gray-50 p-6 rounded-2xl border border-gray-100 w-full text-center">Standard healthy ingredients suitable for {activeMeal?.type}</p>
+                        <div className="flex flex-col items-center justify-center py-20 text-center space-y-8">
+                           <div className="w-20 h-20 bg-gray-50 rounded-3xl flex items-center justify-center">
+                              <ChefHat className="w-10 h-10 text-gray-200" />
+                           </div>
+                           <h3 className="text-2xl font-bold text-gray-900">Ready to cook?</h3>
+                           <p className="text-gray-500 font-medium max-w-xs">Our AI can generate a precise culinary protocol for this specific meal.</p>
+                           <button 
+                             onClick={() => fetchRecipe(activeMeal.name, activeMeal.items)}
+                             disabled={isRecipeLoading}
+                             className="px-10 py-4 bg-secondary text-white rounded-2xl font-bold uppercase tracking-widest text-[10px] shadow-lg shadow-secondary/20 flex items-center gap-3"
+                           >
+                             {isRecipeLoading ? <Zap className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+                             Generate Instructions
+                           </button>
+                        </div>
                       )}
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-                  {selectedRecipe ? (
-                    <div className="space-y-12">
-                      <div className="bg-primary/5 p-8 rounded-[2rem] border border-primary/20">
-                        <p className="text-xl font-medium text-black leading-relaxed italic">
-                          "{selectedRecipe.description}"
-                        </p>
-                      </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-                        <div className="space-y-6">
-                          <h3 className="text-xl font-bold flex items-center gap-3">
-                            <ShoppingBag className="w-6 h-6 text-primary" />
-                            Ingredients
-                          </h3>
-                          <div className="space-y-3">
-                            {selectedRecipe.ingredients.map((ing: any, i: number) => (
-                              <div key={i} className="flex justify-between items-center p-4 bg-gray-50 rounded-2xl border border-gray-100 group hover:bg-white hover:shadow-xl transition-all">
-                                <span className="font-bold text-black">{ing.item}</span>
-                                <span className="text-xs font-bold uppercase tracking-widest text-primary bg-primary/10 px-3 py-1 rounded-full">{ing.amount}</span>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-
-                        <div className="space-y-6">
-                          <h3 className="text-xl font-bold flex items-center gap-3">
-                            <ListChecks className="w-6 h-6 text-primary" />
-                            Step-by-Step
-                          </h3>
-                          <div className="space-y-6">
-                            {selectedRecipe.instructions.map((step: string, i: number) => (
-                              <div key={i} className="flex gap-6 group">
-                                <span className="flex-shrink-0 w-8 h-8 bg-black text-white text-[10px] font-bold rounded-full flex items-center justify-center group-hover:bg-primary group-hover:text-black transition-colors shadow-lg">
-                                  {i + 1}
-                                </span>
-                                <p className="text-sm leading-relaxed text-muted-foreground font-medium group-hover:text-black transition-colors">{step}</p>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="bg-black text-white p-8 rounded-[2.5rem] shadow-2xl relative overflow-hidden">
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-primary/20 rounded-full -mr-16 -mt-16 blur-3xl"></div>
-                        <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary mb-3">Chef's Secret Tips</h4>
-                        <p className="text-sm font-medium leading-relaxed text-gray-300">{selectedRecipe.chefTips}</p>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="flex flex-col items-center justify-center py-20 text-center space-y-8">
-                      <div className="p-10 bg-gray-50 rounded-full shadow-inner relative group">
-                        <div className="absolute inset-0 bg-primary/20 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                        <Utensils className="w-20 h-20 text-gray-200 relative z-10" />
-                      </div>
-                      <div>
-                        <h3 className="text-3xl font-bold text-black tracking-tight mb-3">Ready to Cook?</h3>
-                        <p className="text-muted-foreground font-medium max-w-xs mx-auto">
-                          NutriAI will generate a custom culinary guide tailored to your selected items.
-                        </p>
-                      </div>
-                      <button
-                        onClick={() => activeMeal && fetchRecipe(activeMeal.name, activeMeal.items)}
-                        disabled={isRecipeLoading}
-                        className="px-12 py-5 bg-black text-white font-bold rounded-full hover:bg-primary hover:text-black transition-all shadow-xl flex items-center gap-3 active:scale-95 uppercase tracking-widest text-xs"
-                      >
-                        {isRecipeLoading ? <Sparkles className="w-5 h-5 animate-spin" /> : <Sparkles className="w-5 h-5 shadow-sm" />}
-                        Generate Cooking Protocol
-                      </button>
-                    </div>
-                  )}
-                </div>
-              )}
+                   </div>
+                 )}
+              </div>
             </div>
           </div>
+        )}
+
+      {isRecipeLoading && !selectedRecipe && (
+        <div className="fixed inset-0 z-[70] flex flex-col items-center justify-center bg-gray-900/60 backdrop-blur-md">
+           <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+           <p className="mt-6 text-white font-bold uppercase tracking-[0.4em] text-[10px] animate-pulse">Consulting AI Chef...</p>
         </div>
       )}
 
-      {/* Persistent Loading Overlay */}
-      {isRecipeLoading && !selectedRecipe && (
-        <div className="fixed inset-0 z-[70] flex flex-col items-center justify-center bg-black/60 backdrop-blur-md">
-          <div className="relative">
-            <div className="w-24 h-24 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-            <ChefHat className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 text-primary animate-pulse" />
+        {/* Notification Popup */}
+        {notification && (
+          <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[100] animate-in slide-in-from-bottom-10 fade-in duration-500">
+             <div className={`flex items-center gap-4 px-8 py-4 rounded-2xl shadow-2xl border ${
+               notification.type === 'success' 
+                 ? 'bg-white border-green-100 text-gray-900' 
+                 : 'bg-white border-red-100 text-gray-900'
+             }`}>
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                   notification.type === 'success' ? 'bg-green-50 text-green-500' : 'bg-red-50 text-red-500'
+                }`}>
+                   {notification.type === 'success' ? <CheckCircle2 className="w-5 h-5" /> : <X className="w-5 h-5" />}
+                </div>
+                <div>
+                   <p className="text-sm font-bold tracking-tight">{notification.message}</p>
+                   <p className="text-[10px] font-bold uppercase tracking-widest opacity-40">System Notification</p>
+                </div>
+                <button 
+                  onClick={() => setNotification(null)}
+                  className="ml-4 p-2 hover:bg-gray-50 rounded-lg transition-all"
+                >
+                   <X className="w-4 h-4 text-gray-400" />
+                </button>
+             </div>
           </div>
-          <p className="mt-8 text-white font-bold tracking-[0.3em] uppercase text-xs animate-pulse">Consulting NutriAI Chef...</p>
-        </div>
-      )}
-      </div>
-    </main>
-  );
+        )}
+    </div>
+  </main>
+);
 }

@@ -98,7 +98,7 @@ export function ResourcesPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
           <div className="flex items-center gap-4 mb-3">
-            <div className="w-12 h-12 bg-black rounded-2xl flex items-center justify-center shadow-lg shadow-black/10">
+            <div className="w-12 h-12 bg-secondary rounded-2xl flex items-center justify-center shadow-lg shadow-secondary/10">
               <BookOpen className="h-6 w-6 text-white" />
             </div>
             <h1 className="text-4xl font-bold text-foreground tracking-tight">Resources</h1>
@@ -110,7 +110,7 @@ export function ResourcesPage() {
         {isSignedIn && activeTab === 'library' && (
           <button
             onClick={() => setIsAddModalOpen(true)}
-            className="flex items-center justify-center gap-2 px-6 py-4 bg-black text-white rounded-2xl hover:bg-gray-900 transition-all font-bold shadow-xl shadow-black/10"
+            className="flex items-center justify-center gap-2 px-6 py-4 bg-secondary text-white rounded-2xl hover:bg-secondary/90 transition-all font-bold shadow-xl shadow-secondary/10"
           >
             <Plus className="h-5 w-5" />
             Add Resource
@@ -124,8 +124,8 @@ export function ResourcesPage() {
           <button
             onClick={() => setActiveTab('personalized')}
             className={`px-6 py-2.5 font-bold text-sm transition-all rounded-xl flex items-center gap-2 ${activeTab === 'personalized'
-                ? 'bg-black text-white shadow-lg'
-                : 'text-muted-foreground hover:text-black hover:bg-gray-100'
+                ? 'bg-secondary text-white shadow-lg shadow-secondary/20'
+                : 'text-muted-foreground hover:text-secondary hover:bg-secondary/5'
               }`}
           >
             <Sparkles className="h-4 w-4" />
@@ -134,8 +134,8 @@ export function ResourcesPage() {
           <button
             onClick={() => setActiveTab('library')}
             className={`px-6 py-2.5 font-bold text-sm transition-all rounded-xl flex items-center gap-2 ${activeTab === 'library'
-                ? 'bg-black text-white shadow-lg'
-                : 'text-muted-foreground hover:text-black hover:bg-gray-100'
+                ? 'bg-secondary text-white shadow-lg shadow-secondary/20'
+                : 'text-muted-foreground hover:text-secondary hover:bg-secondary/5'
               }`}
           >
             <BookOpen className="h-4 w-4" />
@@ -154,12 +154,12 @@ export function ResourcesPage() {
               <p className="text-gray-600">Analyzing your profile and preferences</p>
             </div>
           ) : isRecommendationsError ? (
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
-              <h3 className="text-lg font-medium text-yellow-900 mb-2">Unable to load recommendations</h3>
-              <p className="text-yellow-700 mb-4">We couldn't fetch personalized content at this time. Please try again later or browse our resource library.</p>
+            <div className="bg-primary/10 border border-primary/20 rounded-2xl p-6">
+              <h3 className="text-lg font-medium text-secondary mb-2">Unable to load recommendations</h3>
+              <p className="text-muted-foreground mb-4">We couldn't fetch personalized content at this time. Please try again later or browse our resource library.</p>
               <button
                 onClick={() => setActiveTab('library')}
-                className="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors"
+                className="px-4 py-2 bg-secondary text-white rounded-xl hover:bg-secondary/90 transition-colors"
               >
                 Browse Resource Library
               </button>
@@ -173,15 +173,15 @@ export function ResourcesPage() {
                   <div className="relative z-10">
                     <div className="flex items-center gap-3 mb-4">
                       <div className="w-10 h-10 bg-primary/20 rounded-xl flex items-center justify-center border border-primary/30">
-                        <Sparkles className="h-5 w-5 text-black" />
+                        <Sparkles className="h-5 w-5 text-secondary" />
                       </div>
                       <h3 className="text-xl font-bold text-foreground tracking-tight">Your Personalized Feed</h3>
                     </div>
                     <p className="text-muted-foreground font-medium leading-relaxed max-w-2xl">
-                      Optimized for your <span className="text-black font-bold">{recommendations.userProfile.wasteReductionPercentage}% waste reduction rate</span>
-                      {recommendations.userProfile.budgetRange && <> and <span className="text-black font-bold">৳{recommendations.userProfile.budgetRange} monthly budget</span></>}.
+                      Optimized for your <span className="text-secondary font-bold">{recommendations.userProfile.wasteReductionPercentage}% waste reduction rate</span>
+                      {recommendations.userProfile.budgetRange && <> and <span className="text-secondary font-bold">৳{recommendations.userProfile.budgetRange} monthly budget</span></>}.
                       {recommendations.userProfile.primaryConcerns.length > 0 && (
-                        <> Focusing on: <span className="text-primary-dark font-bold uppercase tracking-wider text-xs">{recommendations.userProfile.primaryConcerns.join(', ')}</span>.</>
+                        <> Focusing on: <span className="text-secondary font-bold uppercase tracking-wider text-xs">{recommendations.userProfile.primaryConcerns.join(', ')}</span>.</>
                       )}
                     </p>
                   </div>
@@ -192,8 +192,8 @@ export function ResourcesPage() {
               {recommendations.articles && recommendations.articles.length > 0 && (
                 <div>
                   <div className="flex items-center gap-3 mb-6">
-                    <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
-                      <Newspaper className="h-4 w-4 text-black" />
+                    <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
+                      <Newspaper className="h-4 w-4 text-secondary" />
                     </div>
                     <h2 className="text-xl font-bold text-foreground tracking-tight">Recommended Articles</h2>
                     <span className="bg-gray-50 text-muted-foreground text-xs font-bold px-3 py-1 rounded-full border border-gray-100">{recommendations.articles.length}</span>
@@ -210,8 +210,8 @@ export function ResourcesPage() {
               {recommendations.videos && recommendations.videos.length > 0 && (
                 <div>
                   <div className="flex items-center gap-3 mb-6">
-                    <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
-                      <VideoIcon className="h-4 w-4 text-black" />
+                    <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
+                      <VideoIcon className="h-4 w-4 text-secondary" />
                     </div>
                     <h2 className="text-xl font-bold text-foreground tracking-tight">Recommended Videos</h2>
                     <span className="bg-gray-50 text-muted-foreground text-xs font-bold px-3 py-1 rounded-full border border-gray-100">{recommendations.videos.length}</span>
@@ -233,7 +233,7 @@ export function ResourcesPage() {
                     <p className="text-gray-600 mb-4">We're still learning about your preferences. Check back soon!</p>
                     <button
                       onClick={() => setActiveTab('library')}
-                      className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                      className="px-4 py-2 bg-secondary text-white rounded-xl hover:bg-secondary/90 transition-colors"
                     >
                       Browse Resource Library
                     </button>
@@ -266,7 +266,7 @@ export function ResourcesPage() {
                 </h3>
                 <button
                   onClick={handleClearSearch}
-                  className="text-sm text-gray-600 hover:text-gray-900"
+                  className="text-sm text-secondary hover:text-secondary/80 font-medium"
                 >
                   Clear Results
                 </button>
@@ -278,8 +278,8 @@ export function ResourcesPage() {
                   <button
                     onClick={() => setResultTab('articles')}
                     className={`px-4 py-2 font-medium text-sm transition-colors border-b-2 ${resultTab === 'articles'
-                        ? 'border-green-600 text-green-600'
-                        : 'border-transparent text-gray-600 hover:text-gray-900'
+                        ? 'border-secondary text-secondary'
+                        : 'border-transparent text-gray-600 hover:text-secondary'
                       }`}
                   >
                     Articles ({searchResults.articles.length})
@@ -287,8 +287,8 @@ export function ResourcesPage() {
                   <button
                     onClick={() => setResultTab('videos')}
                     className={`px-4 py-2 font-medium text-sm transition-colors border-b-2 ${resultTab === 'videos'
-                        ? 'border-green-600 text-green-600'
-                        : 'border-transparent text-gray-600 hover:text-gray-900'
+                        ? 'border-secondary text-secondary'
+                        : 'border-transparent text-gray-600 hover:text-secondary'
                       }`}
                   >
                     Videos ({searchResults.videos.length})
@@ -347,8 +347,8 @@ export function ResourcesPage() {
                   className={
                     `px-5 py-2 rounded-xl border text-sm font-bold transition-all uppercase tracking-wider ` +
                     (selectedTag === tag
-                      ? 'bg-black text-white border-black shadow-lg shadow-black/10'
-                      : 'bg-white text-muted-foreground border-gray-100 hover:bg-gray-50 hover:text-black')
+                      ? 'bg-secondary text-white border-secondary shadow-lg shadow-secondary/20'
+                      : 'bg-white text-muted-foreground border-gray-100 hover:bg-secondary/10 hover:text-secondary')
                   }
                 >
                   {tag as string}
