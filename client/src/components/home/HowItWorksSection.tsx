@@ -5,8 +5,8 @@ const steps = [
     icon: ScanBarcode,
     title: '1. Scan & Digitize',
     description: 'Instantly add groceries to your digital pantry using our barcode scanner or receipt upload.',
-    color: 'bg-gray-100 text-gray-900',
-    hoverIconcolor: 'group-hover:bg-purple-100 group-hover:text-red-500',
+    color: 'bg-background text-foreground',
+    hoverIconcolor: 'group-hover:bg-primary/20 group-hover:text-primary-dark',
     ypos: 10,
     delay: 0,
   },
@@ -14,8 +14,8 @@ const steps = [
     icon: Utensils,
     title: '2. Cook Smart',
     description: 'Get AI recipe suggestions based on what you have and what expires soon.',
-    color: 'bg-primary/10 text-primary',
-    hoverIconcolor: 'group-hover:bg-purple-100 group-hover:text-red-500',
+    color: 'bg-primary/10 text-primary-dark',
+    hoverIconcolor: 'group-hover:bg-primary/20 group-hover:text-primary-dark',
     ypos: 10,
     delay: 0.4,
   },
@@ -23,8 +23,8 @@ const steps = [
     icon: Share2,
     title: '3. Share Surplus',
     description: 'Don\'t throw it away! Share excess ingredients with your local community.',
-    color: 'bg-orange-50 text-orange-600',
-    hoverIconcolor: 'group-hover:bg-purple-100 group-hover:text-red-500',
+    color: 'bg-secondary/10 text-secondary',
+    hoverIconcolor: 'group-hover:bg-secondary/20 group-hover:text-secondary-dark',
     ypos: 10,
     delay: 0.7,
   },
@@ -32,8 +32,8 @@ const steps = [
     icon: BarChart,
     title: '4. Track Impact',
     description: 'Visualize your waste reduction and nutrition improvements over time.',
-    color: 'bg-blue-50 text-blue-600',
-    hoverIconcolor: 'group-hover:bg-purple-100 group-hover:text-red-500',
+    color: 'bg-muted text-muted-foreground',
+    hoverIconcolor: 'group-hover:bg-primary/10 group-hover:text-primary',
     ypos: 10,
     delay: 1,
   },
@@ -41,13 +41,16 @@ const steps = [
 
 export default function HowItWorksSection() {
   return (
-    <section id="how-it-works" className="relative py-40 bg-[url('/hehe.jpeg')] bg-cover bg-gradient-to-r from-[#f5dfd6] to-[#f5dfa6]">
-      <div className="absolute inset-0 bg-black/20"></div>
+    <section id="how-it-works" className="relative py-40 bg-[url('/hehe.jpeg')] bg-cover bg-fixed">
+      {/* Overlay to ensure text readability and theme tint */}
+      <div className="absolute inset-0 bg-black/40"></div>
+      <div className="absolute inset-0 bg-gradient-to-r from-primary/30 to-secondary/30 mix-blend-overlay"></div>
+      
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col md:flex-row items-center justify-between mb-16 gap-6">
           <div className="max-w-xl">
-            <h2 className="text-3xl font-bold text-white  mb-2">A Complete Food Lifecycle</h2>
-            <p className="text-white ">Stop managing specific parts of your kitchen in isolation. Connect them all.</p>
+            <h2 className="text-3xl font-display font-bold text-white mb-2">A Complete Food Lifecycle</h2>
+            <p className="text-gray-100 font-medium">Stop managing specific parts of your kitchen in isolation. Connect them all.</p>
           </div>
         </div>
 
@@ -62,7 +65,7 @@ export default function HowItWorksSection() {
                 whileInView={{ y: 0, opacity: 1 }}
                 transition={{ duration: 0.5, ease: 'easeInOut', delay: step.delay }}
                 viewport={{ once: true }}
-                className="group flex flex-col gap-4 p-6 rounded-2xl bg-white border border-gray-100 hover:shadow-xl duration-300"
+                className="group flex flex-col gap-4 p-6 rounded-2xl bg-white/95 backdrop-blur-sm border border-white/20 hover:shadow-xl duration-300"
               >
 
                 {/* Icon Container */}
