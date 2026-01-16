@@ -9,14 +9,14 @@ export default function CTASection() {
   return (
     <section className="py-24 bg-white relative overflow-hidden">
       {/* Decorative */}
-      <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent"></div>
+      <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-border to-transparent"></div>
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="relative bg-gray-900 rounded-3xl p-12 md:p-20 text-center text-white overflow-hidden shadow-2xl shadow-gray-900/20">
+        <div className="relative bg-black/90 rounded-3xl p-12 md:p-20 text-center text-white overflow-hidden shadow-2xl shadow-gray-900/20">
 
           {/* Background decoration */}
           <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-primary rounded-full blur-[100px] -mr-20 -mt-20 opacity-20"></div>
-          <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-blue-600 rounded-full blur-[100px] -ml-10 -mb-10 opacity-20"></div>
+          <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-secondary rounded-full blur-[100px] -ml-10 -mb-10 opacity-20"></div>
           <div className="absolute inset-0 bg-[url('/grid-pattern.svg')] opacity-10"></div>
 
           <div className="relative z-10">
@@ -24,7 +24,7 @@ export default function CTASection() {
               <Sparkles className="w-4 h-4 text-primary" />
             </div>
 
-            <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 tracking-tight text-white">
+            <h2 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold mb-6 tracking-tight text-white">
               {isSignedIn ? 'Ready for a smarter kitchen?' : 'Stop Managing Your Kitchen Manually'}
             </h2>
 
@@ -37,7 +37,7 @@ export default function CTASection() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
                 to={isSignedIn ? '/dashboard' : '/sign-in'}
-                className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-primary text-white rounded-xl hover:bg-primary/90 transition-all font-bold text-lg shadow-lg shadow-primary/25"
+                className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-primary text-white rounded-xl hover:bg-primary-dark transition-all font-bold text-lg shadow-lg shadow-primary/25"
               >
                 {isSignedIn ? 'Open Dashboard' : 'Create Free Account'}
                 <ArrowRight className="w-5 h-5" />

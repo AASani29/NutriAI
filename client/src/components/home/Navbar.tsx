@@ -41,19 +41,19 @@ export default function Navbar({ theme = 'light' }: NavbarProps) {
   ];
 
   return (
-<nav className="fixed top-6 left-1/2 -translate-x-1/2 w-[95%] max-w-7xl z-50 transition-all duration-300 bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl border border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.12)] rounded-3xl">
-  <div className="px-6 sm:px-8">
-    <div className="flex justify-between items-center h-20">
-      <Link to="/" className="flex items-center group">
-        <img src="/logo.png" alt="NutriAI Logo" className="h-16 w-auto object-contain" />
-      </Link>
+    <nav className="fixed top-6 left-1/2 -translate-x-1/2 w-[95%] max-w-7xl z-50 transition-all duration-300 bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl border border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.12)] rounded-3xl">
+      <div className="px-6 sm:px-8">
+        <div className="flex justify-between items-center h-20">
+          <Link to="/" className="flex items-center group">
+            <img src="/colored-logo.png" alt="NutriAI Logo" className="h-16 w-auto object-contain" />
+          </Link>
 
           <div className="hidden md:flex items-start gap-4">
             {navLinks.map(link => (
               <a
                 key={link.href}
                 href={link.href}
-                className={`p-5 rounded-2xl transition-smooth text-lg font-bold ${theme === 'dark' ? 'text-black' : 'text-black'
+                className={`p-5 rounded-2xl transition-smooth text-lg font-bold ${theme === 'dark' ? 'text-white hover:text-primary' : 'text-foreground hover:text-primary'
                   }`}
               >
                 {link.label}
@@ -66,18 +66,18 @@ export default function Navbar({ theme = 'light' }: NavbarProps) {
               <div className="relative" ref={userMenuRef}>
                 <button
                   onClick={toggleUserMenu}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all border border-transparent ${theme === 'dark' ? 'hover:bg-gray-100 hover:border-gray-200' : 'hover:bg-accent hover:border-border'
+                  className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all border border-transparent ${theme === 'dark' ? 'hover:bg-white/10 hover:border-white/20' : 'hover:bg-accent hover:border-primary/20'
                     }`}
                 >
-                  <User className={`w-4 h-4 ${theme === 'dark' ? 'text-black' : 'text-foreground'}`} />
-                  <span className={`text-sm font-bold ${theme === 'dark' ? 'text-black' : 'text-foreground'}`}>Account</span>
+                  <User className={`w-4 h-4 ${theme === 'dark' ? 'text-white' : 'text-foreground'}`} />
+                  <span className={`text-sm font-bold ${theme === 'dark' ? 'text-white' : 'text-foreground'}`}>Account</span>
                 </button>
 
                 {isUserMenuOpen && (
                   <div className="absolute right-0 top-full mt-1 w-48 bg-background border border-border rounded-lg shadow-lg py-1 z-50">
                     <Link
                       to="/dashboard"
-                      className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-accent transition-smooth"
+                      className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-accent transition-smooth font-medium text-foreground"
                       onClick={() => setIsUserMenuOpen(false)}
                     >
                       <Settings className="w-4 h-4" />
@@ -85,7 +85,7 @@ export default function Navbar({ theme = 'light' }: NavbarProps) {
                     </Link>
                     <Link
                       to="/profile"
-                      className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-accent transition-smooth"
+                      className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-accent transition-smooth font-medium text-foreground"
                       onClick={() => setIsUserMenuOpen(false)}
                     >
                       <User className="w-4 h-4" />
@@ -96,7 +96,7 @@ export default function Navbar({ theme = 'light' }: NavbarProps) {
                         setIsUserMenuOpen(false);
                         signOut();
                       }}
-                      className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-accent transition-smooth w-full text-left"
+                      className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-accent transition-smooth w-full text-left font-medium text-foreground"
                     >
                       <LogOut className="w-4 h-4" />
                       Sign Out
@@ -108,14 +108,14 @@ export default function Navbar({ theme = 'light' }: NavbarProps) {
               <>
                 <Link
                   to="/sign-in"
-                  className={`transition-smooth text-sm font-medium pr-5 ${theme === 'dark' ? 'text-black/80 hover:text-primary' : 'text-white/80 hover:text-primary'
+                  className={`transition-smooth text-sm font-medium pr-5 ${theme === 'dark' ? 'text-white/80 hover:text-primary' : 'text-foreground/80 hover:text-primary'
                     }`}
                 >
                   Log In
                 </Link>
                 <Link
                   to="/sign-up"
-                  className="px-6 py-2.5 bg-primary text-primary-foreground rounded-xl hover:bg-primary/90 transition-all text-sm font-bold shadow-lg shadow-primary/10"
+                  className="px-6 py-2.5 bg-primary text-primary-foreground rounded-xl hover:bg-primary-dark transition-all text-sm font-bold shadow-lg shadow-primary/10"
                 >
                   Get Started
                 </Link>
@@ -125,7 +125,7 @@ export default function Navbar({ theme = 'light' }: NavbarProps) {
 
           <button
             onClick={toggleMenu}
-            className={`md:hidden transition-smooth ${theme === 'dark' ? 'text-black hover:text-primary' : 'text-foreground hover:text-primary'}`}
+            className={`md:hidden transition-smooth ${theme === 'dark' ? 'text-white hover:text-primary' : 'text-foreground hover:text-primary'}`}
           >
             {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
@@ -149,7 +149,7 @@ export default function Navbar({ theme = 'light' }: NavbarProps) {
                   <div className="flex flex-col gap-2 w-full">
                     <Link
                       to="/dashboard"
-                      className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-accent transition-smooth rounded-lg"
+                      className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-accent transition-smooth rounded-lg text-foreground font-medium"
                       onClick={() => setIsOpen(false)}
                     >
                       <Settings className="w-4 h-4" />
@@ -157,7 +157,7 @@ export default function Navbar({ theme = 'light' }: NavbarProps) {
                     </Link>
                     <Link
                       to="/profile"
-                      className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-accent transition-smooth rounded-lg"
+                      className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-accent transition-smooth rounded-lg text-foreground font-medium"
                       onClick={() => setIsOpen(false)}
                     >
                       <User className="w-4 h-4" />
@@ -168,7 +168,7 @@ export default function Navbar({ theme = 'light' }: NavbarProps) {
                         setIsOpen(false);
                         signOut();
                       }}
-                      className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-secondary/20 transition-smooth rounded-lg w-full text-left"
+                      className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-secondary/10 transition-smooth rounded-lg w-full text-left text-foreground font-medium"
                     >
                       <LogOut className="w-4 h-4" />
                       Sign Out
@@ -184,7 +184,7 @@ export default function Navbar({ theme = 'light' }: NavbarProps) {
                     </Link>
                     <Link
                       to="/sign-up"
-                      className="flex-1 text-center px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-smooth text-sm font-medium"
+                      className="flex-1 text-center px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary-dark transition-smooth text-sm font-medium"
                     >
                       Get Started
                     </Link>
