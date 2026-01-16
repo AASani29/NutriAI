@@ -16,19 +16,14 @@ export default function SignUpPage() {
       {/* Dark overlay to improve contrast */}
       <div className="absolute inset-0 bg-black/80" />
       
-      {/* Top-left brand link */}
-      <div className="absolute top-6 left-6 z-10">
-        <Link to="/" className="flex items-center gap-2">
-          <img src="/gajor2.png" className="rounded-xl shadow-soft h-12" />
-        </Link>
-      </div>
+      
       
       {/* Centered animated card */}
       <motion.div
         initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.7, ease: 'easeIn' }}
-        className="relative z-10 w-full max-w-xl p-4"
+        className="relative z-10 w-full max-w-xl p-4 flex justify-center"
       >
         <SignUp 
           path="/sign-up"
