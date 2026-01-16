@@ -22,12 +22,14 @@ import {
   Calendar as CalendarIcon,
   TrendingUp,
   Clock,
-  ChevronRight as ChevronRightIcon
+  ChevronRight as ChevronRightIcon,
+  X
 } from 'lucide-react';
 import { useMemo, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useInventory, type ConsumptionLog } from '../hooks/useInventory';
 import { useProfile } from '../context/ProfileContext';
+import DirectConsumption from '../components/DirectConsumption';
 
 export default function DailyLogPage() {
   const navigate = useNavigate();
@@ -37,6 +39,7 @@ export default function DailyLogPage() {
   // State
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const [isDirectConsumptionOpen, setIsDirectConsumptionOpen] = useState(false);
 
   // Derived intervals for calendar generation
   const monthStart = startOfMonth(currentMonth);
@@ -132,7 +135,7 @@ export default function DailyLogPage() {
           {/* Header */}
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Your Schedule</h1>
+              <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Consumption Log</h1>
               <p className="text-gray-500 mt-1">Track your meals and nutrition over time</p>
             </div>
             
@@ -269,8 +272,9 @@ export default function DailyLogPage() {
                    <p className="text-xs text-gray-500 uppercase tracking-widest">{format(selectedDate, 'EEEE')}</p>
                 </div>
                 <button 
-                  onClick={() => navigate('/inventory')}
+                  onClick={() => setIsDirectConsumptionOpen(true)}
                   className="bg-black text-white p-3 rounded-xl hover:bg-gray-800 transition-all shadow-lg active:scale-95"
+                  title="Add Direct Consumption"
                 >
                   <Plus className="w-5 h-5" />
                 </button>
@@ -362,6 +366,22 @@ export default function DailyLogPage() {
         
         </div>
       </div>
+
+      {/* DirectConsumption Modal */}
+      {isDirectConsumptionOpen && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto relative">
+            <button
+              onClick={() => setIsDirectConsumptionOpen(false)}
+              className="absolute top-4 right-4 p-2 hover:bg-gray-100 rounded-lg transition-colors z-10"
+              title="Close"
+            >
+              <X className="w-5 h-5 text-gray-600" />
+            </button>
+            <DirectConsumption />
+          </div>
+        </div>
+      )}
     </main>
   );
 }
