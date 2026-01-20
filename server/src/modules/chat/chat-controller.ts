@@ -45,29 +45,29 @@ export class ChatController {
 
                 // Check for existing session for this specific mode to reuse
                 session = await prisma.chatSession.findFirst({
-                    where: { 
+                    where: {
                         userId: dbUser.id,
-                        mode: mode 
+                        sessionMode: mode
                     },
                     orderBy: { lastActivity: 'desc' },
                     include: { messages: { orderBy: { createdAt: 'asc' } } }
                 });
 
                 if (!session) {
-                    session = await (prisma.chatSession as any).create({
+                    session = await prisma.chatSession.create({
                         data: {
                             userId: dbUser.id,
-                            mode: mode,
+                            sessionMode: mode,
                         },
                         include: { messages: true }
                     });
                 }
             } else {
-                 // Update lastActivity
-                 await prisma.chatSession.update({
+                // Update lastActivity
+                await prisma.chatSession.update({
                     where: { id: session.id },
                     data: { lastActivity: new Date() }
-                 });
+                });
             }
 
             // 2. Save User Message
@@ -106,7 +106,7 @@ export class ChatController {
             });
 
             // 5. Final Response
-            res.json({ 
+            res.json({
                 response: finalResponse,
                 sessionId: session.id
             });
@@ -225,15 +225,15 @@ export class ChatController {
 
             // Find the most recent session for this user AND mode
             const session = await prisma.chatSession.findFirst({
-                where: { 
+                where: {
                     userId: user.id,
-                    mode: (mode as string) || 'ask'
+                    sessionMode: (mode as string) || 'ask'
                 },
                 orderBy: { lastActivity: 'desc' },
-                include: { 
-                    messages: { 
-                        orderBy: { createdAt: 'asc' } 
-                    } 
+                include: {
+                    messages: {
+                        orderBy: { createdAt: 'asc' }
+                    }
                 }
             });
 
@@ -242,10 +242,10 @@ export class ChatController {
                 return;
             }
 
-            res.json({ 
-                history: session.messages, 
+            res.json({
+                history: session.messages,
                 sessionId: session.id,
-                mode: (session as any).mode || 'ask'
+                mode: (session as any).sessionMode || 'ask'
             });
 
         } catch (error: any) {

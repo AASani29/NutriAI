@@ -308,7 +308,7 @@ model MealPlan {
 model ChatSession {
   id           String        @id @default(cuid())
   userId       String
-  mode         String        @default("ask")
+  sessionMode  String        @default("ask")
   startedAt    DateTime      @default(now())
   lastActivity DateTime      @default(now())
   messages     ChatMessage[]
