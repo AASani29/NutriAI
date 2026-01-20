@@ -283,7 +283,7 @@ server.registerTool(
 );
 
 const app = express();
-const PORT = process.env.MCP_PORT || 3001;
+const PORT = process.env.PORT || 3001;
 
 app.use(cors());
 
@@ -301,7 +301,7 @@ app.get('/sse', async (req, res) => {
     if (sessionId) {
         transports.set(sessionId, transport);
         console.log(`✅ Transport registered for session: ${sessionId}`);
-        
+
         // Cleanup on close
         res.on('close', () => {
             console.log(`🔌 SSE connection closed for session: ${sessionId}`);
@@ -314,7 +314,7 @@ app.get('/sse', async (req, res) => {
 app.post('/message', async (req, res) => {
     console.log('📩 Received message on /message');
     const sessionId = req.query.sessionId as string;
-    
+
     if (!sessionId) {
         res.status(400).send("Missing sessionId query parameter");
         return;
