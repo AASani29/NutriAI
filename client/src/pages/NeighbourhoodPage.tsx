@@ -14,21 +14,17 @@ import {
   LayoutGrid,
   History
 } from 'lucide-react';
-import { useListings, useUserListings, useClaimListing } from '../components/neighbourhood/sharing-service';
-import { ListingStatus, type FoodListing, type ClaimListingRequest } from '../components/neighbourhood/types';
-import ClaimModal from '../components/neighbourhood/modal/ClaimModal';
+import { useListings, useUserListings } from '../components/neighbourhood/sharing-service';
+import { ListingStatus } from '../components/neighbourhood/types';
 import { useAuth } from "@clerk/clerk-react";
 
 export default function NeighbourhoodPage() {
   const [activeTab, setActiveTab] = useState<'browse' | 'share' | 'mylistings' | 'mybookings'>('browse');
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedListing, setSelectedListing] = useState<FoodListing | null>(null);
   const { userId } = useAuth();
 
-  const claimMutation = useClaimListing();
-
   // Fetch all available listings (excluding own) for the Discovery feed
-  const { data: allListings = [], refetch: refetchListings } = useListings({
+  const { data: allListings = [] } = useListings({
     status: ListingStatus.AVAILABLE,
     excludeOwnListings: true,
   });
@@ -85,17 +81,6 @@ export default function NeighbourhoodPage() {
     .map(([name, count]) => ({ name, count }))
     .sort((a, b) => b.count - a.count)
     .slice(0, 3);
-
-  const handleClaim = async (data: ClaimListingRequest) => {
-    if (!selectedListing) return;
-    try {
-      await claimMutation.mutateAsync({ id: selectedListing.id, data });
-      setSelectedListing(null);
-      refetchListings(); // Refresh the feed
-    } catch (error) {
-      console.error('Error claiming listing:', error);
-    }
-  };
 
   const getCategoryImage = (category: string = 'Other') => {
     switch (category.toLowerCase()) {
@@ -217,7 +202,6 @@ export default function NeighbourhoodPage() {
                       </p>
                       <div className="flex flex-col md:flex-row items-center gap-4">
                         <button
-                          onClick={() => setSelectedListing(featuredListing)}
                           className="w-full md:w-auto bg-primary text-black hover:bg-white px-6 py-3 rounded-lg font-bold transition-all flex items-center justify-center gap-2"
                         >
                           Reserve Now

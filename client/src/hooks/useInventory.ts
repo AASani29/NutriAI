@@ -1,5 +1,5 @@
 import { useAuth } from '@clerk/clerk-react';
-import { useMutation, useQuery, useQueries, useQueryClient, keepPreviousData } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueries, useQueryClient } from '@tanstack/react-query';
 
 export interface Inventory {
   id: string;

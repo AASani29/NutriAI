@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useInventory } from '../hooks/useInventory';
-import { AlertCircle, Plus, Search, Package, AlertTriangle, ArrowRight, CheckCircle2, MoreHorizontal, Settings2, Database, Warehouse, X, User, ChevronDown, ArchiveX } from 'lucide-react';
+import { AlertCircle, Plus, Search, Package, AlertTriangle, CheckCircle2, MoreHorizontal, Settings2, Database, Warehouse, X, User, ArchiveX } from 'lucide-react';
 import { useAuth } from '@clerk/clerk-react';
 import { EditInventoryDialog } from '../components/inventory/EditInventoryDialog';
 
@@ -13,7 +13,6 @@ export default function InventoryPage() {
   const [selectedUsers, setSelectedUsers] = useState<any[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [editingInventory, setEditingInventory] = useState<any | null>(null);
-  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [filterTab, setFilterTab] = useState<'all' | 'active' | 'archived'>('all');
   const navigate = useNavigate();
   const { getToken } = useAuth();

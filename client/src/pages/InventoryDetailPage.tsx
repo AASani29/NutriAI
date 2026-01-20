@@ -301,18 +301,6 @@ export default function InventoryDetailPage() {
   const hasActiveFilters =
     filters.category || filters.expiryStatus || filters.stockLevel || search;
 
-  const availableCategories = Array.from(
-    new Set(
-      (inventoryItems || [])
-        .map(
-          item =>
-            item.foodItem?.category ||
-            (item.foodItemId ? 'uncategorized' : 'custom'),
-        )
-        .filter(Boolean),
-    ),
-  ).sort();
-
   // --- STATS CALCULATION ---
   const totalItems = inventoryItems?.reduce((acc, item) => acc + item.quantity, 0) || 0;
 

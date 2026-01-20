@@ -18,21 +18,16 @@ import {
   Flame,
   Utensils,
   Droplets,
-  Trophy,
   Calendar as CalendarIcon,
   TrendingUp,
-  Clock,
-  ChevronRight as ChevronRightIcon,
   X
 } from 'lucide-react';
-import { useMemo, useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useMemo, useState } from 'react';
 import { useInventory, type ConsumptionLog } from '../hooks/useInventory';
 import { useProfile } from '../context/ProfileContext';
 import DirectConsumption from '../components/DirectConsumption';
 
 export default function DailyLogPage() {
-  const navigate = useNavigate();
   const { profile } = useProfile();
   const { useGetConsumptionLogs } = useInventory();
 
@@ -53,7 +48,7 @@ export default function DailyLogPage() {
 
   // Fetch logs for the ENTIRE displayed month (plus padding days)
   // We use a large limit to get all logs for dots/analytics
-  const { data: consumptionData, isLoading } = useGetConsumptionLogs({
+  const { data: consumptionData } = useGetConsumptionLogs({
     startDate: calendarStart,
     endDate: calendarEnd,
     limit: 1000, 

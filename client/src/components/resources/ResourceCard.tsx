@@ -17,7 +17,7 @@ export function ResourceCard({ resource }: { resource: Resource }) {
       default: return FileText;
     }
   };
-  const getTypeBgColor = (type: string) => {
+  const getTypeBgColor = (_type: string) => {
     return 'bg-secondary/10';
   };
   const TypeIcon = getTypeIcon(resource.type);

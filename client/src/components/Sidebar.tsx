@@ -2,7 +2,6 @@ import { useClerk, useUser } from "@clerk/clerk-react";
 import { Link, useLocation } from "react-router-dom";
 import {
   LayoutDashboard,
-  Brain,
   Package,
   NotebookPen,
   UtensilsCrossed,
