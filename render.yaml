@@ -6,7 +6,7 @@ services:
     plan: free # Can be changed to 'starter' for more power
     rootDir: server
     buildCommand: npm install && npx prisma generate && npm run build
-    startCommand: npx prisma migrate deploy && npm run start
+    startCommand: npx prisma db push --accept-data-loss && npm run start
     envVars:
       - key: NODE_ENV
         value: production
@@ -43,7 +43,7 @@ services:
     plan: free
     rootDir: server
     buildCommand: npm install && npx prisma generate && npm run build
-    startCommand: node dist/mcp-server.js
+    startCommand: npx prisma db push --accept-data-loss && node dist/mcp-server.js
     envVars:
       - key: NODE_ENV
         value: production
