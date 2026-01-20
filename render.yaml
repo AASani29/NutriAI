@@ -35,6 +35,8 @@ services:
         sync: false
       - key: USDA_FOOD_API_KEY
         sync: false
+      - key: MCP_SERVER_URL
+        value: https://nutriai-mcp.onrender.com/sse
 
   # Inventory MCP Server
   - type: web

@@ -286,6 +286,11 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 app.use(cors());
+app.use(express.json());
+
+app.get('/', (req, res) => {
+    res.json({ status: 'ok', service: 'nutriai-mcp-server' });
+});
 
 // SSE Endpoint
 const transports = new Map<string, SSEServerTransport>();
@@ -330,6 +335,6 @@ app.post('/message', async (req, res) => {
     await transport.handlePostMessage(req as any, res);
 });
 
-app.listen(PORT, () => {
-    console.log(`🚀 Inventory MCP Server running on http://localhost:${PORT}/sse`);
+app.listen(Number(PORT), '0.0.0.0', () => {
+    console.log(`🚀 Inventory MCP Server running on port ${PORT}`);
 });
