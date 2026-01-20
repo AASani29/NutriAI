@@ -243,7 +243,7 @@ export class ChatController {
             }
 
             res.json({
-                history: session.messages,
+                history: (session as any).messages,
                 sessionId: session.id,
                 mode: (session as any).sessionMode || 'ask'
             });

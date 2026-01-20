@@ -22,26 +22,41 @@ export class McpClientService {
     }
 
     async connect() {
-        if (this.client) return this.client;
+        if (this.client) {
+            // Check if we are actually connected
+            try {
+                // A small check might be needed here, or just assume it's okay if it reached here
+                // For now, if connect() succeeded once, we reuse.
+                return this.client;
+            } catch (e) {
+                this.client = null;
+            }
+        }
 
         const mcpUrl = process.env.MCP_SERVER_URL || 'http://localhost:3001/sse';
         console.log(`🔌 Connecting to MCP Server at ${mcpUrl}...`);
 
-        this.transport = new SSEClientTransport(new URL(mcpUrl));
+        try {
+            this.transport = new SSEClientTransport(new URL(mcpUrl));
+            this.client = new Client(
+                {
+                    name: 'nutriai-backend-client',
+                    version: '1.0.0',
+                },
+                {
+                    capabilities: {},
+                }
+            );
 
-        this.client = new Client(
-            {
-                name: 'nutriai-backend-client',
-                version: '1.0.0',
-            },
-            {
-                capabilities: {},
-            }
-        );
-
-        await this.client.connect(this.transport);
-        console.log('✅ Connected to MCP Server via HTTP/SSE');
-        return this.client;
+            await this.client.connect(this.transport);
+            console.log('✅ Connected to MCP Server via HTTP/SSE');
+            return this.client;
+        } catch (error) {
+            console.error('❌ Failed to connect to MCP Server:', error);
+            this.client = null;
+            this.transport = null;
+            throw error;
+        }
     }
 
     async listTools() {
