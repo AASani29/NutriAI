@@ -282,58 +282,88 @@ server.registerTool(
     },
 );
 
-const app = express();
 const PORT = process.env.PORT || 3001;
-
-app.use(cors());
-
-app.get('/', (req, res) => {
-    res.json({ status: 'ok', service: 'nutriai-mcp-server' });
-});
-
-// SSE Endpoint
 const transports = new Map<string, SSEServerTransport>();
 
-app.get('/sse', async (req, res) => {
-    console.log(`🔌 New SSE connection established`);
-    const transport = new SSEServerTransport('/message', res);
-    await server.connect(transport);
+import http from 'http';
+import { URL as NodeURL } from 'url';
 
-    // Assuming transport has a sessionId property after connection
-    // @ts-ignore
-    const sessionId = transport.sessionId;
-    if (sessionId) {
-        transports.set(sessionId, transport);
-        console.log(`✅ Transport registered for session: ${sessionId}`);
+const serverApp = http.createServer(async (req, res) => {
+    const url = new NodeURL(req.url || '', `http://${req.headers.host}`);
+    const pathname = url.pathname;
 
-        // Cleanup on close
-        res.on('close', () => {
-            console.log(`🔌 SSE connection closed for session: ${sessionId}`);
-            transports.delete(sessionId);
-        });
-    }
-});
+    // CORS Headers
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-// Message Endpoint for POST requests from client
-app.post('/message', async (req, res) => {
-    console.log('📩 Received message on /message');
-    const sessionId = req.query.sessionId as string;
-
-    if (!sessionId) {
-        res.status(400).send("Missing sessionId query parameter");
+    if (req.method === 'OPTIONS') {
+        res.writeHead(204);
+        res.end();
         return;
     }
 
-    const transport = transports.get(sessionId);
-    if (!transport) {
-        console.warn(`⚠️ Session not found: ${sessionId}`);
-        res.status(404).send("Session not found");
+    // Health Check
+    if (pathname === '/' && req.method === 'GET') {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ status: 'ok', service: 'nutriai-mcp-server' }));
         return;
     }
 
-    await transport.handlePostMessage(req as any, res);
+    // SSE Endpoint
+    if (pathname === '/sse' && req.method === 'GET') {
+        console.log(`🔌 New SSE connection established`);
+        const transport = new SSEServerTransport('/message', res);
+        await server.connect(transport);
+
+        // @ts-ignore
+        const sessionId = transport.sessionId;
+        if (sessionId) {
+            transports.set(sessionId, transport);
+            console.log(`✅ Transport registered for session: ${sessionId}`);
+
+            res.on('close', () => {
+                console.log(`🔌 SSE connection closed for session: ${sessionId}`);
+                transports.delete(sessionId);
+            });
+        }
+        return;
+    }
+
+    // Message Endpoint
+    if (pathname === '/message' && req.method === 'POST') {
+        console.log('📩 Received message on /message');
+        const sessionId = url.searchParams.get('sessionId');
+
+        if (!sessionId) {
+            res.writeHead(400);
+            res.end("Missing sessionId query parameter");
+            return;
+        }
+
+        const transport = transports.get(sessionId);
+        if (!transport) {
+            console.warn(`⚠️ Session not found: ${sessionId}`);
+            res.writeHead(404);
+            res.end("Session not found");
+            return;
+        }
+
+        try {
+            await transport.handlePostMessage(req, res);
+        } catch (error: any) {
+            console.error('❌ Error in handlePostMessage:', error);
+            res.writeHead(500);
+            res.end(error.message);
+        }
+        return;
+    }
+
+    // Default 404
+    res.writeHead(404);
+    res.end("Not Found");
 });
 
-app.listen(Number(PORT), '0.0.0.0', () => {
+serverApp.listen(Number(PORT), '0.0.0.0', () => {
     console.log(`🚀 Inventory MCP Server running on port ${PORT}`);
 });
