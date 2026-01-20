@@ -126,23 +126,42 @@ export class ChatController {
     private async handleAgentMode(userId: string, message: string, history: any[]): Promise<string> {
         // 1. Get Tools from MCP
         const toolsList = await mcpClientService.listTools();
+        console.log(`🛠️ MCP Tools found: ${toolsList.tools.map(t => t.name).join(', ')}`);
+
         const tools = toolsList.tools.map((tool: any) => {
             const parameters = { ...tool.inputSchema };
+            // Ensure parameters is treated as an object and remove non-standard fields
             delete parameters.$schema;
-            return {
+
+            const toolDef = {
                 type: "function" as const,
                 function: {
                     name: tool.name,
                     description: tool.description,
-                    parameters: parameters,
+                    parameters: {
+                        type: "object",
+                        ...parameters,
+                    },
                 },
             };
+            // console.log(`🔍 Tool Def for ${tool.name}:`, JSON.stringify(toolDef, null, 2));
+            return toolDef;
         });
 
-        const systemContext = `You are the NutriAI Task Agent. Your goal is to help the user manage their inventory and logs.
-        The user's ID is "${userId}". Use this ID for all tool calls. 
-        If nutritional data or prices are missing, estimate them (Prices in BDT). 
-        Always be helpful and concise.`;
+        const systemContext = `You are the NutriAI Task Agent, a professional nutrition and inventory management assistant.
+        Your goal is to help the user manage their inventories and log food consumption.
+        
+        The user's Clerk ID is "${userId}". 
+        CRITICAL: Always use this specific ID for the "userId" parameter in EVERY tool call.
+        
+        Available Tools:
+        - get_inventories: List the user's inventories (Fridge, Pantry, etc.)
+        - add_inventory_item: Add a new item to an inventory. 
+        - consume_inventory_item: Remove/Consume an item from an inventory.
+        - log_food_consumption: Log food eaten directly.
+        
+        If nutritional data (calories, protein, etc.) or prices are missing, use your internal knowledge to provide realistic estimates for Bangladesh (Prices in BDT).
+        Always be helpful, professional, and concise.`;
 
         const messages: any[] = [
             { role: 'system', content: systemContext },

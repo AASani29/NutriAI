@@ -1,7 +1,5 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { SSEServerTransport } from '@modelcontextprotocol/sdk/server/sse.js';
-import express from 'express';
-import cors from 'cors';
 import { z } from 'zod';
 import { InventoryService } from './modules/inventories/inventory-service';
 import prisma from './config/database';
@@ -16,13 +14,10 @@ const server = new McpServer({
 });
 
 // Tool: get_inventories
-server.registerTool(
+server.tool(
     'get_inventories',
     {
-        description: 'List all inventories available to the user',
-        inputSchema: {
-            userId: z.string().describe('The user ID (Clerk ID) to fetch inventories for'),
-        },
+        userId: z.string().describe('The user ID (Clerk ID) to fetch inventories for'),
     },
     async ({ userId }) => {
         try {
@@ -50,16 +45,13 @@ server.registerTool(
 );
 
 // Tool: create_inventory
-server.registerTool(
+server.tool(
     'create_inventory',
     {
-        description: 'Create a new inventory (e.g. Fridge, Pantry, Office)',
-        inputSchema: {
-            userId: z.string().describe('The user ID (Clerk ID)'),
-            name: z.string().describe('Name of the new inventory'),
-            description: z.string().optional().describe('Description of the inventory'),
-            isPrivate: z.union([z.boolean(), z.string()]).optional().transform(v => String(v) === 'true').describe('Whether the inventory is private (default: true)'),
-        },
+        userId: z.string().describe('The user ID (Clerk ID)'),
+        name: z.string().describe('Name of the new inventory'),
+        description: z.string().optional().describe('Description of the inventory'),
+        isPrivate: z.union([z.boolean(), z.string()]).optional().transform(v => String(v) === 'true').describe('Whether the inventory is private (default: true)'),
     },
     async ({ userId, name, description, isPrivate }) => {
         try {
@@ -91,27 +83,24 @@ server.registerTool(
 );
 
 // Tool: add_inventory_item
-server.registerTool(
+server.tool(
     'add_inventory_item',
     {
-        description: 'Add a new item to an inventory',
-        inputSchema: {
-            userId: z.string().describe('The user ID (Clerk ID)'),
-            inventoryId: z.string().describe('The ID of the inventory to add to'),
-            foodItemId: z.string().optional().describe('The ID of the food item'),
-            customName: z.string().optional().describe('Custom name for the item if not a known food item'),
-            quantity: z.union([z.number(), z.string()]).transform(Number).describe('Quantity of the item'),
-            unit: z.string().optional().describe('Unit of measurement'),
-            expiryDate: z.string().optional().describe('Expiry date (ISO string)'),
-            notes: z.string().optional().describe('Notes'),
-            // Nutrition & Price & Category (Estimated by AI if not provided)
-            calories: z.union([z.number(), z.string()]).optional().transform(v => v ? Number(v) : undefined).describe('Calories per unit (or for total quantity if unit implies it)'),
-            protein: z.union([z.number(), z.string()]).optional().transform(v => v ? Number(v) : undefined).describe('Protein (g)'),
-            carbohydrates: z.union([z.number(), z.string()]).optional().transform(v => v ? Number(v) : undefined).describe('Carbs (g)'),
-            fat: z.union([z.number(), z.string()]).optional().transform(v => v ? Number(v) : undefined).describe('Fat (g)'),
-            price: z.union([z.number(), z.string()]).optional().transform(v => v ? Number(v) : undefined).describe('Price/Cost of the item'),
-            category: z.string().optional().describe('Category (e.g., Produce, Dairy, Meat)'),
-        },
+        userId: z.string().describe('The user ID (Clerk ID)'),
+        inventoryId: z.string().describe('The ID of the inventory to add to'),
+        foodItemId: z.string().optional().describe('The ID of the food item'),
+        customName: z.string().optional().describe('Custom name for the item if not a known food item'),
+        quantity: z.union([z.number(), z.string()]).transform(Number).describe('Quantity of the item'),
+        unit: z.string().optional().describe('Unit of measurement'),
+        expiryDate: z.string().optional().describe('Expiry date (ISO string)'),
+        notes: z.string().optional().describe('Notes'),
+        // Nutrition & Price & Category (Estimated by AI if not provided)
+        calories: z.union([z.number(), z.string()]).optional().transform(v => v ? Number(v) : undefined).describe('Calories per unit (or for total quantity if unit implies it)'),
+        protein: z.union([z.number(), z.string()]).optional().transform(v => v ? Number(v) : undefined).describe('Protein (g)'),
+        carbohydrates: z.union([z.number(), z.string()]).optional().transform(v => v ? Number(v) : undefined).describe('Carbs (g)'),
+        fat: z.union([z.number(), z.string()]).optional().transform(v => v ? Number(v) : undefined).describe('Fat (g)'),
+        price: z.union([z.number(), z.string()]).optional().transform(v => v ? Number(v) : undefined).describe('Price/Cost of the item'),
+        category: z.string().optional().describe('Category (e.g., Produce, Dairy, Meat)'),
     },
     async (args) => {
         try {
@@ -161,28 +150,25 @@ server.registerTool(
 
 
 // Tool: consume_inventory_item
-server.registerTool(
+server.tool(
     'consume_inventory_item',
     {
-        description: 'Consume an item FROM AN EXISTING INVENTORY, reducing its quantity.',
-        inputSchema: {
-            userId: z.string().describe('The user ID (Clerk ID)'),
-            inventoryId: z.string().describe('The inventory ID'),
-            inventoryItemId: z.string().optional().describe('The specific inventory item ID to consume from'),
-            foodItemId: z.string().optional().describe('The food item ID (if not using inventory item ID)'),
-            itemName: z.string().optional().describe('Name of the item consumed'),
-            quantity: z.union([z.number(), z.string()]).transform(Number).describe('Amount consumed'),
-            unit: z.string().optional().describe('Unit of measurement'),
-            calories: z.union([z.number(), z.string()]).optional().transform(v => v ? Number(v) : undefined).describe('Calories consumed'),
-            protein: z.union([z.number(), z.string()]).optional().transform(v => v ? Number(v) : undefined).describe('Protein consumed'),
-            carbohydrates: z.union([z.number(), z.string()]).optional().transform(v => v ? Number(v) : undefined).describe('Carbs consumed'),
-            fat: z.union([z.number(), z.string()]).optional().transform(v => v ? Number(v) : undefined).describe('Fat consumed'),
-            fiber: z.union([z.number(), z.string()]).optional().transform(v => v ? Number(v) : undefined).describe('Fiber consumed'),
-            sugar: z.union([z.number(), z.string()]).optional().transform(v => v ? Number(v) : undefined).describe('Sugar consumed'),
-            sodium: z.union([z.number(), z.string()]).optional().transform(v => v ? Number(v) : undefined).describe('Sodium consumed'),
-            consumedAt: z.string().optional().describe('Date consumed (ISO string)'),
-            notes: z.string().optional().describe('Consumption notes'),
-        },
+        userId: z.string().describe('The user ID (Clerk ID)'),
+        inventoryId: z.string().describe('The inventory ID'),
+        inventoryItemId: z.string().optional().describe('The specific inventory item ID to consume from'),
+        foodItemId: z.string().optional().describe('The food item ID (if not using inventory item ID)'),
+        itemName: z.string().optional().describe('Name of the item consumed'),
+        quantity: z.union([z.number(), z.string()]).transform(Number).describe('Amount consumed'),
+        unit: z.string().optional().describe('Unit of measurement'),
+        calories: z.union([z.number(), z.string()]).optional().transform(v => v ? Number(v) : undefined).describe('Calories consumed'),
+        protein: z.union([z.number(), z.string()]).optional().transform(v => v ? Number(v) : undefined).describe('Protein consumed'),
+        carbohydrates: z.union([z.number(), z.string()]).optional().transform(v => v ? Number(v) : undefined).describe('Carbs consumed'),
+        fat: z.union([z.number(), z.string()]).optional().transform(v => v ? Number(v) : undefined).describe('Fat consumed'),
+        fiber: z.union([z.number(), z.string()]).optional().transform(v => v ? Number(v) : undefined).describe('Fiber consumed'),
+        sugar: z.union([z.number(), z.string()]).optional().transform(v => v ? Number(v) : undefined).describe('Sugar consumed'),
+        sodium: z.union([z.number(), z.string()]).optional().transform(v => v ? Number(v) : undefined).describe('Sodium consumed'),
+        consumedAt: z.string().optional().describe('Date consumed (ISO string)'),
+        notes: z.string().optional().describe('Consumption notes'),
     },
     async (args) => {
         try {
@@ -215,27 +201,24 @@ server.registerTool(
 );
 
 // Tool: log_food_consumption (Direct Consumption)
-server.registerTool(
+server.tool(
     'log_food_consumption',
     {
-        description: 'Log food consumption directly (without removing from inventory). Use this when the user eats something not tracked in their inventory. Always estimate nutrition/price if not provided.',
-        inputSchema: {
-            userId: z.string().describe('The user ID (Clerk ID)'),
-            itemName: z.string().describe('Name of the item consumed'),
-            quantity: z.union([z.number(), z.string()]).transform(Number).describe('Amount consumed'),
-            unit: z.string().optional().describe('Unit of measurement'),
-            calories: z.union([z.number(), z.string()]).optional().transform(v => v ? Number(v) : undefined).describe('Calories consumed'),
-            protein: z.union([z.number(), z.string()]).optional().transform(v => v ? Number(v) : undefined).describe('Protein consumed'),
-            carbohydrates: z.union([z.number(), z.string()]).optional().transform(v => v ? Number(v) : undefined).describe('Carbs consumed'),
-            fat: z.union([z.number(), z.string()]).optional().transform(v => v ? Number(v) : undefined).describe('Fat consumed'),
-            fiber: z.union([z.number(), z.string()]).optional().transform(v => v ? Number(v) : undefined).describe('Fiber consumed'),
-            sugar: z.union([z.number(), z.string()]).optional().transform(v => v ? Number(v) : undefined).describe('Sugar consumed'),
-            sodium: z.union([z.number(), z.string()]).optional().transform(v => v ? Number(v) : undefined).describe('Sodium consumed'),
-            price: z.union([z.number(), z.string()]).optional().transform(v => v ? Number(v) : undefined).describe('Estimated price/cost of this consumption'),
-            category: z.string().optional().describe('Category (e.g. Produce, Dairy) - added to notes for now'),
-            consumedAt: z.string().optional().describe('Date consumed (ISO string)'),
-            notes: z.string().optional().describe('Consumption notes'),
-        },
+        userId: z.string().describe('The user ID (Clerk ID)'),
+        itemName: z.string().describe('Name of the item consumed'),
+        quantity: z.union([z.number(), z.string()]).transform(Number).describe('Amount consumed'),
+        unit: z.string().optional().describe('Unit of measurement'),
+        calories: z.union([z.number(), z.string()]).optional().transform(v => v ? Number(v) : undefined).describe('Calories consumed'),
+        protein: z.union([z.number(), z.string()]).optional().transform(v => v ? Number(v) : undefined).describe('Protein consumed'),
+        carbohydrates: z.union([z.number(), z.string()]).optional().transform(v => v ? Number(v) : undefined).describe('Carbs consumed'),
+        fat: z.union([z.number(), z.string()]).optional().transform(v => v ? Number(v) : undefined).describe('Fat consumed'),
+        fiber: z.union([z.number(), z.string()]).optional().transform(v => v ? Number(v) : undefined).describe('Fiber consumed'),
+        sugar: z.union([z.number(), z.string()]).optional().transform(v => v ? Number(v) : undefined).describe('Sugar consumed'),
+        sodium: z.union([z.number(), z.string()]).optional().transform(v => v ? Number(v) : undefined).describe('Sodium consumed'),
+        price: z.union([z.number(), z.string()]).optional().transform(v => v ? Number(v) : undefined).describe('Estimated price/cost of this consumption'),
+        category: z.string().optional().describe('Category (e.g. Produce, Dairy) - added to notes for now'),
+        consumedAt: z.string().optional().describe('Date consumed (ISO string)'),
+        notes: z.string().optional().describe('Consumption notes'),
     },
     async (args) => {
         try {
@@ -282,11 +265,11 @@ server.registerTool(
     },
 );
 
-const PORT = process.env.PORT || 3001;
-const transports = new Map<string, SSEServerTransport>();
-
 import http from 'http';
 import { URL as NodeURL } from 'url';
+
+const PORT = process.env.PORT || 3001;
+const transports = new Map<string, SSEServerTransport>();
 
 const serverApp = http.createServer(async (req, res) => {
     const url = new NodeURL(req.url || '', `http://${req.headers.host}`);
